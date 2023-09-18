@@ -60,7 +60,10 @@ lazy val css = taskKey[Unit]("Build the CSS")
 
 lazy val commonSettings = Seq(
   libraryDependencies ++= Seq(
-    Dependencies.munit.value
+    Dependencies.munit.value,
+    Dependencies.http4sClient.value,
+    Dependencies.http4sServer.value,
+    Dependencies.http4sDsl.value
   )
 )
 
@@ -76,10 +79,6 @@ lazy val core = project
   .in(file("core"))
   .settings(
     commonSettings,
-    libraryDependencies ++= Seq(
-      Dependencies.catsCore.value,
-      Dependencies.catsEffect.value
-    ),
     moduleName := "krop-core"
   )
 
