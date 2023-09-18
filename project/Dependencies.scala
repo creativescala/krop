@@ -9,6 +9,7 @@ object Dependencies {
   val catsEffectVersion = "3.5.1"
   val fs2Version = "3.6.1"
   val http4sVersion = "1.0.0-M40"
+  val endpoints4sVersion = "1.10.0"
   val scalaJsDomVersion = "2.4.0"
 
   val munitVersion = "0.7.29"
@@ -23,6 +24,8 @@ object Dependencies {
   val http4sServer =
     Def.setting("org.http4s" %% "http4s-ember-server" % http4sVersion)
   val http4sDsl = Def.setting("org.http4s" %% "http4s-dsl" % http4sVersion)
+  val endpoints4s =
+    Def.setting("org.endpoints4s" %%% "algebra" % endpoints4sVersion)
 
   val munit = Def.setting("org.scalameta" %% "munit" % munitVersion % "test")
 }

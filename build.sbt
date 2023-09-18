@@ -63,7 +63,8 @@ lazy val commonSettings = Seq(
     Dependencies.munit.value,
     Dependencies.http4sClient.value,
     Dependencies.http4sServer.value,
-    Dependencies.http4sDsl.value
+    Dependencies.http4sDsl.value,
+    Dependencies.endpoints4s.value
   )
 )
 
