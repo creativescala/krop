@@ -23,19 +23,16 @@ import org.http4s.ember.server.*
 import org.typelevel.log4cats.LoggerFactory
 import org.typelevel.log4cats.slf4j.Slf4jFactory
 
-opaque type ServerBuilder = EmberServerBuilder[IO]
 object ServerBuilder {
-  implicit val loggerFactory: LoggerFactory[IO] = Slf4jFactory.create[IO]
-
-  val default = EmberServerBuilder.default[IO]
+  opaque type ServerBuilder = EmberServerBuilder[IO]
   extension (builder: ServerBuilder) {
 
     /** Expose the underlying implementation of this type */
     def unwrap: EmberServerBuilder[IO] =
       builder
 
-    def build: Server =
-      Server(builder.unwrap.build)
+    def build: Server.Server =
+      Server.Server(builder.unwrap.build)
 
     /** Set the port on which the server will listen. */
     def withPort(port: Port): ServerBuilder =
@@ -45,5 +42,10 @@ object ServerBuilder {
     def withHost(host: Host): ServerBuilder =
       builder.unwrap.withHost(host)
   }
+  object ServerBuilder {
+    implicit val loggerFactory: LoggerFactory[IO] = Slf4jFactory.create[IO]
 
+    val default = EmberServerBuilder.default[IO]
+
+  }
 }

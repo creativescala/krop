@@ -21,11 +21,8 @@ import cats.effect.Resource
 import cats.effect.unsafe.implicits.global
 import org.http4s.server.{Server => Http4sServer}
 
-opaque type Server = Resource[IO, Http4sServer]
 object Server {
-  def apply(server: Resource[IO, Http4sServer]): Server =
-    server
-
+  opaque type Server = Resource[IO, Http4sServer]
   extension (server: Server) {
 
     /** Expose the underlying implementation of this type */
@@ -39,5 +36,9 @@ object Server {
     def run(): Unit =
       toIO.unsafeRunSync()
   }
+  object Server {
+    def apply(server: Resource[IO, Http4sServer]): Server =
+      server
 
+  }
 }
