@@ -22,6 +22,8 @@ import cats.effect.unsafe.implicits.global
 import org.http4s.server.{Server => Http4sServer}
 
 object Server {
+
+  /** A HTTP server that will serve requests when run. */
   opaque type Server = Resource[IO, Http4sServer]
   extension (server: Server) {
 
@@ -29,10 +31,16 @@ object Server {
     def unwrap: Resource[IO, Http4sServer] =
       server
 
+    /** Convert this server to a Cats Effect IO for more control over how it is
+      * run.
+      */
     def toIO: IO[Unit] =
       server.unwrap.use(_ => IO.never)
 
-    /** Run this server, using the default Cats Effect thread pool. */
+    /** Run this server, using the default Cats Effect thread pool. The server
+      * is run synchronously, so this method will only return when the server
+      * has finished.
+      */
     def run(): Unit =
       toIO.unsafeRunSync()
   }

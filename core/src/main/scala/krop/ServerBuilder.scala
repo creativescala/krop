@@ -24,6 +24,8 @@ import org.typelevel.log4cats.LoggerFactory
 import org.typelevel.log4cats.slf4j.Slf4jFactory
 
 object ServerBuilder {
+
+  /** A description of how to create a [[krop.Server.Server]]. */
   opaque type ServerBuilder = EmberServerBuilder[IO]
   extension (builder: ServerBuilder) {
 
@@ -31,8 +33,18 @@ object ServerBuilder {
     def unwrap: EmberServerBuilder[IO] =
       builder
 
+    /** Build a [[krop.Server.Server]] from this description. */
     def build: Server.Server =
       Server.Server(builder.unwrap.build)
+
+    /** Build a[[krop.Server.Server]] from this description and immediately run
+      * it. The server is run synchronously, so this method will only return
+      * when the server has finished.
+      */
+    def run(): Unit = {
+      import Server.*
+      Server(build).run()
+    }
 
     /** Set the port on which the server will listen. */
     def withPort(port: Port): ServerBuilder =
