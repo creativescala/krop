@@ -53,6 +53,10 @@ object ServerBuilder {
     /** Set the host address on which the server will listen. */
     def withHost(host: Host): ServerBuilder =
       builder.unwrap.withHost(host)
+
+    /** Set the application that the server will run. */
+    def withApplication(app: Application): ServerBuilder =
+      builder.unwrap.withHttpApp(app.unwrap)
   }
   object ServerBuilder {
     implicit val loggerFactory: LoggerFactory[IO] = Slf4jFactory.create[IO]
