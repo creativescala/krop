@@ -26,7 +26,7 @@ import endpoints4s.Valid
 import endpoints4s.Validated
 import endpoints4s.algebra
 import endpoints4s.algebra.Documentation
-import krop.Route.Route
+import krop.Route
 import org.http4s
 import org.http4s.EntityDecoder
 import org.http4s.EntityEncoder
@@ -75,7 +75,6 @@ trait EndpointsWithCustomErrors
   // Convenient type aliases
   private[endpoints] type Http4sRequest = http4s.Request[Effect]
   private[endpoints] type Http4sResponse = http4s.Response[Effect]
-  private[endpoints] type KropRoute = krop.Route.Route
 
   type RequestHeaders[A] = http4s.Headers => Validated[A]
 
@@ -154,12 +153,12 @@ trait EndpointsWithCustomErrors
       operationId: Option[String]
   ) {
 
-    def handle(handler: A => B): KropRoute =
+    def handle(handler: A => B): Route =
       handleIO(handler(_).pure[Effect])
 
     def handleIO(
         handler: A => Effect[B]
-    ): KropRoute = {
+    ): Route = {
       val route = { (http4sRequest: http4s.Request[Effect]) =>
         try {
           request
@@ -185,7 +184,7 @@ trait EndpointsWithCustomErrors
     }
   }
 
-  def routesFromEndpoints(endpoints: KropRoute*): KropRoute =
+  def routesFromEndpoints(endpoints: Route*): Route =
     endpoints.reduceLeft(_ orElse _)
 
   /** HEADERS
