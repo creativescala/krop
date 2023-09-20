@@ -20,7 +20,7 @@ package krop
   * mode it shows output that is useful for debugging and otherwise inspecting
   * the running state. In production this output is hidden.
   *
-  * The mode is set by the KROP_ENV environment variable. If it has the value of
+  * The mode is set by the krop.mode JVM system property. If it has the value of
   * "development" (without the quotes; any capitalization is fine) then the mode
   * is development. Otherwise it is production.
   *
@@ -44,14 +44,18 @@ enum Mode {
 }
 object Mode {
 
-  /** The name of the environment variable used to set the Krop mode. */
-  val environmentVariable = "KROP_ENV"
+  /** The name of the system property used to set the Krop mode. */
+  val modeProperty = "krop.mode"
 
   /** The mode in which Krop is running. */
   val mode: Mode = {
-    val envVar = System.getenv(environmentVariable)
-    if (envVar == null) Mode.Production
-    else if (envVar.toLowerCase() == "development") Mode.Development
-    else Mode.Production
+    val property = System.getProperty(modeProperty)
+    val m =
+      if (property == null) Mode.Production
+      else if (property.toLowerCase() == "development") Mode.Development
+      else Mode.Production
+
+    Logger.logger.info(s"Krop starting in $m mode")
+    m
   }
 }
