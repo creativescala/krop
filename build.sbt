@@ -52,6 +52,7 @@ commands += Command.command("build") { state =>
     "scalafixAll" ::
     "scalafmtAll" ::
     "headerCreateAll" ::
+    "githubWorkflowGenerate" ::
     state
 }
 
