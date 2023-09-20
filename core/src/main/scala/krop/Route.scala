@@ -27,18 +27,25 @@ import org.http4s.Response
 /** A [[krop.Route.Route]] is a function that accepts a request and may produce
   * a response.
   */
-final case class Route(unwrap: HttpRoutes[IO]) {
+final case class Route(unwrap: IO[HttpRoutes[IO]]) {
 
   /** Try this route. If it fails to match, try the other route. */
-  def orElse(other: Route): Route =
-    Route(unwrap <+> other.unwrap)
+  def orElse(that: Route): Route =
+    Route(
+      for {
+        l <- this.unwrap
+        r <- that.unwrap
+      } yield l <+> r
+    )
 
   /** Convert this route into an [[krop.Application]] by adding a handler for
     * any unmatched requests.
     */
   def otherwise(handler: Request[IO] => IO[Response[IO]]): Application =
     Application(
-      Kleisli(req => unwrap.run(req).getOrElseF(handler(req)))
+      unwrap.map(route =>
+        Kleisli(req => route.run(req).getOrElseF(handler(req)))
+      )
     )
 
   /** Convert this [[krop.Route.Route]] into an [[krop.Application]] by
@@ -51,5 +58,5 @@ object Route {
 
   /** The empty route, which doesn't match any request. */
   val empty: Route =
-    Route(HttpRoutes.empty[IO])
+    Route(IO.pure(HttpRoutes.empty[IO]))
 }

@@ -22,4 +22,4 @@ import org.http4s.HttpApp
 /** An [[krop.Application]] produces a response for every HTTP request. Compare
   * to [[krop.Route.Route]], which may not produce a response for some requests.
   */
-final case class Application(unwrap: HttpApp[IO])
+final case class Application(unwrap: IO[HttpApp[IO]])
