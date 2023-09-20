@@ -46,6 +46,7 @@ ThisBuild / tlSitePublishBranch := Some("main")
 // Run this (build) to do everything involved in building the project
 commands += Command.command("build") { state =>
   "dependencyUpdates" ::
+    "clean" ::
     "compile" ::
     "test" ::
     "docs / tlSite" ::
