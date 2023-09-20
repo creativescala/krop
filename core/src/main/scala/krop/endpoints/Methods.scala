@@ -14,13 +14,22 @@
  * limitations under the License.
  */
 
-package krop
+package krop.endpoints
 
-import cats.effect.IO
-import org.http4s.HttpApp
+import endpoints4s.algebra
+import org.http4s
 
-// Not implemented as an opaque type as it clashes with Route.Route
-/** An [[krop.Application]] produces a response for every HTTP request. Compare
-  * to [[krop.Route.Route]], which may not produce a response for some requests.
+/** [[algebra.Methods]] interpreter that decodes and encodes methods.
+  *
+  * @group interpreters
   */
-final case class Application(unwrap: HttpApp[IO])
+trait Methods extends algebra.Methods {
+  type Method = http4s.Method
+
+  def Get: Method = http4s.Method.GET
+  def Post: Method = http4s.Method.POST
+  def Put: Method = http4s.Method.PUT
+  def Delete: Method = http4s.Method.DELETE
+  def Patch: Method = http4s.Method.PATCH
+  def Options: Method = http4s.Method.OPTIONS
+}

@@ -26,7 +26,9 @@ import org.http4s.Response
 
 object Route {
 
-  /** A [[krop.Route.Route]] is a function that accepts a request */
+  /** A [[krop.Route.Route]] is a function that accepts a request and may
+    * produce a response.
+    */
   opaque type Route = HttpRoutes[IO]
   extension (route: Route) {
 
@@ -53,7 +55,13 @@ object Route {
       route.orElse(NotFound.notFound)
   }
   object Route {
+
+    /** Convert a `http4s.HttpRoutes` into a [[Route]]. */
     def apply(route: HttpRoutes[IO]): Route =
       route
+
+    /** The empty route, which doesn't match any request. */
+    val empty: Route =
+      Route(HttpRoutes.empty[IO])
   }
 }

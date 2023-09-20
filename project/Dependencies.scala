@@ -10,6 +10,7 @@ object Dependencies {
   val fs2Version = "3.6.1"
   val http4sVersion = "1.0.0-M40"
   val endpoints4sVersion = "1.10.0"
+  val endpoints4sOpenApiVersion = "4.4.0"
   val scalaJsDomVersion = "2.4.0"
 
   val munitVersion = "0.7.29"
@@ -26,6 +27,8 @@ object Dependencies {
   val http4sDsl = Def.setting("org.http4s" %% "http4s-dsl" % http4sVersion)
   val endpoints4s =
     Def.setting("org.endpoints4s" %%% "algebra" % endpoints4sVersion)
+  val endpoints4sOpenApi =
+    Def.setting("org.endpoints4s" %%% "openapi" % endpoints4sOpenApiVersion)
 
   val munit = Def.setting("org.scalameta" %% "munit" % munitVersion % "test")
 }
