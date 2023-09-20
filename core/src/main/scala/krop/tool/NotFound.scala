@@ -18,16 +18,15 @@ package krop.tool
 
 import cats.effect.IO
 import krop.Mode
-import org.http4s.Entity
-import org.http4s.Request
-import org.http4s.Response
-import org.http4s.Status
+import org.http4s.*
+import org.http4s.dsl.io.*
+import org.http4s.headers.`Content-Type`
 
 object NotFound {
   def requestToString(request: Request[IO]): String =
     s"${request.method} ${request.uri.path}"
 
-  def development(request: Request[IO]): Response[IO] = {
+  def development(request: Request[IO]): IO[Response[IO]] = {
     val html = s"""
      |<!doctype html>
      |<html lang=en>
@@ -43,11 +42,11 @@ object NotFound {
      |</html>
      """.stripMargin
 
-    Response(status = Status.NotFound, entity = Entity.utf8String(html))
+    org.http4s.dsl.io.NotFound(html, `Content-Type`(MediaType.text.html))
   }
 
-  val production: Response[IO] = Response.notFound
+  val production: IO[Response[IO]] = IO.pure(Response.notFound)
 
-  def notFound(request: Request[IO]): Response[IO] =
+  def notFound(request: Request[IO]): IO[Response[IO]] =
     if Mode.mode.isProduction then production else development(request)
 }

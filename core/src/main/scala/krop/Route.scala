@@ -36,9 +36,9 @@ final case class Route(unwrap: HttpRoutes[IO]) {
   /** Convert this route into an [[krop.Application]] by adding a handler for
     * any unmatched requests.
     */
-  def otherwise(handler: Request[IO] => Response[IO]): Application =
+  def otherwise(handler: Request[IO] => IO[Response[IO]]): Application =
     Application(
-      Kleisli(req => unwrap.run(req).getOrElse(handler(req)))
+      Kleisli(req => unwrap.run(req).getOrElseF(handler(req)))
     )
 
   /** Convert this [[krop.Route.Route]] into an [[krop.Application]] by
