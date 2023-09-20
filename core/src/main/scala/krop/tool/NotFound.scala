@@ -32,12 +32,13 @@ object NotFound {
      |<html lang=en>
      |<head>
      |  <meta charset=utf-8>
+     |  <link href="/krop/assets/krop.css" rel="stylesheet"/>
      |  <title>Krop: Not Found</title>
      |</head>
      |<body>
-     |  <p>The request for<br/>
-     |     <code>${requestToString(request)}</code><br/>
-     |     didn't match any routes :-(</p>
+     |  <h1>Not Found</h1>
+     |  <p>The request for did not match any routes :-(</p>
+     |  <p><code>${requestToString(request)}</code></p>
      |</body>
      |</html>
      """.stripMargin

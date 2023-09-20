@@ -1,0 +1,15 @@
+body {
+    margin: 40px;
+    font-family: system-ui, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue",sans-serif;
+}
+
+h1 {
+    font-size: 1.8em;
+    font-weight: 600;
+    margin-bottom: 1em;
+    margin-top: 2em;
+}
+
+p {
+    margin-bottom: 1em;
+}
