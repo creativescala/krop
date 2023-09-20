@@ -17,8 +17,9 @@
 package krop
 
 object all {
-  export Application.*
-  export Route.*
-  export Server.*
-  export ServerBuilder.*
+  export krop.Application
+  export krop.Route
+  export krop.Server
+  export krop.ServerBuilder
+  export krop.endpoints.Endpoints
 }

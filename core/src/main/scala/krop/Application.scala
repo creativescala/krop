@@ -19,7 +19,6 @@ package krop
 import cats.effect.IO
 import org.http4s.HttpApp
 
-// Not implemented as an opaque type as it clashes with Route.Route
 /** An [[krop.Application]] produces a response for every HTTP request. Compare
   * to [[krop.Route.Route]], which may not produce a response for some requests.
   */

@@ -24,44 +24,32 @@ import org.http4s.HttpRoutes
 import org.http4s.Request
 import org.http4s.Response
 
+/** A [[krop.Route.Route]] is a function that accepts a request and may produce
+  * a response.
+  */
+final case class Route(unwrap: HttpRoutes[IO]) {
+
+  /** Try this route. If it fails to match, try the other route. */
+  def orElse(other: Route): Route =
+    Route(unwrap <+> other.unwrap)
+
+  /** Convert this route into an [[krop.Application]] by adding a handler for
+    * any unmatched requests.
+    */
+  def otherwise(handler: Request[IO] => Response[IO]): Application =
+    Application(
+      Kleisli(req => unwrap.run(req).getOrElse(handler(req)))
+    )
+
+  /** Convert this [[krop.Route.Route]] into an [[krop.Application]] by
+    * responding to all unmatched requests with a NotFound (404) response.
+    */
+  def otherwiseNotFound: Application =
+    this.otherwise(NotFound.notFound)
+}
 object Route {
 
-  /** A [[krop.Route.Route]] is a function that accepts a request and may
-    * produce a response.
-    */
-  opaque type Route = HttpRoutes[IO]
-  extension (route: Route) {
-
-    /** Expose the underlying implementation of this type */
-    def unwrap: HttpRoutes[IO] =
-      route
-
-    /** Try this route. If it fails to match, try the other route. */
-    def orElse(other: Route): Route =
-      route <+> other
-
-    /** Convert this route into an [[krop.Application]] by adding a handler for
-      * any unmatched requests.
-      */
-    def otherwise(handler: Request[IO] => Response[IO]): Application =
-      Application(
-        Kleisli(req => route.unwrap.run(req).getOrElse(handler(req)))
-      )
-
-    /** Convert this [[krop.Route.Route]] into an [[krop.Application]] by
-      * responding to all unmatched requests with a NotFound (404) response.
-      */
-    def otherwiseNotFound: Application =
-      route.otherwise(NotFound.notFound)
-  }
-  object Route {
-
-    /** Convert a `http4s.HttpRoutes` into a [[Route]]. */
-    def apply(route: HttpRoutes[IO]): Route =
-      route
-
-    /** The empty route, which doesn't match any request. */
-    val empty: Route =
-      Route(HttpRoutes.empty[IO])
-  }
+  /** The empty route, which doesn't match any request. */
+  val empty: Route =
+    Route(HttpRoutes.empty[IO])
 }
