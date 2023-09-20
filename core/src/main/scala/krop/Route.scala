@@ -37,13 +37,13 @@ object Route {
       route
 
     /** Try this route. If it fails to match, try the other route. */
-    def and(other: Route): Route =
+    def orElse(other: Route): Route =
       route <+> other
 
     /** Convert this route into an [[krop.Application]] by adding a handler for
       * any unmatched requests.
       */
-    def orElse(handler: Request[IO] => Response[IO]): Application =
+    def otherwise(handler: Request[IO] => Response[IO]): Application =
       Application(
         Kleisli(req => route.unwrap.run(req).getOrElse(handler(req)))
       )
@@ -51,8 +51,8 @@ object Route {
     /** Convert this [[krop.Route.Route]] into an [[krop.Application]] by
       * responding to all unmatched requests with a NotFound (404) response.
       */
-    def orNotFound: Application =
-      route.orElse(NotFound.notFound)
+    def otherwiseNotFound: Application =
+      route.otherwise(NotFound.notFound)
   }
   object Route {
 

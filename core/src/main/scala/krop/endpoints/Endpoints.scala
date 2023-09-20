@@ -186,7 +186,7 @@ trait EndpointsWithCustomErrors
   }
 
   def routesFromEndpoints(endpoints: KropRoute*): KropRoute =
-    endpoints.reduceLeft(_ and _)
+    endpoints.reduceLeft(_ orElse _)
 
   /** HEADERS
     */
