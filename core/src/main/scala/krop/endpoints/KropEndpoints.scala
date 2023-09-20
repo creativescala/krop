@@ -59,7 +59,7 @@ import scala.util.control.NonFatal
   *   }
   * }}}
   */
-trait Endpoints
+trait KropEndpoints
     extends algebra.Endpoints
     with EndpointsWithCustomErrors
     with BuiltInErrors {}
