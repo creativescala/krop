@@ -26,7 +26,9 @@ object KropAssets {
   given LoggerFactory[IO] = Slf4jFactory.create[IO]
 
   val kropAssets: Route = {
-    val route = ResourceServiceBuilder[IO]("/krop/assets").toRoutes
+    val route = ResourceServiceBuilder[IO]("/krop/assets")
+      .withPathPrefix("/krop/assets")
+      .toRoutes
     Route(route)
   }
 

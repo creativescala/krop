@@ -17,37 +17,56 @@
 package krop.tool
 
 import cats.effect.IO
+import krop.Application
 import krop.Mode
 import org.http4s.*
 import org.http4s.dsl.io.*
 import org.http4s.headers.`Content-Type`
 
+/** This is a tool that displays useful information in development mode if no
+  * route matches a request. In production mode it simply returns a 404 Not
+  * Found.
+  */
 object NotFound {
   def requestToString(request: Request[IO]): String =
     s"${request.method} ${request.uri.path}"
 
-  def development(request: Request[IO]): IO[Response[IO]] = {
-    val html = s"""
-     |<!doctype html>
-     |<html lang=en>
-     |<head>
-     |  <meta charset=utf-8>
-     |  <link href="/krop/assets/krop.css" rel="stylesheet"/>
-     |  <title>Krop: Not Found</title>
-     |</head>
-     |<body>
-     |  <h1>Not Found</h1>
-     |  <p>The request for did not match any routes :-(</p>
-     |  <p><code>${requestToString(request)}</code></p>
-     |</body>
-     |</html>
-     """.stripMargin
+  /** The development version of this tool, which returns useful information in
+    * the case of an unmatched request.
+    */
+  val development: Application = {
+    // Need assets to serve the CSS
+    KropAssets.kropAssets.otherwise(
+      Application.lift { req =>
+        val html =
+          s"""
+          |<!doctype html>
+          |<html lang=en>
+          |<head>
+          |  <meta charset=utf-8>
+          |  <link href="/krop/assets/krop.css" rel="stylesheet"/>
+          |  <title>Krop: Not Found</title>
+          |</head>
+          |<body>
+          |  <h1>Not Found</h1>
+          |  <p>The request</p>
+          |  <p><code>${requestToString(req)}</code></p>
+          |  <p>did not match any routes :-{</p>
+          |</body>
+          |</html>
+          """.stripMargin
 
-    org.http4s.dsl.io.NotFound(html, `Content-Type`(MediaType.text.html))
+        org.http4s.dsl.io.NotFound(html, `Content-Type`(MediaType.text.html))
+      }
+    )
   }
 
-  val production: IO[Response[IO]] = IO.pure(Response.notFound)
+  /** The production version of this tool, which returns NotFound to every
+    * request.
+    */
+  val production: Application = Application.notFound
 
-  def notFound(request: Request[IO]): IO[Response[IO]] =
-    if Mode.mode.isProduction then production else development(request)
+  /** The notFound Application tool. */
+  val notFound: Application =
+    if Mode.mode.isProduction then production else development
 }
