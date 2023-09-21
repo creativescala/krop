@@ -38,14 +38,17 @@ final case class Route(unwrap: IO[HttpRoutes[IO]]) {
       } yield l <+> r
     )
 
-  /** Convert this route into an [[krop.Application]] by adding a handler for
-    * any unmatched requests.
+  /** Convert this route into an [[krop.Application]] that first tries this
+    * route and, if the route fails to match, passes the request to the `app`
+    * Application.
     */
-  def otherwise(handler: Request[IO] => IO[Response[IO]]): Application =
-    Application(
-      unwrap.map(route =>
-        Kleisli(req => route.run(req).getOrElseF(handler(req)))
-      )
+  def otherwise(app: Application): Application =
+    Application.lift(req =>
+      for {
+        r <- unwrap
+        a <- app.unwrap
+        result <- r.run(req).getOrElseF(a(req))
+      } yield result
     )
 
   /** Convert this [[krop.Route.Route]] into an [[krop.Application]] by
@@ -56,7 +59,15 @@ final case class Route(unwrap: IO[HttpRoutes[IO]]) {
 }
 object Route {
 
+  /** Lift an [[org.http4s.HttpRoutes]] into a [[krop.Route]]. */
+  def liftRoutes(routes: HttpRoutes[IO]): Route =
+    Route(IO.pure(routes))
+
+  /** Lift a partial function into a [[krop.Route]]. */
+  def lift(f: PartialFunction[Request[IO], IO[Response[IO]]]): Route =
+    Route.liftRoutes(HttpRoutes.of(f))
+
   /** The empty route, which doesn't match any request. */
   val empty: Route =
-    Route(IO.pure(HttpRoutes.empty[IO]))
+    Route.liftRoutes(HttpRoutes.empty[IO])
 }

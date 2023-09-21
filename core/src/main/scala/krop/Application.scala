@@ -20,7 +20,6 @@ import cats.effect.IO
 import org.http4s.HttpApp
 import org.http4s.Request
 import org.http4s.Response
-import org.http4s.Status
 
 /** An [[krop.Application]] produces a response for every HTTP request. Compare
   * to [[krop.Route.Route]], which may not produce a response for some requests.
@@ -29,13 +28,16 @@ final case class Application(unwrap: IO[HttpApp[IO]])
 object Application {
 
   /** Lift an [[org.http4s.HttpApp]] into an [[krop.Application]]. */
-  def of(app: HttpApp[IO]): Application =
+  def liftApp(app: HttpApp[IO]): Application =
     Application(IO.pure(app))
+
+  def lift(f: Request[IO] => IO[Response[IO]]): Application =
+    Application.liftApp(HttpApp(f))
 
   /** The Application that returns 404 Not Found to all requests. See
     * [[krop.tool.NotFound]] for an alternative the works differently in
     * development mode.
     */
   val notFound: Application =
-    Application.of(HttpApp.notFound[IO])
+    Application.liftApp(HttpApp.notFound[IO])
 }
