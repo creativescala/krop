@@ -36,6 +36,16 @@
         <main class="content">
             <h1 id="quick-start" class="title">Quick Start</h1>
             <p>In this section we&#39;ll go through a quick example that illustrates all the major features of Krop.</p>
+            
+            <h2 id="project-template" class="section">Project Template</h2>
+            <p>To get started, create a project from the Krop project template.</p>
+            <pre><code class="nohighlight"><span>sbt new creativescala/krop-fullstack.g</span><span class="number-literal">8</span></code></pre>
+            <p>This will prompt you for a few values then create a project for you. 
+            Change into the directory it created, and run sbt. Now within sbt run the command</p>
+            <pre><code class="nohighlight"><span>backend / run</span></code></pre>
+            <p>This will start the server. Visit <code>http://localhost:8080/</code> to see the masterpiece you have just created.</p>
+            
+            <h2 id="imports" class="section">Imports</h2>
             <p>To start using Krop you need to import the core Krop library. A single import is all you need.</p>
             <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">krop</span><span>.</span><span class="identifier">all</span><span>.*</span></code></pre>
             <p class="nextPage"><a href="principles.html">Principles→</a></p>
