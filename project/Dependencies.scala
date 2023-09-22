@@ -14,6 +14,7 @@ object Dependencies {
   val scalaJsDomVersion = "2.4.0"
 
   val munitVersion = "0.7.29"
+  val munitCatsVersion = "2.0.0-M3"
 
   // Libraries
   val catsEffect =
@@ -31,4 +32,8 @@ object Dependencies {
     Def.setting("org.endpoints4s" %%% "openapi" % endpoints4sOpenApiVersion)
 
   val munit = Def.setting("org.scalameta" %% "munit" % munitVersion % "test")
+  val munitCats =
+    Def.setting(
+      "org.typelevel" %%% "munit-cats-effect" % munitCatsVersion % "test"
+    )
 }

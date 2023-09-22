@@ -62,6 +62,7 @@ lazy val css = taskKey[Unit]("Build the CSS")
 lazy val commonSettings = Seq(
   libraryDependencies ++= Seq(
     Dependencies.munit.value,
+    Dependencies.munitCats.value,
     Dependencies.http4sClient.value,
     Dependencies.http4sServer.value,
     Dependencies.http4sDsl.value,
