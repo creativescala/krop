@@ -18,11 +18,11 @@ package krop.route
 
 import cats.data.Kleisli
 import cats.data.OptionT
-import cats.syntax.all.*
 import cats.effect.IO
+import cats.syntax.all.*
 import org.http4s.Method
-import org.http4s.{Request as Http4sRequest}
 import org.http4s.Response
+import org.http4s.{Request as Http4sRequest}
 
 final case class Request[A <: Tuple](method: Method, path: Path[A]) {
   def withMethod(method: Method): Request[A] =
