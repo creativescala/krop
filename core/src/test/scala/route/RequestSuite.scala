@@ -29,13 +29,13 @@ class RequestSuite extends CatsEffectSuite {
     val request =
       Http4sRequest(method = Method.GET, uri = uri"http://example.org/")
 
-    assert(simpleRequest.extract(request).isDefined)
+    simpleRequest.extract(request).map(_.isDefined).assert
   }
 
   test("simple request doesn't match PUT /") {
     val request =
       Http4sRequest(method = Method.PUT, uri = uri"http://example.org/")
 
-    assert(simpleRequest.extract(request).isEmpty)
+    simpleRequest.extract(request).map(_.isEmpty).assert
   }
 }

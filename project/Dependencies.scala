@@ -26,6 +26,7 @@ object Dependencies {
   val http4sServer =
     Def.setting("org.http4s" %% "http4s-ember-server" % http4sVersion)
   val http4sDsl = Def.setting("org.http4s" %% "http4s-dsl" % http4sVersion)
+  val http4sCirce = Def.setting("org.http4s" %% "http4s-circe" % http4sVersion)
   val endpoints4s =
     Def.setting("org.endpoints4s" %%% "algebra" % endpoints4sVersion)
   val endpoints4sOpenApi =
