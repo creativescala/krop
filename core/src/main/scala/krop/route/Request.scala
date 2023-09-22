@@ -20,13 +20,14 @@ import cats.data.Kleisli
 import cats.data.OptionT
 import cats.effect.IO
 import cats.syntax.all.*
+import org.http4s.DecodeResult
+import org.http4s.EntityDecoder
+import org.http4s.Media
+import org.http4s.MediaRange
 import org.http4s.Method
 import org.http4s.Response
 import org.http4s.{Request as Http4sRequest}
-import org.http4s.EntityDecoder
-import org.http4s.MediaRange
-import org.http4s.DecodeResult
-import org.http4s.Media
+
 import scala.Tuple.Append
 
 trait Request[A] {

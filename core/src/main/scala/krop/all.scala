@@ -22,7 +22,7 @@ object all {
   export krop.Server
   export krop.ServerBuilder
   export krop.endpoints.KropEndpoints
-  export krop.route.Route
+  export krop.route.Request
 
   export org.http4s.EntityDecoder
   export org.http4s.Method
