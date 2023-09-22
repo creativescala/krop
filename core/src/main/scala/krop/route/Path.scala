@@ -38,7 +38,7 @@ final case class Path[A <: Tuple](segments: Vector[Segment | Capture[?]]) {
               loop(matchSegments.tail, pathSegments.tail)
             else None
 
-          case Capture(decoder) =>
+          case Capture(_, decoder) =>
             if !pathSegments.isEmpty then {
               val raw = pathSegments(0).decoded()
               val attempt = decoder(raw)
@@ -62,10 +62,18 @@ final case class Path[A <: Tuple](segments: Vector[Segment | Capture[?]]) {
 
   def /[B](capture: Capture[B]): Path[Tuple.Append[A, B]] =
     Path(segments :+ capture)
+
+  override def toString(): String =
+    segments
+      .map {
+        case Segment(value)   => value
+        case Capture(name, _) => name
+      }
+      .mkString("/", "/", "")
 }
 object Path {
   val root = Path[EmptyTuple](Vector.empty)
 }
 
 final case class Segment(value: String)
-final case class Capture[A](decoder: String => Try[A])
+final case class Capture[A](name: String, decoder: String => Try[A])
