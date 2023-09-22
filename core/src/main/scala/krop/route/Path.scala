@@ -76,4 +76,11 @@ object Path {
 }
 
 final case class Segment(value: String)
-final case class Capture[A](name: String, decoder: String => Try[A])
+final case class Capture[A](name: String, decoder: String => Try[A]) {
+  def withName(name: String): Capture[A] =
+    this.copy(name = name)
+}
+object Capture {
+  val int: Capture[Int] = Capture("<int>", str => Try(str.toInt))
+  val string: Capture[String] = Capture("<string>", str => Success(str))
+}
