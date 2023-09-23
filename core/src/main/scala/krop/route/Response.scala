@@ -23,6 +23,7 @@ import org.http4s.Status
 import org.http4s.dsl.io.*
 import org.http4s.{Request as Http4sRequest}
 import org.http4s.{Response as Http4sResponse}
+import fs2.io.file.{Path as Fs2Path}
 
 /** A [[krop.route.Response]] produces a [[org.http4s.Response]] given a value
   * of type A and a [[org.http4s.Request]].
@@ -50,6 +51,25 @@ object Response {
         StaticFile
           .fromResource(pathPrefix ++ fileName, Some(request))
           .getOrElseF(InternalServerError())
+    }
+
+  /** Respond with a file loaded fromt the filesystem. The `pathPrefix` is the
+    * prefix within the file system where the files will be found. E.g.
+    * "/etc/assets/". The `Path` value is the rest of the resource name. E.g
+    * "krop.css".
+    */
+  def staticFile(pathPrefix: Fs2Path): Response[Fs2Path] =
+    new Response[Fs2Path] {
+      def respond(
+          request: Http4sRequest[IO],
+          fileName: Fs2Path
+      ): IO[Http4sResponse[IO]] = {
+        import krop.Logger.given
+
+        StaticFile
+          .fromPath[IO](pathPrefix / fileName, Some(request))
+          .getOrElseF(InternalServerError())
+      }
     }
 
   def ok[A](using entityEncoder: EntityEncoder[IO, A]): Response[A] =
