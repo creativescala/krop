@@ -28,7 +28,16 @@ import org.http4s.{Request as Http4sRequest}
 
 import scala.Tuple.Append
 
+/** A [[krop.route.Request]] describes a pattern within a [[org.http4s.Request]]
+  * that a Route is looking for. For example, it can look for a particular HTTP
+  * method, say GET, and a particular pattern within a path, such as
+  * "/user/create".
+  */
 trait Request[A] {
+
+  /** Optinoally extract the value of type A that this [[krop.route.Request]]
+    * matches from a [[org.http4s.Request]].
+    */
   def extract(request: Http4sRequest[IO]): IO[Option[A]]
 
   def handle(f: A => IO[Response[IO]]): krop.Route =
