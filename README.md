@@ -12,8 +12,8 @@ This is an experiment to see if `http4s` can be made easy to use. The goal is to
 Key points:
 
 - Single import to access all functionality
-- No `IO` in types like `Request[IO, A]`. Default to `IO` and use opaque types to hide this. Tagless final is pointless ceremony for most applications.
-- Use opaque types to narrow generic types like `Kleisli` so that only domain specific functionality is exposed.
+- Default to `IO` and hide it's usage as far as possible. Tagless final is pointless ceremony for most applications.
+- Wrap generic types like `Kleisli` so that only domain specific functionality is exposed.
 - Default routing DSL that is discoverable (i.e. not using pattern matching). Will probably use an existing library like `endpoints4s` or `tapir` for this.
 - Make very simple things, like creating mostly static sites, very easy.
 
