@@ -17,7 +17,9 @@
 package krop.route
 
 import cats.effect.IO
+import org.http4s.EntityEncoder
 import org.http4s.StaticFile
+import org.http4s.Status
 import org.http4s.dsl.io.*
 import org.http4s.{Request as Http4sRequest}
 import org.http4s.{Response as Http4sResponse}
@@ -49,4 +51,21 @@ object Response {
           .fromResource(pathPrefix ++ fileName, Some(request))
           .getOrElseF(InternalServerError())
     }
+
+  final case class EntityEncodingResponse[A](
+      status: Status,
+      entityEncoder: EntityEncoder[IO, A]
+  ) extends Response[A] {
+    def respond(request: Http4sRequest[IO], value: A): IO[Http4sResponse[IO]] =
+      IO.pure(
+        Http4sResponse(
+          status = status,
+          headers = entityEncoder.headers,
+          entity = entityEncoder.toEntity(value)
+        )
+      )
+  }
+
+  def ok[A](using entityEncoder: EntityEncoder[IO, A]) =
+    EntityEncodingResponse(Status.Ok, entityEncoder)
 }
