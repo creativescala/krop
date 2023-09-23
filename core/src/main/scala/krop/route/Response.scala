@@ -22,16 +22,23 @@ import org.http4s.dsl.io.*
 import org.http4s.{Request as Http4sRequest}
 import org.http4s.{Response as Http4sResponse}
 
-/** A [[krop.route.Response]] produces an [[org.http4s.Response]] given a value
-  * of type A and an [[org.http4s.Request]].
+/** A [[krop.route.Response]] produces a [[org.http4s.Response]] given a value
+  * of type A and a [[org.http4s.Request]].
   */
 trait Response[A] {
 
-  /** Produce a [[org.http4s.Response]] given a request and a value of type A.
+  /** Produce the [[org.http4s.Response]] given a request and the value of type
+    * A.
     */
   def respond(request: Http4sRequest[IO], value: A): IO[Http4sResponse[IO]]
 }
 object Response {
+
+  /** Respond with a resource loaded by the Classloader. The `pathPrefix` is the
+    * prefix within the resources where the Classloader will look. E.g.
+    * "/krop/assets". The `String` value is the rest of the resource name. E.g
+    * "krop.css".
+    */
   def staticResource(pathPrefix: String): Response[String] =
     new Response[String] {
       def respond(
