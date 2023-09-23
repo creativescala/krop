@@ -36,7 +36,7 @@ object Response {
 
   /** Respond with a resource loaded by the Classloader. The `pathPrefix` is the
     * prefix within the resources where the Classloader will look. E.g.
-    * "/krop/assets". The `String` value is the rest of the resource name. E.g
+    * "/krop/assets/". The `String` value is the rest of the resource name. E.g
     * "krop.css".
     */
   def staticResource(pathPrefix: String): Response[String] =
