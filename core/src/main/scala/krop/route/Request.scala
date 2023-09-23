@@ -49,60 +49,61 @@ trait Request[A] {
 }
 object Request {
   def delete: PathRequest[EmptyTuple] =
-    PathRequest(method = Method.DELETE, Path.root)
+    Request.method(method = Method.DELETE)
 
   def get: PathRequest[EmptyTuple] =
-    PathRequest(method = Method.GET, Path.root)
+    Request.method(method = Method.GET)
 
   def post: PathRequest[EmptyTuple] =
-    PathRequest(method = Method.POST, Path.root)
+    Request.method(method = Method.POST)
 
   def put: PathRequest[EmptyTuple] =
-    PathRequest(method = Method.PUT, Path.root)
+    Request.method(method = Method.PUT)
 
   def method(method: Method): PathRequest[EmptyTuple] =
     PathRequest(method = method, Path.root)
-}
 
-/** A [[krop.route.Request]] that only specifies a method and a
-  * [[krop.route.Path]]. The simplest possible [[krop.route.Request]].
-  */
-final case class PathRequest[P <: Tuple](
-    method: Method,
-    path: Path[P]
-) extends Request[P] {
-  def withEntity[E](entity: EntityDecoder[IO, E]): PathEntityRequest[P, E] =
-    PathEntityRequest(this, entity)
+  /** A [[krop.route.Request]] that only specifies a method and a
+    * [[krop.route.Path]]. The simplest possible [[krop.route.Request]].
+    */
+  final case class PathRequest[P <: Tuple](
+      method: Method,
+      path: Path[P]
+  ) extends Request[P] {
+    def withEntity[E](entity: EntityDecoder[IO, E]): PathEntityRequest[P, E] =
+      PathEntityRequest(this, entity)
 
-  def withMethod(method: Method): Request[P] =
-    this.copy(method = method)
+    def withMethod(method: Method): Request[P] =
+      this.copy(method = method)
 
-  def withPath[P2 <: Tuple](path: Path[P2]): Request[P2] =
-    this.copy(path = path)
+    def withPath[P2 <: Tuple](path: Path[P2]): Request[P2] =
+      this.copy(path = path)
 
-  def extract(request: Http4sRequest[IO]): IO[Option[P]] = {
-    IO.pure(
-      Option
-        .when(request.method == method)(())
-        .flatMap(_ => path.extract(request.pathInfo))
-    )
-  }
-
-}
-
-final case class PathEntityRequest[P <: Tuple, E](
-    pathRequest: PathRequest[P],
-    decoder: EntityDecoder[IO, E]
-) extends Request[Tuple.Append[P, E]] {
-  def extract(request: Http4sRequest[IO]): IO[Option[Append[P, E]]] = {
-    given EntityDecoder[IO, E] = decoder
-    pathRequest
-      .extract(request)
-      .flatMap(maybePath =>
-        maybePath match {
-          case None        => IO.pure(None)
-          case Some(value) => request.as[E].map(e => Some(value :* e))
-        }
+    def extract(request: Http4sRequest[IO]): IO[Option[P]] = {
+      IO.pure(
+        Option
+          .when(request.method == method)(())
+          .flatMap(_ => path.extract(request.pathInfo))
       )
+    }
+
   }
+
+  final case class PathEntityRequest[P <: Tuple, E](
+      pathRequest: PathRequest[P],
+      decoder: EntityDecoder[IO, E]
+  ) extends Request[Tuple.Append[P, E]] {
+    def extract(request: Http4sRequest[IO]): IO[Option[Append[P, E]]] = {
+      given EntityDecoder[IO, E] = decoder
+      pathRequest
+        .extract(request)
+        .flatMap(maybePath =>
+          maybePath match {
+            case None        => IO.pure(None)
+            case Some(value) => request.as[E].map(e => Some(value :* e))
+          }
+        )
+    }
+  }
+
 }

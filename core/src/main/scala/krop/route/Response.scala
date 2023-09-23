@@ -52,7 +52,18 @@ object Response {
           .getOrElseF(InternalServerError())
     }
 
-  final case class EntityEncodingResponse[A](
+  def ok[A](using entityEncoder: EntityEncoder[IO, A]): Response[A] =
+    status(Status.Ok)(using entityEncoder)
+
+  def status[A](status: Status)(using
+      entityEncoder: EntityEncoder[IO, A]
+  ): Response[A] =
+    StatusEntityEncodingResponse(status, entityEncoder)
+
+  /** A [[krop.route.Response]] that specifies only a HTTP status code and an
+    * [[org.http4s.EntityEncoder]].
+    */
+  final case class StatusEntityEncodingResponse[A](
       status: Status,
       entityEncoder: EntityEncoder[IO, A]
   ) extends Response[A] {
@@ -66,6 +77,4 @@ object Response {
       )
   }
 
-  def ok[A](using entityEncoder: EntityEncoder[IO, A]) =
-    EntityEncodingResponse(Status.Ok, entityEncoder)
 }
