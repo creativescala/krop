@@ -23,7 +23,7 @@ import org.http4s.implicits.*
 import org.http4s.{Request as Http4sRequest}
 
 class RequestSuite extends CatsEffectSuite {
-  val simpleRequest = Request.get
+  val simpleRequest = Request.get(Path.root)
 
   test("simple request matches GET /") {
     val request =

@@ -38,20 +38,20 @@ trait Request[A] {
   def extract(request: Http4sRequest[IO]): IO[Option[A]]
 }
 object Request {
-  def delete: PathRequest[EmptyTuple] =
-    Request.method(method = Method.DELETE)
+  def delete[P <: Tuple](path: Path[P]): PathRequest[P] =
+    Request.method(Method.DELETE, path)
 
-  def get: PathRequest[EmptyTuple] =
-    Request.method(method = Method.GET)
+  def get[P <: Tuple](path: Path[P]): PathRequest[P] =
+    Request.method(Method.GET, path)
 
-  def post: PathRequest[EmptyTuple] =
-    Request.method(method = Method.POST)
+  def post[P <: Tuple](path: Path[P]): PathRequest[P] =
+    Request.method(Method.POST, path)
 
-  def put: PathRequest[EmptyTuple] =
-    Request.method(method = Method.PUT)
+  def put[P <: Tuple](path: Path[P]): PathRequest[P] =
+    Request.method(Method.PUT, path)
 
-  def method(method: Method): PathRequest[EmptyTuple] =
-    PathRequest(method = method, Path.root)
+  def method[P <: Tuple](method: Method, path: Path[P]): PathRequest[P] =
+    PathRequest(method, path)
 
   /** A [[krop.route.Request]] that only specifies a method and a
     * [[krop.route.Path]]. The simplest possible [[krop.route.Request]].

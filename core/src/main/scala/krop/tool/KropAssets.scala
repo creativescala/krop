@@ -26,7 +26,7 @@ object KropAssets {
   val kropAssets: Route = {
     val route =
       Route(
-        Request.get.withPath(Path.root / "krop" / "assets" / Capture.string),
+        Request.get(Path.root / "krop" / "assets" / Capture.string),
         Response.staticResource("/krop/assets")
       ).passthrough
 
