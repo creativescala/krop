@@ -180,7 +180,7 @@ trait EndpointsWithCustomErrors
           case NonFatal(t) => Some(handleServerError(http4sRequest, t))
         }
       }
-      Route(IO.pure(HttpRoutes.of(Function.unlift(route))))
+      Route.liftRoutes("unknown", HttpRoutes.of(Function.unlift(route)))
     }
   }
 

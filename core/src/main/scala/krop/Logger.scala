@@ -18,8 +18,8 @@ package krop
 
 import cats.effect.IO
 import org.slf4j.LoggerFactory
-import org.typelevel.log4cats.{LoggerFactory as CatsLoggerFactory}
 import org.typelevel.log4cats.slf4j.Slf4jFactory
+import org.typelevel.log4cats.{LoggerFactory as CatsLoggerFactory}
 
 object Logger {
   val logger = LoggerFactory.getLogger("krop")

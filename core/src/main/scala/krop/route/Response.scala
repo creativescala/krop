@@ -17,13 +17,13 @@
 package krop.route
 
 import cats.effect.IO
+import fs2.io.file.{Path as Fs2Path}
 import org.http4s.EntityEncoder
 import org.http4s.StaticFile
 import org.http4s.Status
 import org.http4s.dsl.io.*
 import org.http4s.{Request as Http4sRequest}
 import org.http4s.{Response as Http4sResponse}
-import fs2.io.file.{Path as Fs2Path}
 
 /** A [[krop.route.Response]] produces a [[org.http4s.Response]] given a value
   * of type A and a [[org.http4s.Request]].
@@ -36,20 +36,21 @@ trait Response[A] {
   def respond(request: Http4sRequest[IO], value: A): IO[Http4sResponse[IO]]
 }
 object Response {
+  type Response1[A] = Response[Tuple1[A]]
 
   /** Respond with a resource loaded by the Classloader. The `pathPrefix` is the
     * prefix within the resources where the Classloader will look. E.g.
     * "/krop/assets/". The `String` value is the rest of the resource name. E.g
     * "krop.css".
     */
-  def staticResource(pathPrefix: String): Response[String] =
-    new Response[String] {
+  def staticResource(pathPrefix: String): Response1[String] =
+    new Response[Tuple1[String]] {
       def respond(
           request: Http4sRequest[IO],
-          fileName: String
+          fileName: Tuple1[String]
       ): IO[Http4sResponse[IO]] =
         StaticFile
-          .fromResource(pathPrefix ++ fileName, Some(request))
+          .fromResource(pathPrefix ++ fileName(0), Some(request))
           .getOrElseF(InternalServerError())
     }
 
@@ -58,26 +59,26 @@ object Response {
     * "/etc/assets/". The `Path` value is the rest of the resource name. E.g
     * "krop.css".
     */
-  def staticFile(pathPrefix: Fs2Path): Response[Fs2Path] =
-    new Response[Fs2Path] {
+  def staticFile(pathPrefix: Fs2Path): Response1[Fs2Path] =
+    new Response[Tuple1[Fs2Path]] {
       def respond(
           request: Http4sRequest[IO],
-          fileName: Fs2Path
+          fileName: Tuple1[Fs2Path]
       ): IO[Http4sResponse[IO]] = {
         import krop.Logger.given
 
         StaticFile
-          .fromPath[IO](pathPrefix / fileName, Some(request))
+          .fromPath[IO](pathPrefix / fileName(0), Some(request))
           .getOrElseF(InternalServerError())
       }
     }
 
-  def ok[A](using entityEncoder: EntityEncoder[IO, A]): Response[A] =
+  def ok[A](using entityEncoder: EntityEncoder[IO, A]): Response1[A] =
     status(Status.Ok)(using entityEncoder)
 
   def status[A](status: Status)(using
       entityEncoder: EntityEncoder[IO, A]
-  ): Response[A] =
+  ): Response1[A] =
     StatusEntityEncodingResponse(status, entityEncoder)
 
   /** A [[krop.route.Response]] that specifies only a HTTP status code and an
@@ -86,13 +87,16 @@ object Response {
   final case class StatusEntityEncodingResponse[A](
       status: Status,
       entityEncoder: EntityEncoder[IO, A]
-  ) extends Response[A] {
-    def respond(request: Http4sRequest[IO], value: A): IO[Http4sResponse[IO]] =
+  ) extends Response1[A] {
+    def respond(
+        request: Http4sRequest[IO],
+        value: Tuple1[A]
+    ): IO[Http4sResponse[IO]] =
       IO.pure(
         Http4sResponse(
           status = status,
           headers = entityEncoder.headers,
-          entity = entityEncoder.toEntity(value)
+          entity = entityEncoder.toEntity(value(0))
         )
       )
   }

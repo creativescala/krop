@@ -16,20 +16,20 @@
 
 package krop.tool
 
-import cats.effect.IO
 import krop.Route
-import org.http4s.server.staticcontent.ResourceServiceBuilder
-import org.typelevel.log4cats.LoggerFactory
-import org.typelevel.log4cats.slf4j.Slf4jFactory
+import krop.route.Capture
+import krop.route.Path
+import krop.route.Request
+import krop.route.Response
 
 object KropAssets {
-  given LoggerFactory[IO] = Slf4jFactory.create[IO]
-
   val kropAssets: Route = {
-    val route = ResourceServiceBuilder[IO]("/krop/assets")
-      .withPathPrefix("/krop/assets")
-      .toRoutes
-    Route(route)
-  }
+    val route =
+      Route(
+        Request.get.withPath(Path.root / "krop" / "assets" / Capture.string),
+        Response.staticResource("/krop/assets")
+      ).passthrough
 
+    route
+  }
 }

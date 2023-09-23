@@ -16,14 +16,11 @@
 
 package krop.route
 
-import cats.data.Kleisli
-import cats.data.OptionT
 import cats.effect.IO
 import cats.syntax.all.*
 import org.http4s.EntityDecoder
 import org.http4s.Media
 import org.http4s.Method
-import org.http4s.Response
 import org.http4s.{Request as Http4sRequest}
 
 import scala.Tuple.Append
@@ -39,13 +36,6 @@ trait Request[A] {
     * matches from a [[org.http4s.Request]].
     */
   def extract(request: Http4sRequest[IO]): IO[Option[A]]
-
-  def handle(f: A => IO[Response[IO]]): krop.Route =
-    krop.Route.liftRoutes(
-      Kleisli[OptionT[IO, *], Http4sRequest[IO], Response[IO]](request =>
-        OptionT(extract(request).flatMap(maybePE => maybePE.traverse(f)))
-      )
-    )
 }
 object Request {
   def delete: PathRequest[EmptyTuple] =

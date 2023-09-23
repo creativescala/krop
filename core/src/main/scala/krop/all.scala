@@ -23,7 +23,10 @@ object all {
   export krop.ServerBuilder
   export krop.endpoints.KropEndpoints
   export krop.route.Request
+  export krop.route.Response
 
   export org.http4s.EntityDecoder
+  export org.http4s.EntityEncoder
   export org.http4s.Method
+  export org.http4s.Status
 }
