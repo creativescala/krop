@@ -23,6 +23,7 @@ import cats.effect.IO
 import cats.syntax.all.*
 import krop.route.Request
 import krop.route.Response
+import krop.route.TupleApply
 import krop.tool.NotFound
 import org.http4s.HttpRoutes
 import org.http4s.{Request as Http4sRequest}
@@ -132,13 +133,15 @@ object Route {
       request: Request[I],
       response: Response[O]
   ) {
-    def handle(f: I => O): Route =
-      this.handleIO(i => IO.pure(f(i)))
+    def handle[A](f: A => O)(using ta: TupleApply[I, A => O, O]): Route =
+      this.handleIO[I](i => IO.pure(ta.tuple(f)(i)))
 
-    def handleIO(f: I => IO[O]): Route =
-      Route.RequestResponse(request, response, f)
+    def handleIO[A](f: A => IO[O])(using
+        ta: TupleApply[I, A => IO[O], IO[O]]
+    ): Route =
+      Route.RequestResponse(request, response, ta.tuple(f))
 
-    def passthrough(using ev: I =:= O): Route =
-      this.handleIO(i => IO.pure(i))
+    def passthrough(using ta: TupleApply[I, O => O, O]): Route =
+      this.handle(ta.tuple(o => o))
   }
 }

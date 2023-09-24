@@ -30,7 +30,7 @@ class ResponseSuite extends CatsEffectSuite {
       Http4sRequest(method = Method.GET, uri = uri"http://example.org/")
 
     staticResourceResponse
-      .respond(request, Tuple1("krop.css"))
+      .respond(request, "krop.css")
       .map(_.status.isSuccess)
       .assert
   }
@@ -40,7 +40,7 @@ class ResponseSuite extends CatsEffectSuite {
       Http4sRequest(method = Method.GET, uri = uri"http://example.org/")
 
     staticResourceResponse
-      .respond(request, Tuple1("bogus.css"))
+      .respond(request, "bogus.css")
       .map(!_.status.isSuccess)
       .assert
   }
