@@ -19,7 +19,8 @@ package krop.route
 /** This type class connects tuples of values and functions, specifically
   * allowing application of functions to tuples that don't exactly match their
   * type signature. For example, it allows a function of no arguments to be
-  * applied to the empty tuple.
+  * applied to the empty tuple, and a function of a single argument to be
+  * applied to a tuple of one value.
   */
 trait TupleApply[A, F, C] {
   def tuple(f: F): A => C
