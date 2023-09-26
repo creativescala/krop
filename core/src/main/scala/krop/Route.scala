@@ -112,8 +112,7 @@ object Route {
     Route.liftRoutes(description, HttpRoutes.of(f))
 
   /** The empty route, which doesn't match any request. */
-  val empty: Route =
-    Route.liftRoutes("empty", HttpRoutes.empty[IO])
+  val empty: Route = Route(Chain.empty)
 
   final case class RouteBuilder[I, O](
       request: Request[I],

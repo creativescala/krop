@@ -36,6 +36,11 @@ trait Request[A] {
     * matches from a [[org.http4s.Request]].
     */
   def extract(request: Http4sRequest[IO]): IO[Option[A]]
+
+  /** Produces a human-readable representation of this Request. The toString
+    * method is used to output the usual programmatic representation.
+    */
+  def describe: String
 }
 object Request {
   def delete[P <: Tuple](path: Path[P]): PathRequest[P] =
@@ -77,6 +82,8 @@ object Request {
       )
     }
 
+    def describe: String =
+      s"${method.toString()} ${path.describe}"
   }
 
   final case class PathEntityRequest[P <: Tuple, E](
@@ -94,6 +101,9 @@ object Request {
           }
         )
     }
+
+    def describe: String =
+      s"${pathRequest.describe}  ${decoder.consumes.mkString(",")}"
   }
 
 }

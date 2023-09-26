@@ -26,8 +26,12 @@ trait TupleApply[A, F, C] {
   def tuple(f: F): A => C
 }
 object TupleApply {
-  given emptyTupleApply[C]: TupleApply[EmptyTuple, () => C, C] with {
+  given emptyTupleFunction0Apply[C]: TupleApply[EmptyTuple, () => C, C] with {
     def tuple(f: () => C): EmptyTuple => C = (_) => f()
+  }
+
+  given emptyTupleFunction1Apply[C]: TupleApply[EmptyTuple, Any => C, C] with {
+    def tuple(f: Any => C): EmptyTuple => C = x => f(x)
   }
 
   given tuple1Apply[A, C]: TupleApply[Tuple1[A], A => C, C] with {

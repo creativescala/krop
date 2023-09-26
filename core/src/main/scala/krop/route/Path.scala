@@ -63,7 +63,10 @@ final case class Path[A <: Tuple](segments: Vector[Segment | Capture[?]]) {
   def /[B](capture: Capture[B]): Path[Tuple.Append[A, B]] =
     Path(segments :+ capture)
 
-  override def toString(): String =
+  /** Produces a human-readable representation of this Path. The toString method
+    * is used to output the usual programmatic representation.
+    */
+  def describe: String =
     segments
       .map {
         case Segment(value)   => value

@@ -21,6 +21,7 @@ import cats.effect.IO
 import krop.Application
 import krop.Mode
 import krop.Route
+import krop.Route.Atomic
 import org.http4s.*
 import org.http4s.dsl.io.*
 import org.http4s.headers.`Content-Type`
@@ -42,7 +43,12 @@ object NotFound {
         val kropRoutes = route.orElse(KropAssets.kropAssets)
 
         val description = kropRoutes.routes
-          .map(_.toString)
+          .map(r =>
+            r match {
+              case Atomic.Krop(request, response, handler) => request.describe
+              case Atomic.Http4s(description, routes)      => description
+            }
+          )
           .toList
           .mkString("<p><code>", "</code></p>\n<p><code>", "</code></p>")
 
