@@ -16,6 +16,7 @@
 
 package krop
 
+import cats.data.Kleisli
 import cats.effect.IO
 import org.http4s.HttpApp
 import org.http4s.Request
@@ -23,13 +24,35 @@ import org.http4s.Response
 
 /** An [[krop.Application]] produces a response for every HTTP request. Compare
   * to [[krop.Route.Route]], which may not produce a response for some requests.
+  *
+  * @param routes
+  *   The route this Application will test against any incoming request
+  * @param supervisor
+  *   Responsible for constructing a HttpApp that matches all possible requests,
+  *   handling requests that the route doesn't match.
   */
-final case class Application(unwrap: IO[HttpApp[IO]])
+final case class Application(
+    route: Route,
+    supervisor: Route => IO[HttpApp[IO]]
+) {
+  def toHttpApp: IO[HttpApp[IO]] =
+    supervisor(route)
+}
 object Application {
+
+  /** Construction an [[Application]] with no route and the given supervisor. */
+  def apply(supervisor: Route => IO[HttpApp[IO]]): Application =
+    Application(Route.empty, supervisor)
 
   /** Lift an [[org.http4s.HttpApp]] into an [[krop.Application]]. */
   def liftApp(app: HttpApp[IO]): Application =
-    Application(IO.pure(app))
+    Application(
+      Route.empty,
+      (route) =>
+        route.toHttpRoutes.map(r =>
+          Kleisli(req => r.run(req).getOrElseF(app.run(req)))
+        )
+    )
 
   def lift(f: Request[IO] => IO[Response[IO]]): Application =
     Application.liftApp(HttpApp(f))
@@ -39,5 +62,8 @@ object Application {
     * development mode.
     */
   val notFound: Application =
-    Application.liftApp(HttpApp.notFound[IO])
+    Application(
+      Route.empty,
+      (route) => route.toHttpRoutes.map(r => r.orNotFound)
+    )
 }

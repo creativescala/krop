@@ -16,9 +16,11 @@
 
 package krop.tool
 
+import cats.data.Kleisli
 import cats.effect.IO
 import krop.Application
 import krop.Mode
+import krop.Route
 import org.http4s.*
 import org.http4s.dsl.io.*
 import org.http4s.headers.`Content-Type`
@@ -35,10 +37,18 @@ object NotFound {
     * the case of an unmatched request.
     */
   val development: Application = {
-    // Need assets to serve the CSS
-    KropAssets.kropAssets.otherwise(
-      Application.lift { req =>
-        val html =
+    val supervisor =
+      (route: Route) => {
+        val kropRoutes = route.orElse(KropAssets.kropAssets)
+
+        val description = kropRoutes.routes
+          .map(_.toString)
+          .toList
+          .mkString("<p><code>", "</code></p>\n<p><code>", "</code></p>")
+
+        val httpRoutes = kropRoutes.toHttpRoutes
+
+        def html(req: Request[IO]) =
           s"""
           |<!doctype html>
           |<html lang=en>
@@ -52,13 +62,26 @@ object NotFound {
           |  <p>The request</p>
           |  <p><code>${requestToString(req)}</code></p>
           |  <p>did not match any routes :-{</p>
+          |  <h2>Routes</h2>
+          |  <p>The available routes are:</p>
+          |  ${description}
           |</body>
           |</html>
           """.stripMargin
 
-        org.http4s.dsl.io.NotFound(html, `Content-Type`(MediaType.text.html))
+        def response(req: Request[IO]) =
+          org.http4s.dsl.io
+            .NotFound(html(req), `Content-Type`(MediaType.text.html))
+
+        val app: IO[HttpApp[IO]] =
+          httpRoutes.map(r =>
+            Kleisli((req: Request[IO]) => r.run(req).getOrElseF(response(req)))
+          )
+
+        app
       }
-    )
+
+    Application(supervisor)
   }
 
   /** The production version of this tool, which returns NotFound to every
