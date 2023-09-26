@@ -30,8 +30,14 @@ object TupleApply {
     def tuple(f: () => C): EmptyTuple => C = (_) => f()
   }
 
-  given emptyTupleFunction1Apply[C]: TupleApply[EmptyTuple, Any => C, C] with {
+  given emptyTupleAnyFunction1Apply[C]: TupleApply[EmptyTuple, Any => C, C]
+  with {
     def tuple(f: Any => C): EmptyTuple => C = x => f(x)
+  }
+
+  given emptyTupleUnitFunction1Apply[C]: TupleApply[EmptyTuple, Unit => C, C]
+  with {
+    def tuple(f: Unit => C): EmptyTuple => C = x => f(())
   }
 
   given tuple1Apply[A, C]: TupleApply[Tuple1[A], A => C, C] with {

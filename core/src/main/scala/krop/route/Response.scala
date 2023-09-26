@@ -53,12 +53,12 @@ object Response {
           .getOrElseF(InternalServerError())
     }
 
-  /** Respond with a file loaded fromt the filesystem. The `pathPrefix` is the
-    * prefix within the file system where the files will be found. E.g.
+  /** Respond with a file loaded from the filesystem. The `pathPrefix` is the
+    * directory within the file system where the files will be found. E.g.
     * "/etc/assets/". The `Path` value is the rest of the resource name. E.g
     * "krop.css".
     */
-  def staticFile(pathPrefix: Fs2Path): Response[Fs2Path] =
+  def staticDirectory(pathPrefix: Fs2Path): Response[Fs2Path] =
     new Response[Fs2Path] {
       def respond(
           request: Http4sRequest[IO],
@@ -69,6 +69,42 @@ object Response {
         StaticFile
           .fromPath[IO](pathPrefix / fileName, Some(request))
           .getOrElseF(InternalServerError())
+      }
+    }
+
+  /** Respond with a file loaded from the filesystem. The `path` is the location
+    * of the file. E.g. "/etc/assets/index.html".
+    */
+  def staticFile(path: String): Response[Unit] =
+    new Response[Unit] {
+      def respond(
+          request: Http4sRequest[IO],
+          unit: Unit
+      ): IO[Http4sResponse[IO]] = {
+        import krop.Logger.given
+
+        val p = fs2.io.file.Path(path)
+
+        StaticFile
+          .fromPath[IO](p, Some(request))
+          .getOrElseF {
+            fs2.io.file.Files.forIO
+              .exists(p)
+              .map(exists =>
+                krop.Logger.logger
+                  .error(
+                    s"""
+                       |Resource.staticFile couldn't load a file from path ${path}.
+                       |
+                       |  This path represents ${p.absolute} as an absolute path.
+                       |  A file ${
+                        if exists then "does" else "does not"
+                      } exist at this path.""".stripMargin
+                  )
+              )
+              *>
+                InternalServerError()
+          }
       }
     }
 

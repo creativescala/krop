@@ -44,4 +44,15 @@ class ResponseSuite extends CatsEffectSuite {
       .map(!_.status.isSuccess)
       .assert
   }
+
+  test("static file response succeeds when file exists") {
+    val request =
+      Http4sRequest(method = Method.GET, uri = uri"http://example.org/")
+
+    Response
+      .staticFile("project/plugins.sbt")
+      .respond(request, ())
+      .map(_.status.isSuccess)
+      .assert
+  }
 }
