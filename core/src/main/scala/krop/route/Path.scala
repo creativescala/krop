@@ -21,7 +21,7 @@ import org.http4s.Uri.{Path as UriPath}
 import scala.util.Failure
 import scala.util.Success
 
-final case class Path[A <: Tuple](segments: Vector[String | Param[?]]) {
+final class Path[A <: Tuple] private (segments: Vector[String | Param[?]]) {
   def extract(path: UriPath): Option[A] = {
     def loop(
         matchSegments: Vector[String | Param[?]],
