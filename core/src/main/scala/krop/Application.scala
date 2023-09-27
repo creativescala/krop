@@ -58,12 +58,7 @@ object Application {
     Application.liftApp(HttpApp(f))
 
   /** The Application that returns 404 Not Found to all requests. See
-    * [[krop.tool.NotFound]] for an alternative the works differently in
-    * development mode.
+    * [[krop.tool.NotFound]] for details on the implementation.
     */
-  val notFound: Application =
-    Application(
-      Route.empty,
-      (route) => route.toHttpRoutes.map(r => r.orNotFound)
-    )
+  val notFound: Application = krop.tool.NotFound.notFound
 }
