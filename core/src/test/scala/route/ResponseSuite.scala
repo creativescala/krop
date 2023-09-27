@@ -30,7 +30,7 @@ class ResponseSuite extends CatsEffectSuite {
       Http4sRequest(method = Method.GET, uri = uri"http://example.org/")
 
     staticResourceResponse
-      .respond(request, "krop.css")
+      .respond(request, "pico.min.css")
       .map(_.status.isSuccess)
       .assert
   }
