@@ -29,8 +29,11 @@ import org.http4s.HttpRoutes
 import org.http4s.{Request as Http4sRequest}
 import org.http4s.{Response as Http4sResponse}
 
-/** A [[krop.Route]] accepts a request and may produce a response. A Route is
-  * the basic unit for building a web service.
+/** A [[krop.Route]] accepts a request and may produce a response, but is not
+  * required to produce a response. A Route is the basic unit for building a web
+  * service. The majority of the service will consist of routes (and their
+  * associated handlers), with a final catch-all to deal with any requests that
+  * are not handled by other routes.
   */
 final case class Route(routes: Chain[Route.Atomic]) {
 
@@ -51,6 +54,7 @@ final case class Route(routes: Chain[Route.Atomic]) {
   def otherwiseNotFound: Application =
     this.otherwise(NotFound.notFound)
 
+  /** Convert to the representation used by http4s */
   def toHttpRoutes: IO[HttpRoutes[IO]] =
     routes.foldLeftM(HttpRoutes.empty[IO])((accum, atom) =>
       atom.toHttpRoutes.map(r => accum <+> r)
@@ -58,7 +62,7 @@ final case class Route(routes: Chain[Route.Atomic]) {
 }
 object Route {
 
-  /** Individual routes */
+  /** The smallest unit of route. A Route can combine several atomic routes. */
   enum Atomic {
     case Krop[I, O](
         request: Request[I],
@@ -96,7 +100,7 @@ object Route {
   ): RouteBuilder[I, O] =
     RouteBuilder(request, response)
 
-  /** Lift an [[org.http4s.HttpRoutes]] into a [[krop.Route]]. */
+  /** Lift an `IO[HttpRoutes[IO]` into a [[krop.Route]]. */
   def liftRoutesIO(description: String, routes: IO[HttpRoutes[IO]]): Route =
     Atomic.Http4s(description, routes).toRoute
 
