@@ -14,7 +14,7 @@ Key points:
 - Single import to access all functionality
 - Default to `IO` and hide it's usage as far as possible. Tagless final is pointless ceremony for most applications.
 - Wrap generic types like `Kleisli` so that only domain specific functionality is exposed.
-- Default routing DSL that is discoverable (i.e. not using pattern matching). Will probably use an existing library like `endpoints4s` or `tapir` for this.
+- Default routing DSL that is discoverable (i.e. not using pattern matching). 
 - Make very simple things, like creating mostly static sites, very easy.
 
 As an example of what we're aiming for, take a look at [the Phoenix framework](https://www.phoenixframework.org/). Elixir is not a popular language but this framework has outstanding documentation and a well defined story for every common use case.
