@@ -21,10 +21,19 @@ import org.http4s.Uri
 import org.http4s.implicits.*
 
 class PathSuite extends FunSuite {
+  val nonCapturingPath = Path.root / "user" / "create"
+  val nonCapturingRestPath = Path.root / "assets" / "html" / Segment.Rest
+  val capturingRestPath = Path.root / "assets" / "html" / Param.vector
   val simplePath = Path.root / "user" / Param.int.withName("<userId>") / "view"
 
   test("Path description is as expected") {
     assertEquals(simplePath.describe, "/user/<userId>/view")
+  }
+
+  test("Non-capturing path succeeds with empty tuple") {
+    val okUri = uri"http://example.org/user/create"
+
+    assertEquals(nonCapturingPath.extract(okUri.path), Some(EmptyTuple))
   }
 
   test("Path extracts expected element from http4s path") {
@@ -49,5 +58,20 @@ class PathSuite extends FunSuite {
     val badUri = uri"http://example.org/user/1234/view/this/that"
 
     assertEquals(simplePath.extract(badUri.path), None)
+  }
+
+  test("Path with rest segment matches all extra segments") {
+    val okUri = uri"http://example.org/assets/html/this/that/theother.html"
+
+    assertEquals(nonCapturingRestPath.extract(okUri.path), Some(EmptyTuple))
+  }
+
+  test("Path with rest segment captures all extra segments") {
+    val okUri = uri"http://example.org/assets/html/this/that/theother.html"
+
+    assertEquals(
+      capturingRestPath.extract(okUri.path),
+      Some(Vector("this", "that", "theother.html") *: EmptyTuple)
+    )
   }
 }

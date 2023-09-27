@@ -19,22 +19,29 @@ package krop.route
 import scala.util.Success
 import scala.util.Try
 
-/** A `Param` parses a path segment in a [[krop.route.Path]] into to a type `A`,
-  * and converts a value of type `A` into a `String`.
-  *
-  * @param name
-  *   The name used when printing this `Param`. Usually a short word in angle
-  *   brackets, like "<int>" or "<string>".
-  * @param parse
-  *   The function to convert from a `String` to `A`, which can fail.
-  * @param unparse
-  *   The function to convert from `A` to a `String`.
+/** A `Param` parses path segments in a [[krop.route.Path]] into value sof type
+  * `A`, and converts values of type `A` into a path segments.
   */
-final case class Param[A](
-    name: String,
-    parse: String => Try[A],
-    unparse: A => String
-) {
+enum Param[A] {
+  case Rest(
+      name: String,
+      parse: Vector[String] => Try[A],
+      unparse: A => Vector[String]
+  )
+  /*
+   * @param name
+   *   The name used when printing this `Param`. Usually a short word in angle
+   *   brackets, like "<int>" or "<string>".
+   * @param parse
+   *   The function to convert from a `String` to `A`, which can fail.
+   * @param unparse
+   *   The function to convert from `A` to a `String`.
+   */
+  case Part(
+      name: String,
+      parse: String => Try[A],
+      unparse: A => String
+  )
 
   /** Create a `Path` with a more informative name. For example, you might use
     * this method to note that an int is in fact a user id.
@@ -44,9 +51,17 @@ final case class Param[A](
     * ```
     */
   def withName(name: String): Param[A] =
-    this.copy(name = name)
+    this match {
+      case Rest(_, p, u) => Rest(name, p, u)
+      case Part(_, p, u) => Part(name, p, u)
+    }
 }
 object Param {
-  val int: Param[Int] = Param("<int>", str => Try(str.toInt), i => i.toString)
-  val string: Param[String] = Param("<string>", str => Success(str), identity)
+  val int: Param[Int] =
+    Param.Part("<Int>", str => Try(str.toInt), i => i.toString)
+  val string: Param[String] =
+    Param.Part("<String>", str => Success(str), identity)
+
+  val vector: Param[Vector[String]] =
+    Param.Rest("<String>", vector => Success(vector), identity)
 }
