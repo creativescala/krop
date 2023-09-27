@@ -32,8 +32,9 @@ import scala.Tuple.Append
   */
 trait Request[A] {
 
-  /** Optinoally extract the value of type A that this [[krop.route.Request]]
-    * matches from a [[org.http4s.Request]].
+  /** Extract the value of type A that this [[krop.route.Request]] matches from
+    * a [[org.http4s.Request]], returning `None` if the given request doesn't
+    * match what this is looking for.
     */
   def extract(request: Http4sRequest[IO]): IO[Option[A]]
 
