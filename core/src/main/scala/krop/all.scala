@@ -25,6 +25,7 @@ object all {
   export krop.route.Request
   export krop.route.Response
   export krop.route.Path
+  export krop.route.Param
 
   export org.http4s.EntityDecoder
   export org.http4s.EntityEncoder

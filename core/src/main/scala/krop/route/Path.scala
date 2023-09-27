@@ -20,12 +20,11 @@ import org.http4s.Uri.{Path as UriPath}
 
 import scala.util.Failure
 import scala.util.Success
-import scala.util.Try
 
-final case class Path[A <: Tuple](segments: Vector[Segment | Capture[?]]) {
+final case class Path[A <: Tuple](segments: Vector[String | Param[?]]) {
   def extract(path: UriPath): Option[A] = {
     def loop(
-        matchSegments: Vector[Segment | Capture[?]],
+        matchSegments: Vector[String | Param[?]],
         pathSegments: Vector[UriPath.Segment]
     ): Option[Tuple] =
       if matchSegments.isEmpty then {
@@ -33,12 +32,12 @@ final case class Path[A <: Tuple](segments: Vector[Segment | Capture[?]]) {
         else None
       } else {
         matchSegments.head match {
-          case Segment(value) =>
-            if !pathSegments.isEmpty && pathSegments(0).decoded() == value then
+          case s: String =>
+            if !pathSegments.isEmpty && pathSegments(0).decoded() == s then
               loop(matchSegments.tail, pathSegments.tail)
             else None
 
-          case Capture(_, decoder) =>
+          case Param(_, decoder, _) =>
             if !pathSegments.isEmpty then {
               val raw = pathSegments(0).decoded()
               val attempt = decoder(raw)
@@ -58,10 +57,10 @@ final case class Path[A <: Tuple](segments: Vector[Segment | Capture[?]]) {
   }
 
   def /(segment: String): Path[A] =
-    Path(segments :+ Segment(segment))
+    Path(segments :+ segment)
 
-  def /[B](capture: Capture[B]): Path[Tuple.Append[A, B]] =
-    Path(segments :+ capture)
+  def /[B](param: Param[B]): Path[Tuple.Append[A, B]] =
+    Path(segments :+ param)
 
   /** Produces a human-readable representation of this Path. The toString method
     * is used to output the usual programmatic representation.
@@ -69,21 +68,11 @@ final case class Path[A <: Tuple](segments: Vector[Segment | Capture[?]]) {
   def describe: String =
     segments
       .map {
-        case Segment(value)   => value
-        case Capture(name, _) => name
+        case s: String      => s
+        case Param(n, _, _) => n
       }
       .mkString("/", "/", "")
 }
 object Path {
   val root = Path[EmptyTuple](Vector.empty)
-}
-
-final case class Segment(value: String)
-final case class Capture[A](name: String, decoder: String => Try[A]) {
-  def withName(name: String): Capture[A] =
-    this.copy(name = name)
-}
-object Capture {
-  val int: Capture[Int] = Capture("<int>", str => Try(str.toInt))
-  val string: Capture[String] = Capture("<string>", str => Success(str))
 }

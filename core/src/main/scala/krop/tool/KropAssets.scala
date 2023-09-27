@@ -17,7 +17,7 @@
 package krop.tool
 
 import krop.Route
-import krop.route.Capture
+import krop.route.Param
 import krop.route.Path
 import krop.route.Request
 import krop.route.Response
@@ -26,7 +26,7 @@ object KropAssets {
   val kropAssets: Route = {
     val route =
       Route(
-        Request.get(Path.root / "krop" / "assets" / Capture.string),
+        Request.get(Path.root / "krop" / "assets" / Param.string),
         Response.staticResource("/krop/assets")
       ).passthrough
 
