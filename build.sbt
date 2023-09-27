@@ -158,6 +158,10 @@ lazy val examples = project
   .settings(
     commonSettings,
     moduleName := "krop-examples",
-    mimaPreviousArtifacts := Set.empty
+    mimaPreviousArtifacts := Set.empty,
+    // This sets Krop into development mode, which gives useful tools for
+    // developers. If you don't set this, Krop runs in production mode.
+    run / javaOptions += "-Dkrop.mode=development",
+    run / fork := true
   )
   .dependsOn(core)
