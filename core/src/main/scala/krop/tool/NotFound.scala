@@ -51,8 +51,8 @@ object NotFound {
           )
           .toList
           .mkString(
-            """<p class="pt-2 pl-4"><code>""",
-            """</code></p>\n<p class="pt-2 pl-4"><code>""",
+            """<p class="pt-2 pl-4 text-sm font-semibold font-mono"><code>""",
+            """</code></p>\n<p class="pt-2 pl-4 text-sm font-semibold font-mono"><code>""",
             "</code></p>"
           )
 
@@ -71,7 +71,9 @@ object NotFound {
           |<body class="container mx-auto px-4 py-32">
           |  <h1 class="text-lg text-violet-700 font-semibold">Not Found <span class="rounded-full ml-2 py-2 px-2 text-xs bg-violet-200">404</span></h1>
           |  <p class="pt-2">The request</p>
-          |  <p class="pt-2 pl-4"><code>${requestToString(req)}</code></p>
+          |  <p class="pt-2 pl-4 text-sm font-semibold font-mono"><code>${requestToString(
+              req
+            )}</code></p>
           |  <p class="pt-2">did not match any routes :-{</p>
           |  <h2 class="text-lg font-semibold pt-4">Routes</h2>
           |  <p class="pt-2">The available routes are:</p>
