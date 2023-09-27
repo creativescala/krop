@@ -51,9 +51,9 @@ object NotFound {
           )
           .toList
           .mkString(
-            """<p class="pt-2 pl-4 text-sm font-semibold font-mono"><code>""",
-            """</code></p>\n<p class="pt-2 pl-4 text-sm font-semibold font-mono"><code>""",
-            "</code></p>"
+            """<li><pre><code>""",
+            """</code></pre></li>\n<li><code><pre>""",
+            "</code></pre></li>"
           )
 
         val httpRoutes = kropRoutes.toHttpRoutes
@@ -64,20 +64,25 @@ object NotFound {
           |<html lang=en>
           |<head>
           |  <meta charset=utf-8>
-          |  <script src="https://cdn.tailwindcss.com"></script>
-          |  <link href="/krop/assets/krop.css" rel="stylesheet"/>
+          |  <link href="/krop/assets/pico.min.css" rel="stylesheet"/>
           |  <title>Krop: Not Found</title>
           |</head>
-          |<body class="container mx-auto px-4 py-32">
-          |  <h1 class="text-lg text-violet-700 font-semibold">Not Found <span class="rounded-full ml-2 py-2 px-2 text-xs bg-violet-200">404</span></h1>
-          |  <p class="pt-2">The request</p>
-          |  <p class="pt-2 pl-4 text-sm font-semibold font-mono"><code>${requestToString(
-              req
-            )}</code></p>
-          |  <p class="pt-2">did not match any routes :-{</p>
-          |  <h2 class="text-lg font-semibold pt-4">Routes</h2>
-          |  <p class="pt-2">The available routes are:</p>
-          |  ${description}
+          |<body>
+          |  <main class="container">
+          |    <hgroup>
+          |      <h1>404 Not Found</h1>
+          |      <h4>This page is created by <code>krop.tool.NotFound</code> and will not be shown in production mode</h4>
+          |    </hgroup>
+          |    <p>The request</p>
+          |    <pre><code>${requestToString(req)}</code></pre>
+          |    <p>did not match any routes :-{</p>
+          |
+          |    <h2>Routes</h2>
+          |    <p>The available routes are:</p>
+          |    <ul>
+          |    ${description}
+          |    </li>
+          |  </main>
           |</body>
           |</html>
           """.stripMargin
