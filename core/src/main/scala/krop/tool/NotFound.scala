@@ -50,7 +50,11 @@ object NotFound {
             }
           )
           .toList
-          .mkString("<p><code>", "</code></p>\n<p><code>", "</code></p>")
+          .mkString(
+            """<p class="pt-2 pl-4"><code>""",
+            """</code></p>\n<p class="pt-2 pl-4"><code>""",
+            "</code></p>"
+          )
 
         val httpRoutes = kropRoutes.toHttpRoutes
 
@@ -60,16 +64,17 @@ object NotFound {
           |<html lang=en>
           |<head>
           |  <meta charset=utf-8>
+          |  <script src="https://cdn.tailwindcss.com"></script>
           |  <link href="/krop/assets/krop.css" rel="stylesheet"/>
           |  <title>Krop: Not Found</title>
           |</head>
-          |<body>
-          |  <h1>Not Found</h1>
-          |  <p>The request</p>
-          |  <p><code>${requestToString(req)}</code></p>
-          |  <p>did not match any routes :-{</p>
-          |  <h2>Routes</h2>
-          |  <p>The available routes are:</p>
+          |<body class="container mx-auto px-4 py-32">
+          |  <h1 class="text-lg text-violet-700 font-semibold">Not Found <span class="rounded-full ml-2 py-2 px-2 text-xs bg-violet-200">404</span></h1>
+          |  <p class="pt-2">The request</p>
+          |  <p class="pt-2 pl-4"><code>${requestToString(req)}</code></p>
+          |  <p class="pt-2">did not match any routes :-{</p>
+          |  <h2 class="text-lg font-semibold pt-4">Routes</h2>
+          |  <p class="pt-2">The available routes are:</p>
           |  ${description}
           |</body>
           |</html>
