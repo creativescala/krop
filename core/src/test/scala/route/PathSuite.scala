@@ -22,7 +22,7 @@ import org.http4s.implicits.*
 
 class PathSuite extends FunSuite {
   val nonCapturingPath = Path.root / "user" / "create"
-  val nonCapturingRestPath = Path.root / "assets" / "html" / Segment.Rest
+  val nonCapturingRestPath = Path.root / "assets" / "html" / Segment.all
   val capturingRestPath = Path.root / "assets" / "html" / Param.vector
   val simplePath = Path.root / "user" / Param.int.withName("<userId>") / "view"
 

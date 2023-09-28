@@ -23,7 +23,7 @@ import scala.util.Try
   * `A`, and converts values of type `A` into a path segments.
   */
 enum Param[A] {
-  case Rest(
+  case All(
       name: String,
       parse: Vector[String] => Try[A],
       unparse: A => Vector[String]
@@ -52,7 +52,7 @@ enum Param[A] {
     */
   def withName(name: String): Param[A] =
     this match {
-      case Rest(_, p, u) => Rest(name, p, u)
+      case All(_, p, u)  => All(name, p, u)
       case Part(_, p, u) => Part(name, p, u)
     }
 }
@@ -63,5 +63,5 @@ object Param {
     Param.Part("<String>", str => Success(str), identity)
 
   val vector: Param[Vector[String]] =
-    Param.Rest("<String>", vector => Success(vector), identity)
+    Param.All("<String>", vector => Success(vector), identity)
 }

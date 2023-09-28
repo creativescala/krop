@@ -21,28 +21,47 @@ import org.http4s.Uri.{Path as UriPath}
 import scala.util.Failure
 import scala.util.Success
 
-/** A [[KRop.route.Path]] represents a pattern to match against the path
-  * component of the URI part of a request.
+/** A [[krop.route.Path]] represents a pattern to match against the path
+  * component of the URI of a request.
   *
-  * Paths are created starting with `Path.root` and then calling the `/` method
-  * to add segments to the path.
+  * `Paths` are created starting with `Path.root` and then calling the `/`
+  * method to add segments to the pattern. For example
   *
   * ```
-  * // Matches /user/create
   * Path.root / "user" / "create"
   * ```
   *
-  * If you want to capture part of the path as a parameter for later processing,
-  * use a [[krop.route.Param]].
+  * matches a request with the path `/user/create`.
+  *
+  * Use a [[krop.route.Param]] to capture part of the path for later processing.
+  * For example
   *
   * ```
-  * // Matches /user/<id>/view, where <id> is an Int
   * Path.root / "user" / Param.int / "view"
   * ```
   *
-  * A Path only matches the path component of the URI if they have exactly the
-  * same number of segments. So `Path.root / "user" / "create"` will not match
-  * "/user/create/1234".
+  * matches `/user/<id>/view`, where `<id>` is an `Int`, and makes the `Int`
+  * value available to the request handler.
+  *
+  * A `Path` will fail to match if the URI's path has more segments than the
+  * `Path` matches. So `Path.root / "user" / "create"` will not match
+  * "/user/create/1234". Use `Segment.all` to match and ignore all the segments
+  * to the end of the URI's path. For example
+  *
+  * ```
+  * Path.root / "assets" / Segment.all
+  * ```
+  *
+  * will match `/assets/example.css` and `/assets/css/example.css`.
+  *
+  * To capture all segments to the end of the URI's path, use an instance of
+  * `Param.All` such as `Param.vector`. So
+  *
+  * ```
+  * Path.root / "assets" / Param.vector
+  * ```
+  *
+  * will capture the remainder of the URI's path as a `Vector[String]`.
   */
 final class Path[A <: Tuple] private (
     segments: Vector[Segment | Param[?]],
@@ -50,6 +69,8 @@ final class Path[A <: Tuple] private (
     // matches the rest of a path is not open. Otherwise it is open.
     open: Boolean
 ) {
+
+  /** Optionally extract the captured parts of the URI's path. */
   def extract(path: UriPath): Option[A] = {
     def loop(
         matchSegments: Vector[Segment | Param[?]],
@@ -65,7 +86,7 @@ final class Path[A <: Tuple] private (
               loop(matchSegments.tail, pathSegments.tail)
             else None
 
-          case Segment.Rest =>
+          case Segment.All =>
             Some(EmptyTuple)
 
           case Param.Part(_, parse, _) =>
@@ -82,7 +103,7 @@ final class Path[A <: Tuple] private (
               }
             } else None
 
-          case Param.Rest(_, parse, _) =>
+          case Param.All(_, parse, _) =>
             parse(pathSegments.map(_.decoded())) match {
               case Failure(_)     => None
               case Success(value) => Some(value *: EmptyTuple)
@@ -102,7 +123,7 @@ final class Path[A <: Tuple] private (
     assertOpen()
     segment match {
       case Segment.Part(_) => Path(segments :+ segment, true)
-      case Segment.Rest    => Path(segments :+ segment, false)
+      case Segment.All     => Path(segments :+ segment, false)
     }
   }
 
@@ -110,7 +131,7 @@ final class Path[A <: Tuple] private (
     assertOpen()
     param match {
       case Param.Part(_, _, _) => Path(segments :+ param, true)
-      case Param.Rest(_, _, _) => Path(segments :+ param, false)
+      case Param.All(_, _, _)  => Path(segments :+ param, false)
     }
   }
 
@@ -121,9 +142,9 @@ final class Path[A <: Tuple] private (
     segments
       .map {
         case Segment.Part(v)     => v
-        case Segment.Rest        => "rest*"
+        case Segment.All         => "rest*"
         case Param.Part(n, _, _) => n
-        case Param.Rest(n, _, _) => s"$n*"
+        case Param.All(n, _, _)  => s"$n*"
       }
       .mkString("/", "/", "")
 
