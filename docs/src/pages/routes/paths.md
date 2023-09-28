@@ -1,10 +1,8 @@
-# Routes
+# Paths
 
-```scala mdoc:silent
+```scala mdoc:invisible
 import krop.all.*
 ```
-
-## Paths
 
 A @:api(krop.route.Path) represents a pattern to match against the path
 component of the request's URI. `Paths` are created starting with `Path.root`
@@ -17,7 +15,7 @@ Path.root / "user" / "create"
 matches a request with the path `/user/create`.
 
 
-### Capturing Path Segments
+## Capturing Path Segments
 
 Use a @:api(krop.route.Param) to capture part of the path for later processing.
 For example
@@ -30,7 +28,7 @@ matches `/user/<id>/view`, where `<id>` is an `Int`, and makes the `Int`
 value available to the request handler.
 
 
-### Matching All Segments
+## Matching All Segments
 
 A `Path` will fail to match if the URI's path has more segments than the
 `Path` matches. So `Path.root / "user" / "create"` will not match
