@@ -37,6 +37,18 @@
     <div id="content">
         <main class="content">
             <h1 id="routes" class="title">Routes</h1>
+            <p>Routes take care of the HTTP specific details of incoming requests and outgoing responses. Routes can:</p>
+            <ol class="arabic">
+              <li>match HTTP requests and extract Scala values;</li>
+              <li>convert Scala values into an HTTP response; and in the future</li>
+              <li>construct clients that call routes.</li>
+            </ol>
+            <p>Routes are constructed from three components:</p>
+            <ol class="arabic">
+              <li>a <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Request.html">Request</a>, which describes a HTTP request;</li>
+              <li>a <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Response.html">Response</a>, which describes a HTTP response; and</li>
+              <li>a handler, which processes the values extracted from the request and produces the value needed by the response.</li>
+            </ol>
             <p class="nextPage"><a href="paths.html">Paths→</a></p>
         </main>
         <footer>Creative Scala is copyright Noel Welsh</footer>
