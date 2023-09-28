@@ -106,9 +106,11 @@
             <p>The mosty used in development mode, to output useful debugging information. You can change the name of a <code>Param</code> using the <code>withName</code> method. It&#39;s good practice to set the name whenever you create a new <code>Param</code>. For example, if deriving a new <code>Param</code> from an existing one you should consider changing the name.</p>
             <pre><code class="nohighlight"><span class="comment">// Bad, as the name doesn&#39;t reflect the underlying type.
 </span><span class="identifier">intParam</span><span>.</span><span class="identifier">name</span><span>
-
+</span><span class="comment">// res9: String = &quot;&lt;String&gt;&quot;
+</span><span>
 </span><span class="comment">// Better, as the name has been changed appropriately.
-</span><span class="identifier">intParam</span><span>.</span><span class="identifier">withName</span><span>(</span><span class="string-literal">&quot;&lt;Int&gt;&quot;</span><span>).</span><span class="identifier">name</span></code></pre>
+</span><span class="identifier">intParam</span><span>.</span><span class="identifier">withName</span><span>(</span><span class="string-literal">&quot;&lt;Int&gt;&quot;</span><span>).</span><span class="identifier">name</span><span>
+</span><span class="comment">// res10: String = &quot;&lt;Int&gt;&quot;</span></code></pre>
             
         </main>
         <footer>Creative Scala is copyright Noel Welsh</footer>
