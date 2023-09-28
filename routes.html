@@ -36,27 +36,31 @@
     <div id="content">
         <main class="content">
             <h1 id="routes" class="title">Routes</h1>
+            <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">krop</span><span>.</span><span class="identifier">all</span><span>.*</span></code></pre>
             
             <h2 id="paths" class="section">Paths</h2>
             <p>A <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Path.html">Path</a> represents a pattern to match against the path
-             component of the URI of a request.</p>
-            <p><code>Paths</code> are created starting with <code>Path.root</code> and then calling the <code>/</code>
-             method to add segments to the pattern. For example</p>
+            component of the request&#39;s URI. <code>Paths</code> are created starting with <code>Path.root</code>
+            and then calling the <code>/</code> method to add segments to the pattern. For example</p>
             <pre><code class="nohighlight"><span class="type-name">Path</span><span>.</span><span class="identifier">root</span><span> / </span><span class="string-literal">&quot;user&quot;</span><span> / </span><span class="string-literal">&quot;create&quot;</span></code></pre>
             <p>matches a request with the path <code>/user/create</code>.</p>
+            
+            <h3 id="capturing-path-segments" class="section">Capturing Path Segments</h3>
             <p>Use a <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Param.html">Param</a> to capture part of the path for later processing.
-             For example</p>
+            For example</p>
             <pre><code class="nohighlight"><span class="type-name">Path</span><span>.</span><span class="identifier">root</span><span> / </span><span class="string-literal">&quot;user&quot;</span><span> / </span><span class="type-name">Param</span><span>.</span><span class="identifier">int</span><span> / </span><span class="string-literal">&quot;view&quot;</span></code></pre>
             <p>matches <code>/user/&lt;id&gt;/view</code>, where <code>&lt;id&gt;</code> is an <code>Int</code>, and makes the <code>Int</code>
-             value available to the request handler.</p>
+            value available to the request handler.</p>
+            
+            <h3 id="matching-all-segments" class="section">Matching All Segments</h3>
             <p>A <code>Path</code> will fail to match if the URI&#39;s path has more segments than the
-             <code>Path</code> matches. So <code>Path.root / &quot;user&quot; / &quot;create&quot;</code> will not match
-             &quot;/user/create/1234&quot;. Use <code>Segment.all</code> to match and ignore all the segments
-             to the end of the URI&#39;s path. For example</p>
+            <code>Path</code> matches. So <code>Path.root / &quot;user&quot; / &quot;create&quot;</code> will not match
+            <code>/user/create/1234</code>. Use <code>Segment.all</code> to match and ignore all the segments
+            to the end of the URI&#39;s path. For example</p>
             <pre><code class="nohighlight"><span class="type-name">Path</span><span>.</span><span class="identifier">root</span><span> / </span><span class="string-literal">&quot;assets&quot;</span><span> / </span><span class="type-name">Segment</span><span>.</span><span class="identifier">all</span></code></pre>
             <p>will match <code>/assets/example.css</code> and <code>/assets/css/example.css</code>.</p>
             <p>To capture all segments to the end of the URI&#39;s path, use an instance of
-             <code>Param.All</code> such as <code>Param.vector</code>. So</p>
+            <code>Param.All</code> such as <code>Param.vector</code>. So</p>
             <pre><code class="nohighlight"><span class="type-name">Path</span><span>.</span><span class="identifier">root</span><span> / </span><span class="string-literal">&quot;assets&quot;</span><span> / </span><span class="type-name">Param</span><span>.</span><span class="identifier">vector</span></code></pre>
             <p>will capture the remainder of the URI&#39;s path as a <code>Vector[String]</code>.</p>
             
