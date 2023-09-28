@@ -77,7 +77,8 @@ lazy val root = project
   .settings(moduleName := "krop")
   .aggregate(
     core,
-    examples
+    examples,
+    unidocs
   )
 
 lazy val core = project
