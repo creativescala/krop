@@ -63,6 +63,16 @@
             <code>Param.All</code> such as <code>Param.vector</code>. So</p>
             <pre><code class="nohighlight"><span class="type-name">Path</span><span>.</span><span class="identifier">root</span><span> / </span><span class="string-literal">&quot;assets&quot;</span><span> / </span><span class="type-name">Param</span><span>.</span><span class="identifier">vector</span></code></pre>
             <p>will capture the remainder of the URI&#39;s path as a <code>Vector[String]</code>.</p>
+            <p>A <code>Path</code> that matches all segments is called a closed path. Attempting to add an
+            element to a closed path will result in an exception.</p>
+            <pre><code class="nohighlight"><span class="type-name">Path</span><span>.</span><span class="identifier">root</span><span> / </span><span class="type-name">Segment</span><span>.</span><span class="identifier">all</span><span> / </span><span class="string-literal">&quot;crash&quot;</span><span>
+</span><span class="comment">// java.lang.IllegalStateException: Cannot add a segment or parameter to a closed path.
+// 
+//   A path is closed when it has a segment or parameter that matches all remaining elements.
+//   A closed path cannot have additional segments of parameters added to it.
+// 	at krop.route.Path.assertOpen(Path.scala:157)
+// 	at krop.route.Path.$div(Path.scala:120)
+// 	at repl.MdocSession$MdocApp.$init$$$anonfun$1(routes.md:41)</span></code></pre>
             
         </main>
         <footer>Creative Scala is copyright Noel Welsh</footer>
