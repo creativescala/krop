@@ -16,6 +16,7 @@
 
 package krop.route
 
+/** Matches but does not capture a segment in a URI's path. */
 enum Segment {
   case All
   case One(value: String)
