@@ -1,12 +1,14 @@
 # Paths
 
+```scala mdoc:invisible
+import krop.all.*
+```
+
 A @:api(krop.route.Path) represents a pattern to match against the path
 component of the request's URI. `Paths` are created starting with `Path.root`
 and then calling the `/` method to add segments to the pattern. For example
 
 ```scala mdoc:silent
-import krop.all.*
-
 Path.root / "user" / "create"
 ```
 
