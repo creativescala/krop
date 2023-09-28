@@ -105,7 +105,13 @@ object NotFound {
   /** The production version of this tool, which returns NotFound to every
     * request.
     */
-  val production: Application = Application.notFound
+  val production: Application = Application(routes =>
+    routes.toHttpRoutes.map(r =>
+      Kleisli((req: Request[IO]) =>
+        r.run(req).getOrElseF(IO.pure(Response.notFound.covary[IO]))
+      )
+    )
+  )
 
   /** The notFound Application tool. */
   val notFound: Application =
