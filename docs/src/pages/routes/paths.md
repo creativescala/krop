@@ -66,18 +66,20 @@ The `imap` method transforms a `Param[A]` into a `Param[B]` by providing
 functions `A => B` and `B => A`. This example constructs a `Param[Int]` from the
 built-in `Param[String]`.
 
-```scala mdoc
+```scala mdoc:silent
 val intParam = Param.string.imap(_.toInt)(_.toString)
-
+```
+```scala mdoc
 intParam.parse("100")
 ```
 
 A `Param.One[A]` can be lifted to a `Param.All[Vector[A]]` that uses the given
 `Param.One` for every element in the `Vector`.
 
-```scala mdoc
+```scala mdoc:silent
 val intParams = Param.lift(intParam)
-
+```
+```scala mdoc
 intParams.unparse(Vector(1, 2, 3))
 ```
 
@@ -85,11 +87,31 @@ The `mkString` method can be used for a `Param.All` that constructs a `String`
 containing elements separated by a separator. For example, to accumulate a
 sub-path we could use the following.
 
-```scala mdoc
+```scala mdoc:silent
 val subPath = Param.mkString("/")
-
+```
+```scala mdoc
 subPath.parse(Vector("assets", "css"))
 subPath.unparse("assets/css")
 ```
 
 Finally, you can directly call the constructors for `Param.One` and `Param.All`.
+
+
+### Param Names
+
+`Params` have a `String` name. This is, by convention, some indication of the type written within angle brackets. For example `"<String>"` for a `Param[String]`.
+
+```scala mdoc
+Param.string.name
+```
+
+The mosty used in development mode, to output useful debugging information. You can change the name of a `Param` using the `withName` method. It's good practice to set the name whenever you create a new `Param`. For example, if deriving a new `Param` from an existing one you should consider changing the name.
+
+```scala mdoc:silent
+// Bad, as the name doesn't reflect the underlying type.
+intParam.name
+
+// Better, as the name has been changed appropriately.
+intParam.withName("<Int>").name
+```

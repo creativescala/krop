@@ -28,6 +28,11 @@ import scala.util.Try
 sealed abstract class Param[A] extends Product, Serializable {
   import Param.*
 
+  /** Gets the name of this `Param`. By convention it describes the type within
+    * angle brackets.
+    */
+  def name: String
+
   /** Create a `Path` with a more informative name. For example, you might use
     * this method to note that an int is in fact a user id.
     *
