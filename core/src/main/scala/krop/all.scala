@@ -32,4 +32,7 @@ object all {
   export org.http4s.EntityEncoder
   export org.http4s.Method
   export org.http4s.Status
+
+  export com.comcast.ip4s.Literals.port
+  export com.comcast.ip4s.Literals.host
 }
