@@ -30,7 +30,7 @@ val route = Route(Request.get(Path.root / "user" / Param.int), Response.ok[Strin
   .handle(userId => s"You asked for the user ${userId}")
 ```
 
-[Request](request.md) and [Response][response.md] have separate pages, so here we'll just discuss the handler. There are three ways to create a handler, using `handle`, `handleIO`, or `passthrough`. Assuming the request produces a value of type `A` and the response needs a value of type `B`. Then these three methods have the following meaning:
+[Request](request.md) and [Response](response.md) have separate pages, so here we'll just discuss the handler. There are three ways to create a handler, using `handle`, `handleIO`, or `passthrough`. Assuming the request produces a value of type `A` and the response needs a value of type `B`. Then these three methods have the following meaning:
 
 - `handle` is a function `A => B`;
 - `handle` is a function `A => IO[B]`; and
