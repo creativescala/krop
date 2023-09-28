@@ -54,3 +54,42 @@ element to a closed path will result in an exception.
 ```scala mdoc:crash
 Path.root / Segment.all / "crash"
 ```
+
+
+## Params
+
+There are a small number of predefined `Param` instances on the
+@:api(krop.route.Param$) companion object. Constructing your own instances can
+be done in several ways.
+
+The `imap` method transforms a `Param[A]` into a `Param[B]` by providing
+functions `A => B` and `B => A`. This example constructs a `Param[Int]` from the
+built-in `Param[String]`.
+
+```scala mdoc
+val intParam = Param.string.imap(_.toInt)(_.toString)
+
+intParam.parse("100")
+```
+
+A `Param.One[A]` can be lifted to a `Param.All[Vector[A]]` that uses the given
+`Param.One` for every element in the `Vector`.
+
+```scala mdoc
+val intParams = Param.lift(intParam)
+
+intParams.unparse(Vector(1, 2, 3))
+```
+
+The `mkString` method can be used for a `Param.All` that constructs a `String`
+containing elements separated by a separator. For example, to accumulate a
+sub-path we could use the following.
+
+```scala mdoc
+val subPath = Param.mkString("/")
+
+subPath.parse(Vector("assets", "css"))
+subPath.unparse("assets/css")
+```
+
+Finally, you can directly call the constructors for `Param.One` and `Param.All`.
