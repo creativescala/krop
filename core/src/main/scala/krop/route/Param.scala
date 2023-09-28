@@ -19,16 +19,12 @@ package krop.route
 import scala.util.Success
 import scala.util.Try
 
-/** A `Param` parses path segments in a [[krop.route.Path]] into value sof type
+/** A `Param` parses path segments in a [[krop.route.Path]] into values of type
   * `A`, and converts values of type `A` into a path segments.
   */
 enum Param[A] {
-  case All(
-      name: String,
-      parse: Vector[String] => Try[A],
-      unparse: A => Vector[String]
-  )
-  /*
+  /* A `Param` that matches a all parameters.
+   *
    * @param name
    *   The name used when printing this `Param`. Usually a short word in angle
    *   brackets, like "<int>" or "<string>".
@@ -37,7 +33,22 @@ enum Param[A] {
    * @param unparse
    *   The function to convert from `A` to a `String`.
    */
-  case Part(
+  case All(
+      name: String,
+      parse: Vector[String] => Try[A],
+      unparse: A => Vector[String]
+  )
+  /* A `Param` that matches a single parameter.
+   *
+   * @param name
+   *   The name used when printing this `Param`. Usually a short word in angle
+   *   brackets, like "<int>" or "<string>".
+   * @param parse
+   *   The function to convert from a `String` to `A`, which can fail.
+   * @param unparse
+   *   The function to convert from `A` to a `String`.
+   */
+  case One(
       name: String,
       parse: String => Try[A],
       unparse: A => String
@@ -52,16 +63,23 @@ enum Param[A] {
     */
   def withName(name: String): Param[A] =
     this match {
-      case All(_, p, u)  => All(name, p, u)
-      case Part(_, p, u) => Part(name, p, u)
+      case All(_, p, u) => All(name, p, u)
+      case One(_, p, u) => One(name, p, u)
     }
 }
 object Param {
-  val int: Param[Int] =
-    Param.Part("<Int>", str => Try(str.toInt), i => i.toString)
-  val string: Param[String] =
-    Param.Part("<String>", str => Success(str), identity)
 
+  /** A `Param` that matches a single `Int` parameter */
+  val int: Param[Int] =
+    Param.One("<Int>", str => Try(str.toInt), i => i.toString)
+
+  /** A `Param` that matches a single `String` parameter */
+  val string: Param[String] =
+    Param.One("<String>", str => Success(str), identity)
+
+  /** `Param` that matches all parameters, accumulating them as a
+    * `Vector[String`.
+    */
   val vector: Param[Vector[String]] =
     Param.All("<String>", vector => Success(vector), identity)
 }

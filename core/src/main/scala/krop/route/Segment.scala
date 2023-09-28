@@ -18,9 +18,9 @@ package krop.route
 
 enum Segment {
   case All
-  case Part(value: String)
+  case One(value: String)
 }
 object Segment {
   val all = Segment.All
-  def part(value: String): Segment = Segment.Part(value)
+  def part(value: String): Segment = Segment.One(value)
 }

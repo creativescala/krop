@@ -80,7 +80,7 @@ final class Path[A <: Tuple] private (
         else None
       } else {
         matchSegments.head match {
-          case Segment.Part(value) =>
+          case Segment.One(value) =>
             if !pathSegments.isEmpty && pathSegments(0).decoded() == value then
               loop(matchSegments.tail, pathSegments.tail)
             else None
@@ -88,7 +88,7 @@ final class Path[A <: Tuple] private (
           case Segment.All =>
             Some(EmptyTuple)
 
-          case Param.Part(_, parse, _) =>
+          case Param.One(_, parse, _) =>
             if !pathSegments.isEmpty then {
               val raw = pathSegments(0).decoded()
               val attempt = parse(raw)
@@ -115,22 +115,22 @@ final class Path[A <: Tuple] private (
 
   def /(segment: String): Path[A] = {
     assertOpen()
-    Path(segments :+ Segment.Part(segment), true)
+    Path(segments :+ Segment.One(segment), true)
   }
 
   def /(segment: Segment): Path[A] = {
     assertOpen()
     segment match {
-      case Segment.Part(_) => Path(segments :+ segment, true)
-      case Segment.All     => Path(segments :+ segment, false)
+      case Segment.One(_) => Path(segments :+ segment, true)
+      case Segment.All    => Path(segments :+ segment, false)
     }
   }
 
   def /[B](param: Param[B]): Path[Tuple.Append[A, B]] = {
     assertOpen()
     param match {
-      case Param.Part(_, _, _) => Path(segments :+ param, true)
-      case Param.All(_, _, _)  => Path(segments :+ param, false)
+      case Param.One(_, _, _) => Path(segments :+ param, true)
+      case Param.All(_, _, _) => Path(segments :+ param, false)
     }
   }
 
@@ -140,10 +140,10 @@ final class Path[A <: Tuple] private (
   def describe: String =
     segments
       .map {
-        case Segment.Part(v)     => v
-        case Segment.All         => "rest*"
-        case Param.Part(n, _, _) => n
-        case Param.All(n, _, _)  => s"$n*"
+        case Segment.One(v)     => v
+        case Segment.All        => "rest*"
+        case Param.One(n, _, _) => n
+        case Param.All(n, _, _) => s"$n*"
       }
       .mkString("/", "/", "")
 
