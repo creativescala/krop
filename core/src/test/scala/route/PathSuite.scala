@@ -22,8 +22,8 @@ import org.http4s.implicits.*
 
 class PathSuite extends FunSuite {
   val nonCapturingPath = Path.root / "user" / "create"
-  val nonCapturingRestPath = Path.root / "assets" / "html" / Segment.all
-  val capturingRestPath = Path.root / "assets" / "html" / Param.vector
+  val nonCapturingAllPath = Path.root / "assets" / "html" / Segment.all
+  val capturingAllPath = Path.root / "assets" / "html" / Param.vector
   val simplePath = Path.root / "user" / Param.int.withName("<userId>") / "view"
 
   test("Path description is as expected") {
@@ -60,18 +60,47 @@ class PathSuite extends FunSuite {
     assertEquals(simplePath.extract(badUri.path), None)
   }
 
-  test("Path with rest segment matches all extra segments") {
+  test("Path with all segment matches all extra segments") {
     val okUri = uri"http://example.org/assets/html/this/that/theother.html"
 
-    assertEquals(nonCapturingRestPath.extract(okUri.path), Some(EmptyTuple))
+    assertEquals(nonCapturingAllPath.extract(okUri.path), Some(EmptyTuple))
   }
 
-  test("Path with rest segment captures all extra segments") {
+  test("Path with all param captures all extra segments") {
     val okUri = uri"http://example.org/assets/html/this/that/theother.html"
 
     assertEquals(
-      capturingRestPath.extract(okUri.path),
+      capturingAllPath.extract(okUri.path),
       Some(Vector("this", "that", "theother.html") *: EmptyTuple)
+    )
+  }
+
+  test("Path with all segment matches zero or more segments") {
+    val zeroUri = uri"http://example.org/assets/html"
+    val oneUri = uri"http://example.org/assets/html/example.html"
+    val manyUri = uri"http://example.org/assets/html/a/b/c/example.html"
+
+    assertEquals(nonCapturingAllPath.extract(zeroUri.path), Some(EmptyTuple))
+    assertEquals(nonCapturingAllPath.extract(oneUri.path), Some(EmptyTuple))
+    assertEquals(nonCapturingAllPath.extract(manyUri.path), Some(EmptyTuple))
+  }
+
+  test("Path with all param matches zero or more segments") {
+    val zeroUri = uri"http://example.org/assets/html"
+    val oneUri = uri"http://example.org/assets/html/example.html"
+    val manyUri = uri"http://example.org/assets/html/a/b/c/example.html"
+
+    assertEquals(
+      capturingAllPath.extract(zeroUri.path),
+      Some(Vector.empty[String] *: EmptyTuple)
+    )
+    assertEquals(
+      capturingAllPath.extract(oneUri.path),
+      Some(Vector("example.html") *: EmptyTuple)
+    )
+    assertEquals(
+      capturingAllPath.extract(manyUri.path),
+      Some(Vector("a", "b", "c", "example.html") *: EmptyTuple)
     )
   }
 }
