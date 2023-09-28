@@ -74,6 +74,49 @@
 // 	at krop.route.Path.$div(Path.scala:120)
 // 	at repl.MdocSession$MdocApp.$init$$$anonfun$1(paths.md:39)</span></code></pre>
             
+            <h2 id="params" class="section">Params</h2>
+            <p>There are a small number of predefined <code>Param</code> instances on the
+            <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Param$.html">Param</a> companion object. Constructing your own instances can
+            be done in several ways.</p>
+            <p>The <code>imap</code> method transforms a <code>Param[A]</code> into a <code>Param[B]</code> by providing
+            functions <code>A =&gt; B</code> and <code>B =&gt; A</code>. This example constructs a <code>Param[Int]</code> from the
+            built-in <code>Param[String]</code>.</p>
+            <pre><code class="nohighlight"><span class="keyword">val</span><span> </span><span class="identifier">intParam</span><span> = </span><span class="type-name">Param</span><span>.</span><span class="identifier">string</span><span>.</span><span class="identifier">imap</span><span>(</span><span class="identifier">_</span><span>.</span><span class="identifier">toInt</span><span>)(</span><span class="identifier">_</span><span>.</span><span class="identifier">toString</span><span>)
+</span><span class="comment">// intParam: One[Int] = One(
+//   name = &quot;&lt;String&gt;&quot;,
+//   parse = krop.route.Param$One$$Lambda$13323/2012469043@bc1b24d,
+//   unparse = krop.route.Param$One$$Lambda$13324/1603768619@5dc30874
+// )
+</span><span>
+</span><span class="identifier">intParam</span><span>.</span><span class="identifier">parse</span><span>(</span><span class="string-literal">&quot;100&quot;</span><span>)
+</span><span class="comment">// res4: Try[Int] = Success(value = 100)</span></code></pre>
+            <p>A <code>Param.One[A]</code> can be lifted to a <code>Param.All[Vector[A]]</code> that uses the given
+            <code>Param.One</code> for every element in the <code>Vector</code>.</p>
+            <pre><code class="nohighlight"><span class="keyword">val</span><span> </span><span class="identifier">intParams</span><span> = </span><span class="type-name">Param</span><span>.</span><span class="identifier">lift</span><span>(</span><span class="identifier">intParam</span><span>)
+</span><span class="comment">// intParams: All[Vector[Int]] = All(
+//   name = &quot;&lt;String&gt;&quot;,
+//   parse = krop.route.Param$$$Lambda$13325/1391871343@5577fb1c,
+//   unparse = krop.route.Param$$$Lambda$13326/831228115@2995c508
+// )
+</span><span>
+</span><span class="identifier">intParams</span><span>.</span><span class="identifier">unparse</span><span>(</span><span class="type-name">Vector</span><span>(</span><span class="number-literal">1</span><span>, </span><span class="number-literal">2</span><span>, </span><span class="number-literal">3</span><span>))
+</span><span class="comment">// res5: Vector[String] = Vector(&quot;1&quot;, &quot;2&quot;, &quot;3&quot;)</span></code></pre>
+            <p>The <code>mkString</code> method can be used for a <code>Param.All</code> that constructs a <code>String</code>
+            containing elements separated by a separator. For example, to accumulate a
+            sub-path we could use the following.</p>
+            <pre><code class="nohighlight"><span class="keyword">val</span><span> </span><span class="identifier">subPath</span><span> = </span><span class="type-name">Param</span><span>.</span><span class="identifier">mkString</span><span>(</span><span class="string-literal">&quot;/&quot;</span><span>)
+</span><span class="comment">// subPath: All[String] = All(
+//   name = &quot;&lt;String&gt;&quot;,
+//   parse = krop.route.Param$$$Lambda$13327/318860048@7ee62341,
+//   unparse = krop.route.Param$$$Lambda$13328/50235526@46368ba8
+// )
+</span><span>
+</span><span class="identifier">subPath</span><span>.</span><span class="identifier">parse</span><span>(</span><span class="type-name">Vector</span><span>(</span><span class="string-literal">&quot;assets&quot;</span><span>, </span><span class="string-literal">&quot;css&quot;</span><span>))
+</span><span class="comment">// res6: Try[String] = Success(value = &quot;assets/css&quot;)
+</span><span class="identifier">subPath</span><span>.</span><span class="identifier">unparse</span><span>(</span><span class="string-literal">&quot;assets/css&quot;</span><span>)
+</span><span class="comment">// res7: Vector[String] = Vector(&quot;assets&quot;, &quot;css&quot;)</span></code></pre>
+            <p>Finally, you can directly call the constructors for <code>Param.One</code> and <code>Param.All</code>.</p>
+            
         </main>
         <footer>Creative Scala is copyright Noel Welsh</footer>
     </div>
