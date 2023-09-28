@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="">
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="Laika 0.19.0" />
+    <title>Server</title>
+    
+    
+    <meta name="description" content="docs" />
+    
+    <link href="https://fonts.googleapis.com/css?family=Source+Code+Pro:400|Source+Sans+Pro:300,400,600"
+        rel="stylesheet" type="text/css">
+    <link href="https://fonts.googleapis.com/css?family=Crimson+Pro:400" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" type="text/css" href="creative-scala.css" />
+    
+    <script> /* for avoiding page load transitions */</script>
+</head>
+
+<body>
+    <nav id="topbar"><p><a href="concepts.html">←</a></p>
+<p><a href="../">Krop</a></p>
+<p><a href="routes/">→</a></p></nav>
+    <nav id="sidebar">
+        <ul class="nav-list">
+          <li class="level1 nav-leaf"><a href="index.html">Krop</a></li>
+          <li class="level1 nav-leaf"><a href="quick-start.html">Quick Start</a></li>
+          <li class="level1 nav-leaf"><a href="principles.html">Principles</a></li>
+          <li class="level1 nav-leaf"><a href="concepts.html">Concepts</a></li>
+          <li class="level1 active nav-leaf"><a href="#">Server</a></li>
+          <li class="level1 nav-node"><a href="routes/">Routes</a></li>
+          <li class="level2 nav-leaf"><a href="routes/paths.html">Paths</a></li>
+        </ul>
+    </nav>
+
+    <div id="content">
+        <main class="content">
+            <h1 id="server" class="title">Server</h1>
+            
+            <h2 id="creating-a-server" class="section">Creating a Server</h2>
+            <p>A <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/Server.html">Server</a>, unsurprisingly, runs a web application. Every Krop application needs a <code>Server</code>, which is usually constructed via a <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/ServerBuilder.html">ServerBuilder</a>.</p>
+            <p>Using a <code>ServerBuilder</code> can be as simple as</p>
+            <pre><code class="nohighlight"><span class="keyword">val</span><span> </span><span class="identifier">app</span><span>: </span><span class="type-name">Application</span><span> = </span><span class="type-name">Application</span><span>.</span><span class="identifier">notFound</span><span>
+
+</span><span class="keyword">val</span><span> </span><span class="identifier">builder</span><span> = </span><span class="type-name">ServerBuilder</span><span>.</span><span class="keyword">default</span><span>.</span><span class="identifier">withApplication</span><span>(</span><span class="identifier">app</span><span>)</span></code></pre>
+            <p>This uses the default settings (localhost and port 8080). The are builder methods that allow these to be changed.</p>
+            <p>Once the builder options have been set, calling the <code>run</code> method will construct a <code>Server</code> and immediately run it.</p>
+            <pre><code class="nohighlight"><span class="comment">// If this wasn&#39;t just documentation we&#39;d now have a server listening on port 8080.
+</span><span class="identifier">builder</span><span>.</span><span class="identifier">run</span><span>()</span></code></pre>
+            <p>A <code>ServerBuilder</code> can also be converted a <code>Server</code> using the <code>build</code> method.</p>
+            <pre><code class="nohighlight"><span class="keyword">val</span><span> </span><span class="identifier">server</span><span>: </span><span class="type-name">Server</span><span> = </span><span class="identifier">builder</span><span>.</span><span class="identifier">build</span></code></pre>
+            <p>A <code>Server</code> can then be <code>run</code>, or converted to an <code>IO[Unit]</code>  using <code>toIO</code>.</p>
+            <pre><code class="nohighlight"><span class="comment">// Run the server immediately.
+</span><span class="identifier">server</span><span>.</span><span class="identifier">run</span><span>()</span></code></pre>
+            <pre><code class="nohighlight"><span class="comment">// This IO can be run by an IOApp, for example
+</span><span class="keyword">val</span><span> </span><span class="identifier">io</span><span>: </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] = </span><span class="identifier">server</span><span>.</span><span class="identifier">toIO</span></code></pre>
+            
+            <h2 id="setting-server-options" class="section">Setting Server Options</h2>
+            <p>Setting the server options, such as the port and host, are done by the builder methods on the <code>ServerBuilder</code>. Custom string contexts are provided for defining host and port. Concretely, this means writing code like</p>
+            <pre><code class="nohighlight"><span class="type-name">ServerBuilder</span><span>.</span><span class="keyword">default</span><span>.</span><span class="identifier">withPort</span><span>(</span><span class="string-literal">port&quot;4000&quot;</span><span>)
+
+</span><span class="type-name">ServerBuilder</span><span>.</span><span class="keyword">default</span><span>.</span><span class="identifier">withHost</span><span>(</span><span class="string-literal">host&quot;127.0.0.1&quot;</span><span>)
+</span><span class="type-name">ServerBuilder</span><span>.</span><span class="keyword">default</span><span>.</span><span class="identifier">withHost</span><span>(</span><span class="string-literal">host&quot;localhost&quot;</span><span>)</span></code></pre>
+            <p class="nextPage"><a href="routes/">Routes→</a></p>
+        </main>
+        <footer>Creative Scala is copyright Noel Welsh</footer>
+    </div>
+
+    </div>
+</body>
+
+</html>

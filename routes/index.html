@@ -20,7 +20,7 @@
 </head>
 
 <body>
-    <nav id="topbar"><p><a href="../concepts.html">←</a></p>
+    <nav id="topbar"><p><a href="../server.html">←</a></p>
 <p><a href="../../">Krop</a></p>
 <p><a href="paths.html">→</a></p></nav>
     <nav id="sidebar">
@@ -29,6 +29,7 @@
           <li class="level1 nav-leaf"><a href="../quick-start.html">Quick Start</a></li>
           <li class="level1 nav-leaf"><a href="../principles.html">Principles</a></li>
           <li class="level1 nav-leaf"><a href="../concepts.html">Concepts</a></li>
+          <li class="level1 nav-leaf"><a href="../server.html">Server</a></li>
           <li class="level1 active nav-node"><a href="#">Routes</a></li>
           <li class="level2 nav-leaf"><a href="paths.html">Paths</a></li>
         </ul>
@@ -37,18 +38,26 @@
     <div id="content">
         <main class="content">
             <h1 id="routes" class="title">Routes</h1>
+            <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">krop</span><span>.</span><span class="identifier">all</span><span>.*</span></code></pre>
+            <p>`</p>
             <p>Routes take care of the HTTP specific details of incoming requests and outgoing responses. Routes can:</p>
             <ol class="arabic">
               <li>match HTTP requests and extract Scala values;</li>
               <li>convert Scala values into an HTTP response; and in the future</li>
               <li>construct clients that call routes.</li>
             </ol>
+            
+            <h2 id="constructing-routes" class="section">Constructing Routes</h2>
             <p>Routes are constructed from three components:</p>
             <ol class="arabic">
               <li>a <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Request.html">Request</a>, which describes a HTTP request;</li>
               <li>a <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Response.html">Response</a>, which describes a HTTP response; and</li>
               <li>a handler, which processes the values extracted from the request and produces the value needed by the response.</li>
             </ol>
+            <p>The idiomatic way to construct a <code>Route</code> is by calling the <code>Route.apply</code> method, passing a <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Request.html">Request</a> and <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Response.html">Response</a>, and then adding a handler using <code>handle</code>, <code>handleIO</code>, or <code>passthrough</code>.</p>
+            <p>Here is a small example illustrating the process.</p>
+            <pre><code class="nohighlight"><span class="keyword">val</span><span> </span><span class="identifier">route</span><span> = </span><span class="type-name">Route</span><span>(</span><span class="type-name">Request</span><span>.</span><span class="identifier">get</span><span>(</span><span class="type-name">Path</span><span>.</span><span class="identifier">root</span><span> / </span><span class="string-literal">&quot;user&quot;</span><span> / </span><span class="type-name">Param</span><span>.</span><span class="identifier">int</span><span>), </span><span class="type-name">Response</span><span>.</span><span class="identifier">ok</span><span>[</span><span class="type-name">String</span><span>])
+  .</span><span class="identifier">handle</span><span>(</span><span class="identifier">userId</span><span> =&gt; </span><span class="string-literal">s&quot;You asked for the user </span><span class="substitution">${userId}</span><span class="string-literal">&quot;</span><span>)</span></code></pre>
             <p class="nextPage"><a href="paths.html">Paths→</a></p>
         </main>
         <footer>Creative Scala is copyright Noel Welsh</footer>

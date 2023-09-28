@@ -29,6 +29,7 @@
           <li class="level1 nav-leaf"><a href="../quick-start.html">Quick Start</a></li>
           <li class="level1 nav-leaf"><a href="../principles.html">Principles</a></li>
           <li class="level1 nav-leaf"><a href="../concepts.html">Concepts</a></li>
+          <li class="level1 nav-leaf"><a href="../server.html">Server</a></li>
           <li class="level1 nav-node"><a href="index.html">Routes</a></li>
           <li class="level2 active nav-leaf"><a href="#">Paths</a></li>
         </ul>
@@ -40,9 +41,7 @@
             <p>A <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Path.html">Path</a> represents a pattern to match against the path
             component of the request&#39;s URI. <code>Paths</code> are created starting with <code>Path.root</code>
             and then calling the <code>/</code> method to add segments to the pattern. For example</p>
-            <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">krop</span><span>.</span><span class="identifier">all</span><span>.*
-
-</span><span class="type-name">Path</span><span>.</span><span class="identifier">root</span><span> / </span><span class="string-literal">&quot;user&quot;</span><span> / </span><span class="string-literal">&quot;create&quot;</span></code></pre>
+            <pre><code class="nohighlight"><span class="type-name">Path</span><span>.</span><span class="identifier">root</span><span> / </span><span class="string-literal">&quot;user&quot;</span><span> / </span><span class="string-literal">&quot;create&quot;</span></code></pre>
             <p>matches a request with the path <code>/user/create</code>.</p>
             
             <h2 id="capturing-path-segments" class="section">Capturing Path Segments</h2>
@@ -72,7 +71,7 @@
 //   A closed path cannot have additional segments of parameters added to it.
 // 	at krop.route.Path.assertOpen(Path.scala:157)
 // 	at krop.route.Path.$div(Path.scala:120)
-// 	at repl.MdocSession$MdocApp.$init$$$anonfun$1(paths.md:39)</span></code></pre>
+// 	at repl.MdocSession$MdocApp.$init$$$anonfun$1(paths.md:41)</span></code></pre>
             
             <h2 id="params" class="section">Params</h2>
             <p>There are a small number of predefined <code>Param</code> instances on the
