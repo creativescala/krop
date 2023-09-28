@@ -61,6 +61,9 @@ import scala.util.Success
   * ```
   *
   * will capture the remainder of the URI's path as a `Vector[String]`.
+  *
+  * A `Path` that matches all segments is called a closed path. Attempting to
+  * add an element to a closed path will result in an exception.
   */
 final class Path[A <: Tuple] private (
     segments: Vector[Segment | Param[?]],
