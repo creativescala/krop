@@ -24,7 +24,7 @@ ul.nav-list li:first-child {
     @apply uppercase;
 }
 li.level1 {
-    @apply list-none uppercase text-pink-300 mt-4;
+    @apply list-none text-pink-300 mt-4;
 }
 li.level2 {
     @apply list-none text-slate-300 pl-4;
