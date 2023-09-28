@@ -103,4 +103,9 @@ class PathSuite extends FunSuite {
       Some(Vector("a", "b", "c", "example.html") *: EmptyTuple)
     )
   }
+
+  test("Closed path raises exception when adding additional segments") {
+    intercept[IllegalStateException](nonCapturingAllPath / "crash")
+    intercept[IllegalStateException](capturingAllPath / "crash")
+  }
 }
