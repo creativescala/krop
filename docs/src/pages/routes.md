@@ -1,5 +1,8 @@
 # Routes
 
+```scala mdoc:silent
+import krop.all.*
+```
 
 ## Paths
 
