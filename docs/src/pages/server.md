@@ -50,7 +50,7 @@ Setting the server options, such as the port and host, are done by the builder m
 
 ```scala mdoc:silent
 ServerBuilder.default.withPort(port"4000")
-
+// Host can be a name or an IP address
 ServerBuilder.default.withHost(host"127.0.0.1")
 ServerBuilder.default.withHost(host"localhost")
 ```
