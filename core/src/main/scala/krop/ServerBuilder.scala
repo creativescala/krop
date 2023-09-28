@@ -38,11 +38,24 @@ final case class ServerBuilder(unwrap: IO[EmberServerBuilder[IO]]) {
     this.build.run()
   }
 
-  /** Set the port on which the server will listen. */
+  /** Set the port on which the server will listen. Use the `port` string
+    * context to create a `Port` value.
+    *
+    * ```
+    * Server.default.withPort(port"4000")
+    * ```
+    */
   def withPort(port: Port): ServerBuilder =
     ServerBuilder(unwrap.map(_.withPort(port)))
 
-  /** Set the host address on which the server will listen. */
+  /** Set the host address on which the server will listen. Use the `host`
+    * string context to create a `Host` value.
+    *
+    * ```
+    * Server.default.withHost(host"127.0.0.1")
+    * Server.default.withHost(host"localhost")
+    * ```
+    */
   def withHost(host: Host): ServerBuilder =
     ServerBuilder(unwrap.map(_.withHost(host)))
 
