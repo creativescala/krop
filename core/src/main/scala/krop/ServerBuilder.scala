@@ -42,7 +42,7 @@ final case class ServerBuilder(unwrap: IO[EmberServerBuilder[IO]]) {
     * context to create a `Port` value.
     *
     * ```
-    * Server.default.withPort(port"4000")
+    * ServerBuilder.default.withPort(port"4000")
     * ```
     */
   def withPort(port: Port): ServerBuilder =
@@ -52,8 +52,8 @@ final case class ServerBuilder(unwrap: IO[EmberServerBuilder[IO]]) {
     * string context to create a `Host` value.
     *
     * ```
-    * Server.default.withHost(host"127.0.0.1")
-    * Server.default.withHost(host"localhost")
+    * ServerBuilder.default.withHost(host"127.0.0.1")
+    * ServerBuilder.default.withHost(host"localhost")
     * ```
     */
   def withHost(host: Host): ServerBuilder =
