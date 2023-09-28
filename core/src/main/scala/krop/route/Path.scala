@@ -22,10 +22,9 @@ import scala.util.Failure
 import scala.util.Success
 
 /** A [[krop.route.Path]] represents a pattern to match against the path
-  * component of the URI of a request.
-  *
-  * `Paths` are created starting with `Path.root` and then calling the `/`
-  * method to add segments to the pattern. For example
+  * component of the URI of a request.`Paths` are created starting with
+  * `Path.root` and then calling the `/` method to add segments to the pattern.
+  * For example
   *
   * ```
   * Path.root / "user" / "create"
@@ -45,7 +44,7 @@ import scala.util.Success
   *
   * A `Path` will fail to match if the URI's path has more segments than the
   * `Path` matches. So `Path.root / "user" / "create"` will not match
-  * "/user/create/1234". Use `Segment.all` to match and ignore all the segments
+  * `/user/create/1234`. Use `Segment.all` to match and ignore all the segments
   * to the end of the URI's path. For example
   *
   * ```
