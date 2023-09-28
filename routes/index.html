@@ -22,7 +22,7 @@
 <body>
     <nav id="topbar"><p><a href="../server.html">←</a></p>
 <p><a href="../../">Krop</a></p>
-<p><a href="paths.html">→</a></p></nav>
+<p><a href="request.html">→</a></p></nav>
     <nav id="sidebar">
         <ul class="nav-list">
           <li class="level1 nav-leaf"><a href="../">Krop</a></li>
@@ -31,7 +31,9 @@
           <li class="level1 nav-leaf"><a href="../concepts.html">Concepts</a></li>
           <li class="level1 nav-leaf"><a href="../server.html">Server</a></li>
           <li class="level1 active nav-node"><a href="#">Routes</a></li>
+          <li class="level2 nav-leaf"><a href="request.html">Request</a></li>
           <li class="level2 nav-leaf"><a href="paths.html">Paths</a></li>
+          <li class="level2 nav-leaf"><a href="response.html">Response</a></li>
         </ul>
     </nav>
 
@@ -54,11 +56,17 @@
               <li>a <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Response.html">Response</a>, which describes a HTTP response; and</li>
               <li>a handler, which processes the values extracted from the request and produces the value needed by the response.</li>
             </ol>
-            <p>The idiomatic way to construct a <code>Route</code> is by calling the <code>Route.apply</code> method, passing a <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Request.html">Request</a> and <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Response.html">Response</a>, and then adding a handler using <code>handle</code>, <code>handleIO</code>, or <code>passthrough</code>.</p>
+            <p>The idiomatic way to construct a <code>Route</code> is by calling the <code>Route.apply</code> method, passing a <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Request.html">Request</a> and <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Response.html">Response</a>, and then adding a handler.</p>
             <p>Here is a small example illustrating the process.</p>
             <pre><code class="nohighlight"><span class="keyword">val</span><span> </span><span class="identifier">route</span><span> = </span><span class="type-name">Route</span><span>(</span><span class="type-name">Request</span><span>.</span><span class="identifier">get</span><span>(</span><span class="type-name">Path</span><span>.</span><span class="identifier">root</span><span> / </span><span class="string-literal">&quot;user&quot;</span><span> / </span><span class="type-name">Param</span><span>.</span><span class="identifier">int</span><span>), </span><span class="type-name">Response</span><span>.</span><span class="identifier">ok</span><span>[</span><span class="type-name">String</span><span>])
   .</span><span class="identifier">handle</span><span>(</span><span class="identifier">userId</span><span> =&gt; </span><span class="string-literal">s&quot;You asked for the user </span><span class="substitution">${userId}</span><span class="string-literal">&quot;</span><span>)</span></code></pre>
-            <p class="nextPage"><a href="paths.html">Paths→</a></p>
+            <p><a href="request.html">Request</a> and <a href="response.html">Response</a> have separate pages, so here we&#39;ll just discuss the handler. There are three ways to create a handler, using <code>handle</code>, <code>handleIO</code>, or <code>passthrough</code>. Assuming the request produces a value of type <code>A</code> and the response needs a value of type <code>B</code>. Then these three methods have the following meaning:</p>
+            <ul>
+              <li><code>handle</code> is a function <code>A =&gt; B</code>;</li>
+              <li><code>handle</code> is a function <code>A =&gt; IO[B]</code>; and</li>
+              <li><code>passthrough</code>, which can only be called when <code>A</code> is the same type as <code>B</code>, means that the output of the request is connected directly to the input of the response. This is useful, for example, when the response is loading a static file from the file system or the resources, and the request produces the name of the file to load.</li>
+            </ul>
+            <p class="nextPage"><a href="request.html">Request→</a></p>
         </main>
         <footer>Creative Scala is copyright Noel Welsh</footer>
     </div>
