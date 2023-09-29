@@ -97,8 +97,11 @@ object Route {
   def apply[I, O](
       request: Request[I],
       response: Response[O]
-  ): RouteBuilder[I, O] =
-    RouteBuilder(request, response)
+  )(using
+      ta: TupleApply[I, O],
+      taIO: TupleApply[I, IO[O]]
+  ): RouteBuilder[I, ta.Fun, taIO.Fun, O] =
+    RouteBuilder(request, response, ta, taIO)
 
   /** Lift an `IO[HttpRoutes[IO]` into a [[krop.Route]]. */
   def liftRoutesIO(description: String, routes: IO[HttpRoutes[IO]]): Route =
@@ -118,19 +121,19 @@ object Route {
   /** The empty route, which doesn't match any request. */
   val empty: Route = Route(Chain.empty)
 
-  final case class RouteBuilder[I, O](
+  final case class RouteBuilder[I, F, FIO, O](
       request: Request[I],
-      response: Response[O]
+      response: Response[O],
+      ta: TupleApply.Aux[I, F, O],
+      taIO: TupleApply.Aux[I, FIO, IO[O]]
   ) {
-    def handle[A](f: A => O)(using ta: TupleApply[I, A => O, O]): Route =
-      this.handleIO[I](i => IO.pure(ta.tuple(f)(i)))
+    def handle(f: F): Route =
+      Route.Atomic.Krop(request, response, i => IO.pure(ta.tuple(f)(i))).toRoute
 
-    def handleIO[A](f: A => IO[O])(using
-        ta: TupleApply[I, A => IO[O], IO[O]]
-    ): Route =
-      Route.Atomic.Krop(request, response, ta.tuple(f)).toRoute
+    def handleIO[A](f: FIO): Route =
+      Route.Atomic.Krop(request, response, taIO.tuple(f)).toRoute
 
-    def passthrough(using ta: TupleApply[I, O => O, O]): Route =
-      this.handle(ta.tuple(o => o))
+    def passthrough(using ev: (O => O) =:= ta.Fun) =
+      handle(ev(identity))
   }
 }

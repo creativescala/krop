@@ -22,33 +22,30 @@ package krop.route
   * applied to the empty tuple, and a function of a single argument to be
   * applied to a tuple of one value.
   */
-trait TupleApply[A, F, C] {
-  def tuple(f: F): A => C
+trait TupleApply[A, C] {
+  type Fun
+
+  def tuple(f: Fun): A => C
 }
 object TupleApply {
-  given emptyTupleFunction0Apply[C]: TupleApply[EmptyTuple, () => C, C] with {
+  type Aux[A, B, C] = TupleApply[A, C] { type Fun = B }
+
+  given emptyTupleFunction0Apply[C]: TupleApply[EmptyTuple, C] with {
+    type Fun = () => C
     def tuple(f: () => C): EmptyTuple => C = (_) => f()
   }
 
-  given emptyTupleAnyFunction1Apply[C]: TupleApply[EmptyTuple, Any => C, C]
-  with {
-    def tuple(f: Any => C): EmptyTuple => C = x => f(x)
-  }
-
-  given emptyTupleUnitFunction1Apply[C]: TupleApply[EmptyTuple, Unit => C, C]
-  with {
-    def tuple(f: Unit => C): EmptyTuple => C = x => f(())
-  }
-
-  given tuple1Apply[A, C]: TupleApply[Tuple1[A], A => C, C] with {
+  given tuple1Apply[A, C]: TupleApply[Tuple1[A], C] with {
+    type Fun = A => C
     def tuple(f: A => C): Tuple1[A] => C = (a) => f(a(0))
   }
 
   given tuple2Apply[A, B, C]: TupleApply[
     Tuple2[A, B],
-    (A, B) => C,
     C
   ] with {
+    type Fun = (A, B) => C
+
     def tuple(
         f: (A, B) => C
     ): Tuple2[A, B] => C = f.tupled
@@ -56,9 +53,10 @@ object TupleApply {
 
   given tuple3Apply[A, B, C, D]: TupleApply[
     Tuple3[A, B, C],
-    (A, B, C) => D,
     D
   ] with {
+    type Fun = (A, B, C) => D
+
     def tuple(
         f: (A, B, C) => D
     ): Tuple3[A, B, C] => D = f.tupled
@@ -66,9 +64,10 @@ object TupleApply {
 
   given tuple4Apply[A, B, C, D, E]: TupleApply[
     Tuple4[A, B, C, D],
-    (A, B, C, D) => E,
     E
   ] with {
+    type Fun = (A, B, C, D) => E
+
     def tuple(
         f: (A, B, C, D) => E
     ): Tuple4[A, B, C, D] => E = f.tupled
@@ -76,9 +75,10 @@ object TupleApply {
 
   given tuple5Apply[A, B, C, D, E, F]: TupleApply[
     Tuple5[A, B, C, D, E],
-    (A, B, C, D, E) => F,
     F
   ] with {
+    type Fun = (A, B, C, D, E) => F
+
     def tuple(
         f: (A, B, C, D, E) => F
     ): Tuple5[A, B, C, D, E] => F = f.tupled
@@ -86,9 +86,10 @@ object TupleApply {
 
   given tuple6Apply[A, B, C, D, E, F, G]: TupleApply[
     Tuple6[A, B, C, D, E, F],
-    (A, B, C, D, E, F) => G,
     G
   ] with {
+    type Fun = (A, B, C, D, E, F) => G
+
     def tuple(
         f: (A, B, C, D, E, F) => G
     ): Tuple6[A, B, C, D, E, F] => G = f.tupled
@@ -96,9 +97,10 @@ object TupleApply {
 
   given tuple7Apply[A, B, C, D, E, F, G, H]: TupleApply[
     Tuple7[A, B, C, D, E, F, G],
-    (A, B, C, D, E, F, G) => H,
     H
   ] with {
+    type Fun = (A, B, C, D, E, F, G) => H
+
     def tuple(
         f: (A, B, C, D, E, F, G) => H
     ): Tuple7[A, B, C, D, E, F, G] => H = f.tupled
@@ -106,9 +108,10 @@ object TupleApply {
 
   given tuple8Apply[A, B, C, D, E, F, G, H, I]: TupleApply[
     Tuple8[A, B, C, D, E, F, G, H],
-    (A, B, C, D, E, F, G, H) => I,
     I
   ] with {
+    type Fun = (A, B, C, D, E, F, G, H) => I
+
     def tuple(
         f: (A, B, C, D, E, F, G, H) => I
     ): Tuple8[A, B, C, D, E, F, G, H] => I = f.tupled
@@ -116,9 +119,10 @@ object TupleApply {
 
   given tuple9Apply[A, B, C, D, E, F, G, H, I, J]: TupleApply[
     Tuple9[A, B, C, D, E, F, G, H, I],
-    (A, B, C, D, E, F, G, H, I) => J,
     J
   ] with {
+    type Fun = (A, B, C, D, E, F, G, H, I) => J
+
     def tuple(
         f: (A, B, C, D, E, F, G, H, I) => J
     ): Tuple9[A, B, C, D, E, F, G, H, I] => J = f.tupled
@@ -126,15 +130,12 @@ object TupleApply {
 
   given tuple10Apply[A, B, C, D, E, F, G, H, I, J, K]: TupleApply[
     Tuple10[A, B, C, D, E, F, G, H, I, J],
-    (A, B, C, D, E, F, G, H, I, J) => K,
     K
   ] with {
+    type Fun = (A, B, C, D, E, F, G, H, I, J) => K
+
     def tuple(
         f: (A, B, C, D, E, F, G, H, I, J) => K
     ): Tuple10[A, B, C, D, E, F, G, H, I, J] => K = f.tupled
-  }
-
-  given tupleNApply[A, C]: TupleApply[A, A => C, C] with {
-    def tuple(f: A => C): A => C = f
   }
 }

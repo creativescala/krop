@@ -27,7 +27,7 @@ Here is a small example illustrating the process.
 
 ```scala mdoc:silent
 val route = Route(Request.get(Path.root / "user" / Param.int), Response.ok[String])
-  .handle(userId => s"You asked for the user ${userId}")
+  .handle(userId => s"You asked for the user ${userId.toString}")
 ```
 
 [Request](request.md) and [Response](response.md) have separate pages, so here we'll just discuss the handler. There are three ways to create a handler, using `handle`, `handleIO`, or `passthrough`. Assuming the request produces a value of type `A` and the response needs a value of type `B`. Then these three methods have the following meaning:
@@ -39,7 +39,7 @@ val route = Route(Request.get(Path.root / "user" / Param.int), Response.ok[Strin
 
 ### Type Transformations for Handlers
 
-If you dig into the types produced by `Requests`, you notice a tuple types are used. Here's an example, showing a `Request` producing a `Tuple2`.
+If you dig into the types produced by `Requests`, you notice a lot of tuple types are used. Here's an example, showing a `Request` producing a `Tuple2`.
 
 ```scala mdoc
 val request = Request.get(Path.root / Param.int / Param.string)
@@ -52,10 +52,4 @@ Route(request, Response.ok[String])
   .handle((int, string) => s"${int.toString}: ${string}")
 ```
 
-The conversion between tuples and functions is done by given instances of @api(krop.route.TupleApply).
-
-There are several useful instances for functions of no arguments. In the case where a `Request` produces no values, any of the following will work:
-
-- a function of no arguments;
-- a function with a single `Unit` argument; and
-- a function with a single `Any` argument.
+The conversion between tuples and functions is done by given instances of @:api(krop.route.TupleApply), which allows a function `(A, B, ..., N) => Z` to be applied to a tuple `(A, B, ..., N)`
