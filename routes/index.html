@@ -66,6 +66,20 @@
               <li><code>handle</code> is a function <code>A =&gt; IO[B]</code>; and</li>
               <li><code>passthrough</code>, which can only be called when <code>A</code> is the same type as <code>B</code>, means that the output of the request is connected directly to the input of the response. This is useful, for example, when the response is loading a static file from the file system or the resources, and the request produces the name of the file to load.</li>
             </ul>
+            
+            <h3 id="type-transformations-for-handlers" class="section">Type Transformations for Handlers</h3>
+            <p>If you dig into the types produced by <code>Requests</code>, you notice a tuple types are used. Here&#39;s an example, showing a <code>Request</code> producing a <code>Tuple2</code>.</p>
+            <pre><code class="nohighlight"><span class="keyword">val</span><span> </span><span class="identifier">request</span><span> = </span><span class="type-name">Request</span><span>.</span><span class="identifier">get</span><span>(</span><span class="type-name">Path</span><span>.</span><span class="identifier">root</span><span> / </span><span class="type-name">Param</span><span>.</span><span class="identifier">int</span><span> / </span><span class="type-name">Param</span><span>.</span><span class="identifier">string</span><span>)</span></code></pre>
+            <p>However, when you come to use a handler with such a request, you can use a normal function with two arguments <em>not</em> a function that accepts a single <code>Tuple2</code>.</p>
+            <pre><code class="nohighlight"><span class="type-name">Route</span><span>(</span><span class="identifier">request</span><span>, </span><span class="type-name">Response</span><span>.</span><span class="identifier">ok</span><span>[</span><span class="type-name">String</span><span>])
+  .</span><span class="identifier">handle</span><span>((</span><span class="identifier">int</span><span>, </span><span class="identifier">string</span><span>) =&gt; </span><span class="string-literal">s&quot;</span><span class="substitution">${int.toString}</span><span class="string-literal">: </span><span class="substitution">${string}</span><span class="string-literal">&quot;</span><span>)</span></code></pre>
+            <p>The conversion between tuples and functions is done by given instances of @api(krop.route.TupleApply).</p>
+            <p>There are several useful instances for functions of no arguments. In the case where a <code>Request</code> produces no values, any of the following will work:</p>
+            <ul>
+              <li>a function of no arguments;</li>
+              <li>a function with a single <code>Unit</code> argument; and</li>
+              <li>a function with a single <code>Any</code> argument.</li>
+            </ul>
             <p class="nextPage"><a href="request.html">Request→</a></p>
         </main>
         <footer>Creative Scala is copyright Noel Welsh</footer>
