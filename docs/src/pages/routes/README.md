@@ -36,3 +36,26 @@ val route = Route(Request.get(Path.root / "user" / Param.int), Response.ok[Strin
 - `handle` is a function `A => IO[B]`; and
 - `passthrough`, which can only be called when `A` is the same type as `B`, means that the output of the request is connected directly to the input of the response. This is useful, for example, when the response is loading a static file from the file system or the resources, and the request produces the name of the file to load.
 
+
+### Type Transformations for Handlers
+
+If you dig into the types produced by `Requests`, you notice a tuple types are used. Here's an example, showing a `Request` producing a `Tuple2`.
+
+``` scala mdoc
+val request = Request.get(Path.root / Param.int / Param.string)
+```
+
+However, when you come to use a handler with such a request, you can use a normal function with two arguments *not* a function that accepts a single `Tuple2`.
+
+``` scala mdoc:silent
+Route(request, Response.ok[String])
+  .handle((int, string) => s"${int.toString}: ${string}")
+```
+
+The conversion between tuples and functions is done by given instances of @api(krop.route.TupleApply).
+
+There are several useful instances for functions of no arguments. In the case where a `Request` produces no values, any of the following will work:
+
+- a function of no arguments;
+- a function with a single `Unit` argument; and
+- a function with a single `Any` argument.
