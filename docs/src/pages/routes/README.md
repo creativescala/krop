@@ -1,6 +1,6 @@
 # Routes
 
-``` scala mdoc:invisible
+```scala mdoc:invisible
 import krop.all.*
 ```
 
@@ -25,7 +25,7 @@ The idiomatic way to construct a `Route` is by calling the `Route.apply` method,
 
 Here is a small example illustrating the process.
 
-``` scala mdoc:silent
+```scala mdoc:silent
 val route = Route(Request.get(Path.root / "user" / Param.int), Response.ok[String])
   .handle(userId => s"You asked for the user ${userId}")
 ```
@@ -41,13 +41,13 @@ val route = Route(Request.get(Path.root / "user" / Param.int), Response.ok[Strin
 
 If you dig into the types produced by `Requests`, you notice a tuple types are used. Here's an example, showing a `Request` producing a `Tuple2`.
 
-``` scala mdoc
+```scala mdoc
 val request = Request.get(Path.root / Param.int / Param.string)
 ```
 
 However, when you come to use a handler with such a request, you can use a normal function with two arguments *not* a function that accepts a single `Tuple2`.
 
-``` scala mdoc:silent
+```scala mdoc:silent
 Route(request, Response.ok[String])
   .handle((int, string) => s"${int.toString}: ${string}")
 ```
