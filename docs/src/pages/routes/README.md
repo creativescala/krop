@@ -30,11 +30,11 @@ val route = Route(Request.get(Path.root / "user" / Param.int), Response.ok[Strin
   .handle(userId => s"You asked for the user ${userId.toString}")
 ```
 
-[Request](request.md) and [Response](response.md) have separate pages, so here we'll just discuss the handler. There are three ways to create a handler, using `handle`, `handleIO`, or `passthrough`. Assuming the request produces a value of type `A` and the response needs a value of type `B`. Then these three methods have the following meaning:
+[Request](request.md) and [Response](response.md) have separate pages, so here we'll just discuss the handler. There are three ways to create a handler: using `handle`, `handleIO`, or `passthrough`. Assume the request produces a value of type `A` and the response needs a value of type `B`. Then these three methods have the following meaning:
 
 - `handle` is a function `A => B`;
 - `handle` is a function `A => IO[B]`; and
-- `passthrough`, which can only be called when `A` is the same type as `B`, means that the output of the request is connected directly to the input of the response. This is useful, for example, when the response is loading a static file from the file system or the resources, and the request produces the name of the file to load.
+- `passthrough`, which can only be called when `A` is the same type as `B`, means that the output of the request is connected directly to the input of the response. This is useful, for example, when the response is loading a static file from the file system, and the request produces the name of the file to load.
 
 
 ### Type Transformations for Handlers
