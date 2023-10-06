@@ -21,6 +21,7 @@ import cats.data.Kleisli
 import cats.data.OptionT
 import cats.effect.IO
 import cats.syntax.all.*
+import krop.route.PassthroughBuilder
 import krop.route.Request
 import krop.route.Response
 import krop.route.TupleApply
@@ -133,7 +134,7 @@ object Route {
     def handleIO[A](f: FIO): Route =
       Route.Atomic.Krop(request, response, taIO.tuple(f)).toRoute
 
-    def passthrough(using ev: (O => O) =:= ta.Fun) =
-      handle(ev(identity))
+    def passthrough(using pb: PassthroughBuilder[I, O]): Route =
+      Route.Atomic.Krop(request, response, pb.build).toRoute
   }
 }
