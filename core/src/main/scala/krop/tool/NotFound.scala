@@ -42,6 +42,9 @@ object NotFound {
       (route: Route) => {
         val kropRoutes = route.orElse(KropAssets.kropAssets)
 
+        val liStart = "<li><pre><code>"
+        val liEnd = "</code></pre></li>"
+
         val description = kropRoutes.routes
           .map(r =>
             r match {
@@ -50,11 +53,7 @@ object NotFound {
             }
           )
           .toList
-          .mkString(
-            """<li><pre><code>""",
-            """</code></pre></li>\n<li><code><pre>""",
-            "</code></pre></li>"
-          )
+          .mkString(liStart, s"${liEnd}\n${liStart}", liEnd)
 
         val httpRoutes = kropRoutes.toHttpRoutes
 
