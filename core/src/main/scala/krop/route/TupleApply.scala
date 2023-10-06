@@ -22,13 +22,13 @@ package krop.route
   * applied to the empty tuple, and a function of a single argument to be
   * applied to a tuple of one value.
   */
-trait TupleApply[A, C] {
+trait TupleApply[I, O] {
   type Fun
 
-  def tuple(f: Fun): A => C
+  def tuple(f: Fun): I => O
 }
 object TupleApply {
-  type Aux[A, B, C] = TupleApply[A, C] { type Fun = B }
+  type Aux[I, F, O] = TupleApply[I, O] { type Fun = F }
 
   given emptyTupleFunction0Apply[C]: TupleApply[EmptyTuple, C] with {
     type Fun = () => C
