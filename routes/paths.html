@@ -104,7 +104,7 @@
             <p><code>Params</code> have a <code>String</code> name. This is, by convention, some indication of the type written within angle brackets. For example <code>&quot;&lt;String&gt;&quot;</code> for a <code>Param[String]</code>.</p>
             <pre><code class="nohighlight"><span class="type-name">Param</span><span>.</span><span class="identifier">string</span><span>.</span><span class="identifier">name</span><span>
 </span><span class="comment">// res8: String = &quot;&lt;String&gt;&quot;</span></code></pre>
-            <p>The mosty used in development mode, to output useful debugging information. You can change the name of a <code>Param</code> using the <code>withName</code> method. It&#39;s good practice to set the name whenever you create a new <code>Param</code>. For example, if deriving a new <code>Param</code> from an existing one you should consider changing the name.</p>
+            <p>The name is mosty used in development mode, to output useful debugging information. You can change the name of a <code>Param</code> using the <code>withName</code> method. It&#39;s good practice to set the name whenever you create a new <code>Param</code>. For example, if deriving a new <code>Param</code> from an existing one you should consider changing the name.</p>
             <pre><code class="nohighlight"><span class="comment">// Bad, as the name doesn&#39;t reflect the underlying type.
 </span><span class="identifier">intParam</span><span>.</span><span class="identifier">name</span><span>
 </span><span class="comment">// res9: String = &quot;&lt;String&gt;&quot;
