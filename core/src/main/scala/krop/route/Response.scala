@@ -47,10 +47,20 @@ object Response {
       def respond(
           request: Http4sRequest[IO],
           fileName: String
-      ): IO[Http4sResponse[IO]] =
+      ): IO[Http4sResponse[IO]] = {
+        val path = pathPrefix ++ fileName
         StaticFile
-          .fromResource(pathPrefix ++ fileName, Some(request))
-          .getOrElseF(InternalServerError())
+          .fromResource(path, Some(request))
+          .getOrElseF(
+            IO(
+              krop.Logger.logger.error(
+                s"""
+                   |Resource.staticResource couldn't load a resource from path ${path}.
+                 """.stripMargin
+              )
+            ) *> InternalServerError()
+          )
+      }
     }
 
   /** Respond with a file loaded from the filesystem. The `pathPrefix` is the
