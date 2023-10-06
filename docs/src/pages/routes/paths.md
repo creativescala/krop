@@ -108,7 +108,7 @@ Finally, you can directly call the constructors for `Param.One` and `Param.All`.
 Param.string.name
 ```
 
-The mosty used in development mode, to output useful debugging information. You can change the name of a `Param` using the `withName` method. It's good practice to set the name whenever you create a new `Param`. For example, if deriving a new `Param` from an existing one you should consider changing the name.
+The name is mosty used in development mode, to output useful debugging information. You can change the name of a `Param` using the `withName` method. It's good practice to set the name whenever you create a new `Param`. For example, if deriving a new `Param` from an existing one you should consider changing the name.
 
 ```scala mdoc
 // Bad, as the name doesn't reflect the underlying type.
