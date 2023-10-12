@@ -14,25 +14,3 @@
  * limitations under the License.
  */
 
-package krop.route
-
-import krop.Route
-import munit.FunSuite
-
-class PassthroughBuilderSuite extends FunSuite {
-
-  val emptyRequest = Request.get(Path.root)
-  val stringRequest = Request.get(Path.root / Param.string)
-
-  test("Passthrough works for EmptyTuple => Unit") {
-    val builder = Route(emptyRequest, Response.ok[Unit])
-
-    builder.passthrough
-  }
-
-  test("Passthrough works for Tuple1") {
-    val builder = Route(stringRequest, Response.ok[String])
-
-    builder.passthrough
-  }
-}

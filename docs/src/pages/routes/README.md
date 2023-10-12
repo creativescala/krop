@@ -26,7 +26,7 @@ The idiomatic way to construct a `Route` is by calling the `Route.apply` method,
 Here is a small example illustrating the process.
 
 ```scala mdoc:silent
-val route = Route(Request.get(Path.root / "user" / Param.int), Response.ok[String])
+val route = Route(Request.get(Path.root / "user" / Param.int), Response.ok(Entity.text))
   .handle(userId => s"You asked for the user ${userId.toString}")
 ```
 
@@ -48,7 +48,7 @@ val request = Request.get(Path.root / Param.int / Param.string)
 However, when you come to use a handler with such a request, you can use a normal function with two arguments *not* a function that accepts a single `Tuple2`.
 
 ```scala mdoc:silent
-Route(request, Response.ok[String])
+Route(request, Response.ok(Entity.text))
   .handle((int, string) => s"${int.toString}: ${string}")
 ```
 

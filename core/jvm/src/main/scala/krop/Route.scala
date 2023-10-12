@@ -65,10 +65,10 @@ object Route {
 
   /** The smallest unit of route. A Route can combine several atomic routes. */
   enum Atomic {
-    case Krop[I, O](
-        request: Request[I],
+    case Krop[P <: Tuple, E <: Tuple, O](
+        request: Request[P, E],
         response: Response[O],
-        handler: I => IO[O]
+        handler: Tuple.Concat[P, E] => IO[O]
     )
     case Http4s(description: String, routes: IO[HttpRoutes[IO]])
 
@@ -79,6 +79,7 @@ object Route {
       this match {
         case Http4s(description, routes) => routes
         case Krop(request, response, handler) =>
+          val jvmResponse = route.JvmResponse.fromResponse(response)
           IO.pure(
             Kleisli(req =>
               OptionT(
@@ -86,7 +87,7 @@ object Route {
                   .extract(req)
                   .flatMap(maybeIn =>
                     maybeIn.traverse(in =>
-                      handler(in).flatMap(out => response.respond(req, out))
+                      handler(in).flatMap(out => jvmResponse.respond(req, out))
                     )
                   )
               )
@@ -95,13 +96,13 @@ object Route {
       }
   }
 
-  def apply[I, O](
-      request: Request[I],
+  def apply[P <: Tuple, E <: Tuple, O](
+      request: Request[P, E],
       response: Response[O]
   )(using
-      ta: TupleApply[I, O],
-      taIO: TupleApply[I, IO[O]]
-  ): RouteBuilder[I, ta.Fun, taIO.Fun, O] =
+      ta: TupleApply[Tuple.Concat[P, E], O],
+      taIO: TupleApply[Tuple.Concat[P, E], IO[O]]
+  ): RouteBuilder[P, E, ta.Fun, taIO.Fun, O] =
     RouteBuilder(request, response, ta, taIO)
 
   /** Lift an `IO[HttpRoutes[IO]` into a [[krop.Route]]. */
@@ -122,11 +123,11 @@ object Route {
   /** The empty route, which doesn't match any request. */
   val empty: Route = Route(Chain.empty)
 
-  final case class RouteBuilder[I, F, FIO, O](
-      request: Request[I],
+  final case class RouteBuilder[P <: Tuple, E <: Tuple, F, FIO, O](
+      request: Request[P, E],
       response: Response[O],
-      ta: TupleApply.Aux[I, F, O],
-      taIO: TupleApply.Aux[I, FIO, IO[O]]
+      ta: TupleApply.Aux[Tuple.Concat[P, E], F, O],
+      taIO: TupleApply.Aux[Tuple.Concat[P, E], FIO, IO[O]]
   ) {
     def handle(f: F): Route =
       Route.Atomic.Krop(request, response, i => IO.pure(ta.tuple(f)(i))).toRoute
@@ -134,7 +135,9 @@ object Route {
     def handleIO[A](f: FIO): Route =
       Route.Atomic.Krop(request, response, taIO.tuple(f)).toRoute
 
-    def passthrough(using pb: PassthroughBuilder[I, O]): Route =
+    def passthrough(using
+        pb: PassthroughBuilder[Tuple.Concat[P, E], O]
+    ): Route =
       Route.Atomic.Krop(request, response, pb.build).toRoute
   }
 }

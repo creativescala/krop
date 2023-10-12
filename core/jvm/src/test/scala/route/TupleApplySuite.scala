@@ -27,21 +27,21 @@ class TupleApplySuite extends FunSuite {
   val intStringRequest = Request.get(Path.root / Param.int / Param.string)
 
   test("Type inference works for EmptyTuple") {
-    val builder = Route(emptyRequest, Response.ok[String])
+    val builder = Route(emptyRequest, Response.ok(Entity.text))
 
     builder.handle(() => s"Ok!")
     builder.handleIO(() => IO.pure(s"Ok!"))
   }
 
   test("Type inference works for Tuple1") {
-    val builder = Route(intRequest, Response.ok[String])
+    val builder = Route(intRequest, Response.ok(Entity.text))
 
     builder.handle(i => s"Ok!")
     builder.handleIO(i => IO.pure(s"Ok!"))
   }
 
   test("Type inference works for Tuple2") {
-    val builder = Route(intStringRequest, Response.ok[String])
+    val builder = Route(intStringRequest, Response.ok(Entity.text))
 
     builder.handle((int, string) => s"${int.toString}: ${string}")
     builder.handleIO((int, string) => IO.pure(s"${int.toString}: ${string}"))
