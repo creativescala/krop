@@ -22,11 +22,13 @@ object all {
   export krop.Server
   export krop.ServerBuilder
   export krop.endpoints.KropEndpoints
+
   export krop.route.Request
   export krop.route.Response
   export krop.route.Path
   export krop.route.Param
   export krop.route.Segment
+  export krop.route.Entity
 
   export org.http4s.EntityDecoder
   export org.http4s.EntityEncoder
@@ -34,7 +36,7 @@ object all {
   export org.http4s.Status
 
   import com.comcast.ip4s.*
-  // Redefine these hear because I don't know how to export an anonymous extension method
+  // Redefine these here because I don't know how to export an anonymous extension method
   extension (inline ctx: StringContext) {
     inline def ip(inline args: Any*): IpAddress =
       ${ Literals.ip('ctx, 'args) }

@@ -76,12 +76,14 @@ lazy val root = project
   .in(file("."))
   .settings(moduleName := "krop")
   .aggregate(
-    core,
+    core.js,
+    core.jvm,
     examples,
     unidocs
   )
 
-lazy val core = project
+lazy val core = crossProject(JSPlatform, JVMPlatform)
+  .crossType(CrossType.Full)
   .in(file("core"))
   .settings(
     commonSettings,
@@ -140,7 +142,7 @@ lazy val docs =
         .value
     )
     .enablePlugins(TypelevelSitePlugin)
-    .dependsOn(core)
+    .dependsOn(core.jvm)
 
 lazy val unidocs = project
   .in(file("unidocs"))
@@ -166,4 +168,4 @@ lazy val examples = project
     run / fork := true,
     libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.4.11" % Runtime
   )
-  .dependsOn(core)
+  .dependsOn(core.jvm)

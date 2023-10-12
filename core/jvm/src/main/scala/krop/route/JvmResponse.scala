@@ -18,38 +18,61 @@ package krop.route
 
 import cats.effect.IO
 import fs2.io.file.{Path as Fs2Path}
-import org.http4s.EntityEncoder
-import org.http4s.StaticFile
-import org.http4s.Status
 import org.http4s.dsl.io.*
 import org.http4s.{Request as Http4sRequest}
 import org.http4s.{Response as Http4sResponse}
+import org.http4s.{StaticFile as Http4sStaticFile}
 
-/** A [[krop.route.Response]] produces a [[org.http4s.Response]] given a value
-  * of type A and a [[org.http4s.Request]].
-  */
-trait Response[A] {
+trait JvmResponse[A] {
 
   /** Produce the [[org.http4s.Response]] given a request and the value of type
     * A.
     */
   def respond(request: Http4sRequest[IO], value: A): IO[Http4sResponse[IO]]
 }
-object Response {
+object JvmResponse {
+  def fromResponse[A](response: Response[A]): JvmResponse[A] = {
+
+    response match {
+      case Response.StaticResource(pathPrefix)  => staticResource(pathPrefix)
+      case Response.StaticDirectory(pathPrefix) => staticDirectory(pathPrefix)
+      case Response.StaticFile(pathPrefix)      => staticFile(pathPrefix)
+      case Response.StatusAndEntity(status, entity) => ???
+    }
+  }
+
+  /** Respond with a file loaded from the filesystem. The `pathPrefix` is the
+    * directory within the file system where the files will be found. E.g.
+    * "/etc/assets/". The `Path` value is the rest of the resource name. E.g
+    * "krop.css".
+    */
+  def staticDirectory(pathPrefix: Fs2Path): JvmResponse[Fs2Path] =
+    new JvmResponse[Fs2Path] {
+      def respond(
+          request: Http4sRequest[IO],
+          fileName: Fs2Path
+      ): IO[Http4sResponse[IO]] = {
+        import krop.Logger.given
+
+        Http4sStaticFile
+          .fromPath[IO](pathPrefix / fileName, Some(request))
+          .getOrElseF(InternalServerError())
+      }
+    }
 
   /** Respond with a resource loaded by the Classloader. The `pathPrefix` is the
     * prefix within the resources where the Classloader will look. E.g.
     * "/krop/assets/". The `String` value is the rest of the resource name. E.g
     * "krop.css".
     */
-  def staticResource(pathPrefix: String): Response[String] =
-    new Response[String] {
+  def staticResource(pathPrefix: String): JvmResponse[String] =
+    new JvmResponse[String] {
       def respond(
           request: Http4sRequest[IO],
           fileName: String
       ): IO[Http4sResponse[IO]] = {
         val path = pathPrefix ++ fileName
-        StaticFile
+        Http4sStaticFile
           .fromResource(path, Some(request))
           .getOrElseF(
             IO(
@@ -63,30 +86,11 @@ object Response {
       }
     }
 
-  /** Respond with a file loaded from the filesystem. The `pathPrefix` is the
-    * directory within the file system where the files will be found. E.g.
-    * "/etc/assets/". The `Path` value is the rest of the resource name. E.g
-    * "krop.css".
-    */
-  def staticDirectory(pathPrefix: Fs2Path): Response[Fs2Path] =
-    new Response[Fs2Path] {
-      def respond(
-          request: Http4sRequest[IO],
-          fileName: Fs2Path
-      ): IO[Http4sResponse[IO]] = {
-        import krop.Logger.given
-
-        StaticFile
-          .fromPath[IO](pathPrefix / fileName, Some(request))
-          .getOrElseF(InternalServerError())
-      }
-    }
-
   /** Respond with a file loaded from the filesystem. The `path` is the location
     * of the file. E.g. "/etc/assets/index.html".
     */
-  def staticFile(path: String): Response[Unit] =
-    new Response[Unit] {
+  def staticFile(path: String): JvmResponse[Unit] =
+    new JvmResponse[Unit] {
       def respond(
           request: Http4sRequest[IO],
           unit: Unit
@@ -95,7 +99,7 @@ object Response {
 
         val p = fs2.io.file.Path(path)
 
-        StaticFile
+        Http4sStaticFile
           .fromPath[IO](p, Some(request))
           .getOrElseF {
             fs2.io.file.Files.forIO
@@ -117,33 +121,4 @@ object Response {
           }
       }
     }
-
-  def ok[A](using entityEncoder: EntityEncoder[IO, A]): Response[A] =
-    status(Status.Ok)(using entityEncoder)
-
-  def status[A](status: Status)(using
-      entityEncoder: EntityEncoder[IO, A]
-  ): Response[A] =
-    StatusEntityEncodingResponse(status, entityEncoder)
-
-  /** A [[krop.route.Response]] that specifies only a HTTP status code and an
-    * [[org.http4s.EntityEncoder]].
-    */
-  final case class StatusEntityEncodingResponse[A](
-      status: Status,
-      entityEncoder: EntityEncoder[IO, A]
-  ) extends Response[A] {
-    def respond(
-        request: Http4sRequest[IO],
-        value: A
-    ): IO[Http4sResponse[IO]] =
-      IO.pure(
-        Http4sResponse(
-          status = status,
-          headers = entityEncoder.headers,
-          entity = entityEncoder.toEntity(value)
-        )
-      )
-  }
-
 }

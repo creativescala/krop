@@ -20,13 +20,16 @@ object Dependencies {
   val catsEffect =
     Def.setting("org.typelevel" %%% "cats-effect" % catsEffectVersion)
   val catsCore = Def.setting("org.typelevel" %%% "cats-core" % catsVersion)
+
   val fs2Core = Def.setting("co.fs2" %% "fs2-core" % fs2Version)
+
   val http4sClient =
     Def.setting("org.http4s" %% "http4s-ember-client" % http4sVersion)
   val http4sServer =
     Def.setting("org.http4s" %% "http4s-ember-server" % http4sVersion)
-  val http4sDsl = Def.setting("org.http4s" %% "http4s-dsl" % http4sVersion)
-  val http4sCirce = Def.setting("org.http4s" %% "http4s-circe" % http4sVersion)
+  val http4sDsl = Def.setting("org.http4s" %%% "http4s-dsl" % http4sVersion)
+  val http4sCirce = Def.setting("org.http4s" %%% "http4s-circe" % http4sVersion)
+
   val endpoints4s =
     Def.setting("org.endpoints4s" %%% "algebra" % endpoints4sVersion)
   val endpoints4sOpenApi =

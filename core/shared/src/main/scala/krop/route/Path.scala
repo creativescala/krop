@@ -16,8 +16,11 @@
 
 package krop.route
 
+import krop.route.Param.All
+import krop.route.Param.One
 import org.http4s.Uri.{Path as UriPath}
 
+import scala.collection.mutable
 import scala.util.Failure
 import scala.util.Success
 
@@ -71,6 +74,43 @@ final class Path[A <: Tuple] private (
     // matches the rest of a path is not open. Otherwise it is open.
     open: Boolean
 ) {
+
+  def link(params: A): String = {
+    val paramsArray = params.toArray
+
+    def loop(
+        idx: Int,
+        segments: Vector[Segment | Param[?]],
+        builder: mutable.StringBuilder
+    ): String = {
+      if segments.isEmpty then builder.result()
+      else {
+        val hd = segments.head
+        val tl = segments.tail
+
+        hd match {
+          case Segment.All => builder.result()
+          case Segment.One(value) =>
+            loop(idx + 1, tl, builder.append("/").append(value))
+          case p: Param.All[a] =>
+            builder
+              .append("/")
+              .append(p.unparse(paramsArray(idx).asInstanceOf[a]))
+              .result()
+          case p: Param.One[a] =>
+            loop(
+              idx + 1,
+              tl,
+              builder
+                .append("/")
+                .append(p.unparse(paramsArray(idx).asInstanceOf[a]))
+            )
+        }
+      }
+    }
+
+    loop(0, segments, mutable.StringBuilder())
+  }
 
   /** Optionally extract the captured parts of the URI's path. */
   def extract(path: UriPath): Option[A] = {
