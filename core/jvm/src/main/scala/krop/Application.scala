@@ -18,6 +18,8 @@ package krop
 
 import cats.data.Kleisli
 import cats.effect.IO
+import krop.route.Route
+import krop.syntax.all.*
 import org.http4s.HttpApp
 import org.http4s.Request
 import org.http4s.Response

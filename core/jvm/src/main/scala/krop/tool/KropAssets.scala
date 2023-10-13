@@ -16,11 +16,11 @@
 
 package krop.tool
 
-import krop.Route
 import krop.route.Param
 import krop.route.Path
 import krop.route.Request
 import krop.route.Response
+import krop.route.Route
 
 object KropAssets {
   val kropAssets: Route = {
