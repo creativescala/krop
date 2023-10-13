@@ -17,7 +17,13 @@
 package krop.route
 
 import cats.data.Chain
+import cats.data.Kleisli
+import cats.data.OptionT
 import cats.effect.IO
+import cats.syntax.all.*
+import krop.Application
+import krop.tool.NotFound
+import org.http4s.HttpRoutes
 
 /** A [[krop.Route]] accepts a request and may produce a response, but is not
   * required to produce a response. A Route is the basic unit for building a web
@@ -31,6 +37,24 @@ final class Route(val routes: Chain[Route.Atomic[?, ?, ?]]) {
   def orElse(that: Route): Route =
     new Route(this.routes ++ that.routes)
 
+    /** Convert this route into an [[krop.Application]] that first tries this
+      * route and, if the route fails to match, passes the request to the `app`
+      * Application.
+      */
+  def otherwise(app: Application): Application =
+    app.copy(route = this.orElse(app.route))
+
+  /** Convert this [[krop.Route.Route]] into an [[krop.Application]] by
+    * responding to all unmatched requests with a NotFound (404) response.
+    */
+  def otherwiseNotFound: Application =
+    this.otherwise(NotFound.notFound)
+
+  /** Convert to the representation used by http4s */
+  def toHttpRoutes: IO[HttpRoutes[IO]] =
+    this.routes.foldLeftM(HttpRoutes.empty[IO])((accum, atom) =>
+      atom.toHttpRoutes.map(r => accum <+> r)
+    )
 }
 object Route {
 
@@ -45,6 +69,21 @@ object Route {
   ) {
     def toRoute: Route =
       new Route(Chain(this))
+
+    def toHttpRoutes: IO[HttpRoutes[IO]] =
+      IO.pure(
+        Kleisli(req =>
+          OptionT(
+            request
+              .extract(req)
+              .flatMap(maybeIn =>
+                maybeIn.traverse(in =>
+                  handler(in).flatMap(out => response.respond(req, out))
+                )
+              )
+          )
+        )
+      )
   }
 
   def apply[P <: Tuple, E <: Tuple, O](

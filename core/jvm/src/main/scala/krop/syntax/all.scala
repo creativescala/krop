@@ -16,4 +16,4 @@
 
 package krop.syntax
 
-object all extends RouteSyntax {}
+object all {}
