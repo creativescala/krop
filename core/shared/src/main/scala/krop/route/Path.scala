@@ -75,6 +75,12 @@ final class Path[A <: Tuple] private (
     open: Boolean
 ) {
 
+  def link()(using ev: EmptyTuple =:= A): String =
+    link(ev(EmptyTuple))
+
+  def link[B](param: B)(using ev: Tuple1[B] =:= A): String =
+    link(ev(Tuple1(param)))
+
   def link(params: A): String = {
     val paramsArray = params.toArray
 
@@ -89,20 +95,20 @@ final class Path[A <: Tuple] private (
         val tl = segments.tail
 
         hd match {
-          case Segment.All => builder.result()
+          case Segment.All => builder.addOne('/').result()
           case Segment.One(value) =>
-            loop(idx + 1, tl, builder.append("/").append(value))
+            loop(idx, tl, builder.addOne('/').append(value))
           case p: Param.All[a] =>
             builder
-              .append("/")
-              .append(p.unparse(paramsArray(idx).asInstanceOf[a]))
+              .addOne('/')
+              .append(p.unparse(paramsArray(idx).asInstanceOf[a]).mkString("/"))
               .result()
           case p: Param.One[a] =>
             loop(
               idx + 1,
               tl,
               builder
-                .append("/")
+                .addOne('/')
                 .append(p.unparse(paramsArray(idx).asInstanceOf[a]))
             )
         }

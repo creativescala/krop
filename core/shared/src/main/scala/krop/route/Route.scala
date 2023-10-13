@@ -67,6 +67,16 @@ object Route {
       val response: Response[O],
       val handler: Tuple.Concat[P, E] => IO[O]
   ) {
+    def link()(using ev: EmptyTuple =:= P): String =
+      link(ev(EmptyTuple))
+
+    def link[B](param: B)(using ev: Tuple1[B] =:= P): String =
+      link(ev(Tuple1(param)))
+
+    /** Get a string that represents a hyperlink to this route. */
+    def link(params: P): String =
+      request.link(params)
+
     def toRoute: Route =
       new Route(Chain(this))
 
