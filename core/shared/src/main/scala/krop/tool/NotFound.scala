@@ -21,7 +21,6 @@ import cats.effect.IO
 import krop.Application
 import krop.Mode
 import krop.route.Route
-import krop.syntax.all.*
 import org.http4s.*
 import org.http4s.dsl.io.*
 import org.http4s.headers.`Content-Type`

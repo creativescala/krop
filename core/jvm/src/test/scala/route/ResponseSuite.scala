@@ -24,7 +24,7 @@ import org.http4s.{Request as Http4sRequest}
 
 class ResponseSuite extends CatsEffectSuite {
   val staticResourceResponse =
-    JvmResponse.fromResponse(Response.staticResource("/krop/assets/"))
+    Response.staticResource("/krop/assets/")
 
   test("static resource response succeeds when resource exists") {
     val request =
@@ -50,11 +50,8 @@ class ResponseSuite extends CatsEffectSuite {
     val request =
       Http4sRequest(method = Method.GET, uri = uri"http://example.org/")
 
-    JvmResponse
-      .fromResponse(
-        Response
-          .staticFile("project/plugins.sbt")
-      )
+    Response
+      .staticFile("project/plugins.sbt")
       .respond(request, ())
       .map(_.status.isSuccess)
       .assert
