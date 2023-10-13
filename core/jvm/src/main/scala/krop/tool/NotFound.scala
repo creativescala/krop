@@ -20,8 +20,8 @@ import cats.data.Kleisli
 import cats.effect.IO
 import krop.Application
 import krop.Mode
-import krop.Route
-import krop.Route.Atomic
+import krop.route.Route
+import krop.syntax.all.*
 import org.http4s.*
 import org.http4s.dsl.io.*
 import org.http4s.headers.`Content-Type`
@@ -46,12 +46,7 @@ object NotFound {
         val liEnd = "</code></pre></li>"
 
         val description = kropRoutes.routes
-          .map(r =>
-            r match {
-              case Atomic.Krop(request, response, handler) => request.describe
-              case Atomic.Http4s(description, routes)      => description
-            }
-          )
+          .map(_.request.describe)
           .toList
           .mkString(liStart, s"${liEnd}\n${liStart}", liEnd)
 

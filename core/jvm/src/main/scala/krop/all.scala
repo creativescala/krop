@@ -18,17 +18,18 @@ package krop
 
 object all {
   export krop.Application
-  export krop.Route
   export krop.Server
   export krop.ServerBuilder
-  export krop.endpoints.KropEndpoints
 
+  export krop.route.Route
   export krop.route.Request
   export krop.route.Response
   export krop.route.Path
   export krop.route.Param
   export krop.route.Segment
   export krop.route.Entity
+
+  export krop.syntax.all.*
 
   export org.http4s.EntityDecoder
   export org.http4s.EntityEncoder

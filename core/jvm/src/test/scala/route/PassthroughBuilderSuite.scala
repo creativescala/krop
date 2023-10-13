@@ -16,7 +16,6 @@
 
 package krop.route
 
-import krop.Route
 import munit.FunSuite
 
 class PassthroughBuilderSuite extends FunSuite {

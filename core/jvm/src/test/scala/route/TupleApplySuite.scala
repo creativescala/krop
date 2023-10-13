@@ -17,7 +17,6 @@
 package krop.route
 
 import cats.effect.IO
-import krop.Route
 import munit.FunSuite
 
 class TupleApplySuite extends FunSuite {
