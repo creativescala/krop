@@ -108,4 +108,14 @@ class PathSuite extends FunSuite {
     intercept[IllegalStateException](nonCapturingAllPath / "crash")
     intercept[IllegalStateException](capturingAllPath / "crash")
   }
+
+  test("Path.link produces expected path") {
+    assertEquals(nonCapturingPath.link(), "/user/create")
+    assertEquals(nonCapturingAllPath.link(), "/assets/html/")
+    assertEquals(
+      capturingAllPath.link(Vector("css", "main.css")),
+      "/assets/html/css/main.css"
+    )
+    assertEquals(simplePath.link(1234), "/user/1234/view")
+  }
 }
