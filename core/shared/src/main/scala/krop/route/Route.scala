@@ -21,9 +21,22 @@ import cats.data.Kleisli
 import cats.data.OptionT
 import cats.effect.IO
 import cats.syntax.all.*
-import krop.Application
-import krop.tool.NotFound
 import org.http4s.HttpRoutes
+
+/** Type alias for a [[package.Route]] that has extracts no [[package.Entity]]
+  * from the request.
+  */
+type PathRoute[P <: Tuple, R] = Route[P, EmptyTuple, R]
+
+/** Type alias for a [[package.Route]] that has extracts no [[package.Entity]]
+  * or [[package.Path]]] parameters from the request.
+  */
+type Path0Route[P, R] = PathRoute[EmptyTuple, R]
+
+/** Type alias for a [[package.Route]] that has extracts no [[package.Entity]]
+  * from the request and extracts a single parameter from the [[package.Path]].
+  */
+type Path1Route[P, R] = PathRoute[Tuple1[P], R]
 
 /** A [[krop.Route]] accepts a request and may produce a response, but is not
   * required to produce a response. A Route is the basic unit for building a web
@@ -32,11 +45,11 @@ import org.http4s.HttpRoutes
   * are not handled by other routes.
   *
   * @tparam P
-  *   The type of the parameters to the [[package.Path]]
+  *   The type of the parameters extracted from the [[package.Path]].
   * @tparam E
-  *   The type of the [[package.Entity]]
+  *   The type of the [[package.Entity]] extracted from the request.
   * @tparam O
-  *   The type of the [[package.Response]]
+  *   The type of the parameters used to build the [[package.Response]].
   */
 final class Route[P <: Tuple, E <: Tuple, R](
     val request: Request[P, E],
