@@ -30,6 +30,8 @@ object all {
   export krop.route.Segment
   export krop.route.Entity
 
+  export krop.tool.DefaultAssets
+
   export krop.syntax.all.*
 
   export org.http4s.EntityDecoder
