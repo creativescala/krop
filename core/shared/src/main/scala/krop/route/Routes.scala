@@ -31,8 +31,8 @@ final class Routes(val routes: Chain[Route[?, ?, ?]]) {
   /** Create a [[package.Routes]] that tries first these routes, and if they
     * fail to match, the routes in the given parameter.
     */
-  def orElse(routes: Routes): Routes =
-    Routes(this.routes ++ this.routes)
+  def orElse(that: Routes): Routes =
+    Routes(this.routes ++ that.routes)
 
   /** Convert these [[package.Routes]] into an [[krop.Application]] that first
     * tries these Routes and, if they fail to match, passes the request to the
@@ -49,8 +49,8 @@ final class Routes(val routes: Chain[Route[?, ?, ?]]) {
 
   /** Convert to the representation used by http4s */
   def toHttpRoutes: IO[HttpRoutes[IO]] =
-    this.routes.foldLeftM(HttpRoutes.empty[IO])((accum, atom) =>
-      atom.toHttpRoutes.map(r => accum <+> r)
+    this.routes.foldLeftM(HttpRoutes.empty[IO])((accum, route) =>
+      route.toHttpRoutes.map(r => accum <+> r)
     )
 }
 object Routes {
