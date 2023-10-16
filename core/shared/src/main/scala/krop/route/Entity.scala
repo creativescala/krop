@@ -24,31 +24,44 @@ import org.http4s.Media
 import org.http4s.MediaRange
 import org.http4s.headers.`Content-Type`
 import org.http4s.syntax.all.*
+import scalatags.Text.TypedTag
 
-/** An Entity describes how to encode data for an HTTP entity, and decode data
-  * from an HTTP entity.
+/** Type alias for an Entity where the decoded and encoded type are the same. */
+type InvariantEntity[A] = Entity[A, A]
+
+/** An Entity describes how to decode data from an HTTP entity, and encode data
+  * to an HTTP entity.
   *
-  * @tparam A
-  *   The type of data that this entity will encode and decode.
+  * @tparam D
+  *   The type of data that this entity will decode from a request
+  * @tparam E
+  *   The type of data that this entity will encode in a response
   */
-final case class Entity[A](
-    decoder: EntityDecoder[IO, A],
-    encoder: EntityEncoder[IO, A]
+final case class Entity[D, E](
+    decoder: EntityDecoder[IO, D],
+    encoder: EntityEncoder[IO, E]
 ) {
-  def imap[B](f: A => B)(g: B => A): Entity[B] =
+
+  /** Transform the decoded request data with the given function. */
+  def map[D2](f: D => D2): Entity[D2, E] =
     this.copy(
-      decoder = decoder.map(f),
-      encoder = encoder.contramap(g)
+      decoder = decoder.map(f)
     )
 
-  def withContentType(tpe: `Content-Type`): Entity[A] =
+  /** Transform the encoded response data with the given function. */
+  def contramap[E2](f: E2 => E): Entity[D, E2] =
+    this.copy(
+      encoder = encoder.contramap(f)
+    )
+
+  def withContentType(tpe: `Content-Type`): Entity[D, E] =
     this.copy(
       decoder =
         if decoder.consumes.exists(_.satisfies(tpe.mediaType)) then decoder
         else
-          new EntityDecoder[IO, A] {
+          new EntityDecoder[IO, D] {
             val consumes: Set[MediaRange] = decoder.consumes + tpe.mediaType
-            def decode(m: Media[IO], strict: Boolean): DecodeResult[IO, A] =
+            def decode(m: Media[IO], strict: Boolean): DecodeResult[IO, D] =
               decoder.decode(m, strict)
           }
       ,
@@ -56,7 +69,7 @@ final case class Entity[A](
     )
 }
 object Entity {
-  val unit: Entity[Unit] =
+  val unit: InvariantEntity[Unit] =
     Entity(
       EntityDecoder.decodeBy[IO, Unit](MediaRange.`*/*`)(_ =>
         DecodeResult.success(IO.unit)
@@ -64,12 +77,15 @@ object Entity {
       EntityEncoder.unitEncoder
     )
 
-  val text: Entity[String] =
+  val text: InvariantEntity[String] =
     Entity(
       EntityDecoder.text[IO],
       EntityEncoder.stringEncoder()
     )
 
-  val html: Entity[String] =
+  val html: InvariantEntity[String] =
     text.withContentType(`Content-Type`(mediaType"text/html"))
+
+  val scalatags: Entity[String, TypedTag[String]] =
+    html.contramap(tags => "<!DOCTYPE html>" + tags.toString)
 }

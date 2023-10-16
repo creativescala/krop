@@ -85,7 +85,7 @@ object Request {
       method: Method,
       path: Path[P]
   ) extends Request[P, EmptyTuple] {
-    def withEntity[E](entity: Entity[E]): PathEntityRequest[P, E] =
+    def withEntity[E](entity: Entity[E, ?]): PathEntityRequest[P, E] =
       PathEntityRequest(method, path, entity)
 
     def withMethod(method: Method): PathRequest[P] =
@@ -120,7 +120,7 @@ object Request {
   final case class PathEntityRequest[P <: Tuple, E](
       method: Method,
       path: Path[P],
-      entity: Entity[E]
+      entity: Entity[E, ?]
   ) extends Request[P, Tuple1[E]] {
 
     def pathTo(params: P): String = path.pathTo(params)

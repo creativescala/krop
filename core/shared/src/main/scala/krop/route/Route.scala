@@ -28,10 +28,10 @@ import org.http4s.HttpRoutes
   */
 type PathRoute[P <: Tuple, R] = Route[P, EmptyTuple, R]
 
-/** Type alias for a [[package.Route]] that has extracts no [[package.Entity]]
-  * or [[package.Path]]] parameters from the request.
+/** Type alias for a [[package.Route]] that has extracts no [[package.Path]] or
+  * [[package.Entity]]] parameters from the request.
   */
-type Path0Route[P, R] = PathRoute[EmptyTuple, R]
+type SimpleRoute[P, R] = Route[EmptyTuple, EmptyTuple, R]
 
 /** Type alias for a [[package.Route]] that has extracts no [[package.Entity]]
   * from the request and extracts a single parameter from the [[package.Path]].

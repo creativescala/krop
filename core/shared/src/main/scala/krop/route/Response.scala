@@ -117,10 +117,10 @@ object Response {
       }
     }
 
-  def ok[A](entity: Entity[A]): Response[A] =
+  def ok[A](entity: Entity[?, A]): Response[A] =
     status(Status.Ok, entity)
 
-  def status[A](status: Status, entity: Entity[A]): Response[A] =
+  def status[A](status: Status, entity: Entity[?, A]): Response[A] =
     StatusEntityEncodingResponse(status, entity)
 
   /** A [[krop.route.Response]] that specifies only a HTTP status code and an
@@ -128,7 +128,7 @@ object Response {
     */
   final case class StatusEntityEncodingResponse[A](
       status: Status,
-      entity: Entity[A]
+      entity: Entity[?, A]
   ) extends Response[A] {
     def respond(
         request: Http4sRequest[IO],
