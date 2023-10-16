@@ -6,7 +6,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="Laika 0.19.0" />
-    <title>Routes</title>
+    <title>Routing</title>
     
     
     <meta name="description" content="docs" />
@@ -30,7 +30,7 @@
           <li class="level1 nav-leaf"><a href="../principles.html">Principles</a></li>
           <li class="level1 nav-leaf"><a href="../concepts.html">Concepts</a></li>
           <li class="level1 nav-leaf"><a href="../server.html">Server</a></li>
-          <li class="level1 active nav-node"><a href="#">Routes</a></li>
+          <li class="level1 active nav-node"><a href="#">Routing</a></li>
           <li class="level2 nav-leaf"><a href="request.html">Request</a></li>
           <li class="level2 nav-leaf"><a href="paths.html">Paths</a></li>
           <li class="level2 nav-leaf"><a href="response.html">Response</a></li>
@@ -39,25 +39,29 @@
 
     <div id="content">
         <main class="content">
-            <h1 id="routes" class="title">Routes</h1>
-            <p>`</p>
-            <p>Routes take care of the HTTP specific details of incoming requests and outgoing responses. Routes can:</p>
+            <h1 id="routing" class="title">Routing</h1>
+            <p>Routing handles the HTTP specific details of incoming requests and outgoing responses. Routing can:</p>
             <ol class="arabic">
               <li>match HTTP requests and extract Scala values;</li>
-              <li>convert Scala values into an HTTP response; and in the future</li>
+              <li>convert Scala values to an HTTP response; and in the future</li>
               <li>construct clients that call routes.</li>
             </ol>
+            <p>There are two main abstractions:</p>
+            <ul>
+              <li>a <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Route.html">Route</a>, which deals with a single request and response; and</li>
+              <li>a <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Routes.html">Routes</a>, which is a collection of <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Route.html">Route</a>.</li>
+            </ul>
             
-            <h2 id="constructing-routes" class="section">Constructing Routes</h2>
-            <p>Routes are constructed from three components:</p>
+            <h2 id="constructing-a-route" class="section">Constructing A Route</h2>
+            <p>A <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Route.html">Route</a> is constructed from three components:</p>
             <ol class="arabic">
               <li>a <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Request.html">Request</a>, which describes a HTTP request;</li>
               <li>a <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Response.html">Response</a>, which describes a HTTP response; and</li>
               <li>a handler, which processes the values extracted from the request and produces the value needed by the response.</li>
             </ol>
-            <p>The idiomatic way to construct a <code>Route</code> is by calling the <code>Route.apply</code> method, passing a <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Request.html">Request</a> and <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Response.html">Response</a>, and then adding a handler.</p>
-            <p>Here is a small example illustrating the process.</p>
-            <pre><code class="nohighlight"><span class="keyword">val</span><span> </span><span class="identifier">route</span><span> = </span><span class="type-name">Route</span><span>(</span><span class="type-name">Request</span><span>.</span><span class="identifier">get</span><span>(</span><span class="type-name">Path</span><span>.</span><span class="identifier">root</span><span> / </span><span class="string-literal">&quot;user&quot;</span><span> / </span><span class="type-name">Param</span><span>.</span><span class="identifier">int</span><span>), </span><span class="type-name">Response</span><span>.</span><span class="identifier">ok</span><span>[</span><span class="type-name">String</span><span>])
+            <p>The idiomatic way to construct a <code>Route</code> is by calling the <code>Route.apply</code> method, passing a <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Request.html">Request</a> and <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Response.html">Response</a>, and then adding a handler to the resulting object.</p>
+            <p>Here is a small example showing the process.</p>
+            <pre><code class="nohighlight"><span class="keyword">val</span><span> </span><span class="identifier">route</span><span> = </span><span class="type-name">Route</span><span>(</span><span class="type-name">Request</span><span>.</span><span class="identifier">get</span><span>(</span><span class="type-name">Path</span><span>.</span><span class="identifier">root</span><span> / </span><span class="string-literal">&quot;user&quot;</span><span> / </span><span class="type-name">Param</span><span>.</span><span class="identifier">int</span><span>), </span><span class="type-name">Response</span><span>.</span><span class="identifier">ok</span><span>(</span><span class="type-name">Entity</span><span>.</span><span class="identifier">text</span><span>))
   .</span><span class="identifier">handle</span><span>(</span><span class="identifier">userId</span><span> =&gt; </span><span class="string-literal">s&quot;You asked for the user </span><span class="substitution">${userId.toString}</span><span class="string-literal">&quot;</span><span>)</span></code></pre>
             <p><a href="request.html">Request</a> and <a href="response.html">Response</a> have separate pages, so here we&#39;ll just discuss the handler. There are three ways to create a handler: using <code>handle</code>, <code>handleIO</code>, or <code>passthrough</code>. Assume the request produces a value of type <code>A</code> and the response needs a value of type <code>B</code>. Then these three methods have the following meaning:</p>
             <ul>
@@ -71,12 +75,35 @@
             <pre><code class="nohighlight"><span class="keyword">val</span><span> </span><span class="identifier">request</span><span> = </span><span class="type-name">Request</span><span>.</span><span class="identifier">get</span><span>(</span><span class="type-name">Path</span><span>.</span><span class="identifier">root</span><span> / </span><span class="type-name">Param</span><span>.</span><span class="identifier">int</span><span> / </span><span class="type-name">Param</span><span>.</span><span class="identifier">string</span><span>)
 </span><span class="comment">// request: PathRequest[*:[Int, *:[String, EmptyTuple]]] = PathRequest(
 //   method = GET,
-//   path = krop.route.Path@1c6ba6ca
+//   path = krop.route.Path@29b20c0e
 // )</span></code></pre>
             <p>However, when you come to use a handler with such a request, you can use a normal function with two arguments <em>not</em> a function that accepts a single <code>Tuple2</code>.</p>
-            <pre><code class="nohighlight"><span class="type-name">Route</span><span>(</span><span class="identifier">request</span><span>, </span><span class="type-name">Response</span><span>.</span><span class="identifier">ok</span><span>[</span><span class="type-name">String</span><span>])
+            <pre><code class="nohighlight"><span class="type-name">Route</span><span>(</span><span class="identifier">request</span><span>, </span><span class="type-name">Response</span><span>.</span><span class="identifier">ok</span><span>(</span><span class="type-name">Entity</span><span>.</span><span class="identifier">text</span><span>))
   .</span><span class="identifier">handle</span><span>((</span><span class="identifier">int</span><span>, </span><span class="identifier">string</span><span>) =&gt; </span><span class="string-literal">s&quot;</span><span class="substitution">${int.toString}</span><span class="string-literal">: </span><span class="substitution">${string}</span><span class="string-literal">&quot;</span><span>)</span></code></pre>
             <p>The conversion between tuples and functions is done by given instances of <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/TupleApply.html">TupleApply</a>, which allows a function <code>(A, B, ..., N) =&gt; Z</code> to be applied to a tuple <code>(A, B, ..., N)</code></p>
+            
+            <h2 id="reverse-routing" class="section">Reverse Routing</h2>
+            <p>Given a @:(krop.route.Route) you can construct a hyperlink to that route using the <code>pathTo</code> method. Here&#39;s an example.
+            We first create a @:(krop.route.Route).</p>
+            <pre><code class="nohighlight"><span class="keyword">val</span><span> </span><span class="identifier">viewUser</span><span> = </span><span class="type-name">Route</span><span>(</span><span class="type-name">Request</span><span>.</span><span class="identifier">get</span><span>(</span><span class="type-name">Path</span><span>.</span><span class="identifier">root</span><span> / </span><span class="string-literal">&quot;user&quot;</span><span> / </span><span class="type-name">Param</span><span>.</span><span class="identifier">int</span><span>), </span><span class="type-name">Response</span><span>.</span><span class="identifier">ok</span><span>(</span><span class="type-name">Entity</span><span>.</span><span class="identifier">text</span><span>))
+  .</span><span class="identifier">handle</span><span>(</span><span class="identifier">userId</span><span> =&gt; </span><span class="string-literal">s&quot;You asked for the user </span><span class="substitution">${userId.toString}</span><span class="string-literal">&quot;</span><span>)</span></code></pre>
+            <p>Now we can call <code>pathTo</code> to construct path to that route, which we could embed in an HTML form or a hyperlink.</p>
+            <pre><code class="nohighlight"><span class="identifier">viewUser</span><span>.</span><span class="identifier">pathTo</span><span>(</span><span class="number-literal">1234</span><span>)
+</span><span class="comment">// res1: String = &quot;/user/1234&quot;</span></code></pre>
+            <p>Note that we pass to <code>pathTo</code> the parameters for the <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Path.html">Path</a> component of the route.
+            If the route has no path parameters there is an overload with no parameters.</p>
+            <pre><code class="nohighlight"><span class="keyword">val</span><span> </span><span class="identifier">users</span><span> = </span><span class="type-name">Route</span><span>(</span><span class="type-name">Request</span><span>.</span><span class="identifier">get</span><span>(</span><span class="type-name">Path</span><span>.</span><span class="identifier">root</span><span> / </span><span class="string-literal">&quot;users&quot;</span><span>), </span><span class="type-name">Response</span><span>.</span><span class="identifier">ok</span><span>(</span><span class="type-name">Entity</span><span>.</span><span class="identifier">text</span><span>))
+  .</span><span class="identifier">handle</span><span>(() =&gt; </span><span class="string-literal">&quot;Here are the users.&quot;</span><span>)</span></code></pre>
+            <pre><code class="nohighlight"><span class="identifier">users</span><span>.</span><span class="identifier">pathTo</span><span>
+</span><span class="comment">// res2: String = &quot;/users&quot;</span></code></pre>
+            <p>If there is more than one parameter we must collect them in a tuple.</p>
+            <pre><code class="nohighlight"><span class="keyword">val</span><span> </span><span class="identifier">twoParams</span><span> = </span><span class="type-name">Route</span><span>(</span><span class="type-name">Request</span><span>.</span><span class="identifier">get</span><span>(</span><span class="type-name">Path</span><span>.</span><span class="identifier">root</span><span> / </span><span class="string-literal">&quot;user&quot;</span><span> / </span><span class="type-name">Param</span><span>.</span><span class="identifier">int</span><span> / </span><span class="type-name">Param</span><span>.</span><span class="identifier">string</span><span>), </span><span class="type-name">Response</span><span>.</span><span class="identifier">ok</span><span>(</span><span class="type-name">Entity</span><span>.</span><span class="identifier">text</span><span>))
+  .</span><span class="identifier">handle</span><span>((</span><span class="identifier">userId</span><span>, </span><span class="identifier">name</span><span>) =&gt; </span><span class="string-literal">s&quot;User with id </span><span class="substitution">${userId}</span><span class="string-literal"> and name </span><span class="substitution">${name}</span><span class="string-literal">.&quot;</span><span>)</span></code></pre>
+            <pre><code class="nohighlight"><span class="identifier">twoParams</span><span>.</span><span class="identifier">pathTo</span><span>(</span><span class="number-literal">1234</span><span>, </span><span class="string-literal">&quot;McBoopy&quot;</span><span>)
+</span><span class="comment">// res3: String = &quot;/user/1234/McBoopy&quot;</span></code></pre>
+            
+            <h2 id="combining-routes" class="section">Combining Routes</h2>
+            <p><a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Routes.html">Routes</a> collects together zero or more <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Route.html">Route</a>. The easiest way to construct a @:(krop.route.Routes) is by calling the <code>toRoutes</code> method on <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Route.html">Route</a>. Then use <code>orElse</code> to add more elements.</p>
             <p class="nextPage"><a href="request.html">Request→</a></p>
         </main>
         <footer>Creative Scala is copyright Noel Welsh</footer>
