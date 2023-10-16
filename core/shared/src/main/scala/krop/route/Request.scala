@@ -51,16 +51,16 @@ trait Request[Path <: Tuple, Extra <: Tuple] {
     */
   def describe: String
 
-  /** Create a [[scala.String]] suitable for embedding in HTML that links to the
-    * path described by this [[package.Request]]. Use this to create hyperlinks
-    * or form actions that call a route, without needing to hardcode the route
-    * in the HTML.
+  /** Create a [[scala.String]] path suitable for embedding in HTML that links
+    * to the path described by this [[package.Request]]. Use this to create
+    * hyperlinks or form actions that call a route, without needing to hardcode
+    * the route in the HTML.
     *
-    * This link will not include settings like the entity or headers that this
+    * This path will not include settings like the entity or headers that this
     * [[package.Request]] may require. It is assumed this will be handled
     * elsewhere.
     */
-  def link(params: Path): String
+  def pathTo(params: Path): String
 }
 object Request {
   def delete[P <: Tuple](path: Path[P]): PathRequest[P] =
@@ -94,7 +94,7 @@ object Request {
     def withPath[P2 <: Tuple](path: Path[P2]): PathRequest[P2] =
       this.copy(path = path)
 
-    def link(params: P): String = path.link(params)
+    def pathTo(params: P): String = path.pathTo(params)
 
     def extract(
         request: Http4sRequest[IO]
@@ -123,7 +123,7 @@ object Request {
       entity: Entity[E]
   ) extends Request[P, Tuple1[E]] {
 
-    def link(params: P): String = path.link(params)
+    def pathTo(params: P): String = path.pathTo(params)
 
     def extract(
         request: Http4sRequest[IO]

@@ -75,13 +75,38 @@ final class Path[A <: Tuple] private (
     open: Boolean
 ) {
 
-  def link()(using ev: EmptyTuple =:= A): String =
-    link(ev(EmptyTuple))
+  /** Overload of `pathTo` for the case where this [[package.Path]] has no
+    * parameters.
+    */
+  // def pathTo(using ev: EmptyTuple =:= A): String =
+  //   pathTo(ev(EmptyTuple))
 
-  def link[B](param: B)(using ev: Tuple1[B] =:= A): String =
-    link(ev(Tuple1(param)))
+  /** Overload of `pathTo` for the case where this [[package.Path]] has a single
+    * parameter.
+    */
+  // def pathTo[B](param: B)(using ev: Tuple1[B] =:= A): String =
+  //   pathTo(ev(Tuple1(param)))
 
-  def link(params: A): String = {
+  /** Create a `String` that links to this path with the given parameters. For
+    * example, with the path
+    *
+    * ```scala
+    * val path = Path.root / "user" / Param.id / "edit"
+    * ```
+    *
+    * calling
+    *
+    * ```scala
+    * path.pathTo(1234)
+    * ```
+    *
+    * produces the `String` `"/user/1234/edit"`.
+    *
+    * This version of `pathTo` takes the parameters as a tuple. There are two
+    * overloads that take unwrapped parameters for the case where there are no
+    * or a single parameter.
+    */
+  def pathTo(params: A): String = {
     val paramsArray = params.toArray
 
     def loop(
