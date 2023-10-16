@@ -57,6 +57,12 @@ final class Route[P <: Tuple, E <: Tuple, R](
     val handler: Tuple.Concat[P, E] => IO[R]
 ) {
 
+  /** Try this Route. If it fails to match, pass control to the given
+    * [[package.Route]].
+    */
+  def orElse(that: Route[?, ?, ?]): Routes =
+    this.orElse(that.toRoutes)
+
   /** Try this Route. If it fails to match, pass control to the
     * [[package.Routes]].
     */
