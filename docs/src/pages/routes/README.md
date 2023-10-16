@@ -25,7 +25,7 @@ A @:api(krop.route.Route) is constructed from three components:
 
 The idiomatic way to construct a `Route` is by calling the `Route.apply` method, passing a @:api(krop.route.Request) and @:api(krop.route.Response), and then adding a handler to the resulting object.
 
-Here is a small example illustrating the process.
+Here is a small example showing the process.
 
 ```scala mdoc:silent
 val route = Route(Request.get(Path.root / "user" / Param.int), Response.ok(Entity.text))
@@ -93,3 +93,8 @@ val twoParams = Route(Request.get(Path.root / "user" / Param.int / Param.string)
 ```scala mdoc
 twoParams.pathTo(1234, "McBoopy")
 ```
+
+
+## Combining Routes
+
+@:api(krop.route.Routes) collects together zero or more @:api(krop.route.Route). The easiest way to construct a @:(krop.route.Routes) is by calling the `toRoutes` method on @:api(krop.route.Route). Then use `orElse` to add more elements.
