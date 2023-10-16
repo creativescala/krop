@@ -97,4 +97,4 @@ twoParams.pathTo(1234, "McBoopy")
 
 ## Combining Routes
 
-@:api(krop.route.Routes) collects together zero or more @:api(krop.route.Route). The easiest way to construct a @:(krop.route.Routes) is by calling the `toRoutes` method on @:api(krop.route.Route). Then use `orElse` to add more elements.
+@:api(krop.route.Routes) collects together zero or more @:api(krop.route.Route). The easiest way to construct a @:api(krop.route.Routes) is by calling the `toRoutes` method on @:api(krop.route.Route). Then use `orElse` to add more elements.
