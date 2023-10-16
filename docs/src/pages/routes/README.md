@@ -1,27 +1,29 @@
-# Routes
+# Routing
 
 ```scala mdoc:invisible
 import krop.all.*
 ```
 
-`
-
-Routes take care of the HTTP specific details of incoming requests and outgoing responses. Routes can:
+Routing handles the HTTP specific details of incoming requests and outgoing responses. Routing can:
 
 1. match HTTP requests and extract Scala values;
-2. convert Scala values into an HTTP response; and in the future
+2. convert Scala values to an HTTP response; and in the future
 3. construct clients that call routes.
 
+There are two main abstractions:
 
-## Constructing Routes
+- a @:api(krop.route.Route), which deals with a single request and response; and
+- a @:api(krop.route.Routes), which is a collection of @:api(krop.route.Route).
 
-Routes are constructed from three components:
+## Constructing A Route
+
+A @:api(krop.route.Route) is constructed from three components:
 
 1. a @:api(krop.route.Request), which describes a HTTP request;
 2. a @:api(krop.route.Response), which describes a HTTP response; and
 3. a handler, which processes the values extracted from the request and produces the value needed by the response.
 
-The idiomatic way to construct a `Route` is by calling the `Route.apply` method, passing a @:api(krop.route.Request) and @:api(krop.route.Response), and then adding a handler.
+The idiomatic way to construct a `Route` is by calling the `Route.apply` method, passing a @:api(krop.route.Request) and @:api(krop.route.Response), and then adding a handler to the resulting object.
 
 Here is a small example illustrating the process.
 
@@ -53,3 +55,41 @@ Route(request, Response.ok(Entity.text))
 ```
 
 The conversion between tuples and functions is done by given instances of @:api(krop.route.TupleApply), which allows a function `(A, B, ..., N) => Z` to be applied to a tuple `(A, B, ..., N)`
+
+
+## Reverse Routing
+
+Given a @:(krop.route.Route) you can construct a hyperlink to that route using the `pathTo` method. Here's an example.
+We first create a @:(krop.route.Route).
+
+```scala mdoc:silent
+val viewUser = Route(Request.get(Path.root / "user" / Param.int), Response.ok(Entity.text))
+  .handle(userId => s"You asked for the user ${userId.toString}")
+```
+
+Now we can call `pathTo` to construct path to that route, which we could embed in an HTML form or a hyperlink.
+
+```scala mdoc
+viewUser.pathTo(1234)
+```
+
+Note that we pass to `pathTo` the parameters for the @:api(krop.route.Path) component of the route.
+If the route has no path parameters there is an overload with no parameters.
+
+```scala mdoc:silent
+val users = Route(Request.get(Path.root / "users"), Response.ok(Entity.text))
+  .handle(() => "Here are the users.")
+```
+```scala mdoc
+users.pathTo
+```
+
+If there is more than one parameter we must collect them in a tuple.
+
+```scala mdoc:silent
+val twoParams = Route(Request.get(Path.root / "user" / Param.int / Param.string), Response.ok(Entity.text))
+  .handle((userId, name) => s"User with id ${userId} and name ${name}.")
+```
+```scala mdoc
+twoParams.pathTo(1234, "McBoopy")
+```
