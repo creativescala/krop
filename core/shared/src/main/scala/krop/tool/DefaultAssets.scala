@@ -33,7 +33,7 @@ object DefaultAssets {
             .mkString("/")
             .imap(Fs2Path.apply)(_.toString)
         ),
-        Response.staticDirectory(Fs2Path("/assets/"))
+        Response.staticDirectory(Fs2Path("assets/"))
       ).passthrough
 
     route
