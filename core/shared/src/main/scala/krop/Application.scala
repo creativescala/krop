@@ -18,7 +18,7 @@ package krop
 
 import cats.data.Kleisli
 import cats.effect.IO
-import krop.route.Route
+import krop.route.Routes
 import org.http4s.HttpApp
 import org.http4s.Request
 import org.http4s.Response
@@ -33,24 +33,24 @@ import org.http4s.Response
   *   handling requests that the route doesn't match.
   */
 final case class Application(
-    route: Route,
-    supervisor: Route => IO[HttpApp[IO]]
+    routes: Routes,
+    supervisor: Routes => IO[HttpApp[IO]]
 ) {
   def toHttpApp: IO[HttpApp[IO]] =
-    supervisor(route)
+    supervisor(routes)
 }
 object Application {
 
   /** Construction an [[Application]] with no route and the given supervisor. */
-  def apply(supervisor: Route => IO[HttpApp[IO]]): Application =
-    Application(Route.empty, supervisor)
+  def apply(supervisor: Routes => IO[HttpApp[IO]]): Application =
+    Application(Routes.empty, supervisor)
 
   /** Lift an [[org.http4s.HttpApp]] into an [[krop.Application]]. */
   def liftApp(app: HttpApp[IO]): Application =
     Application(
-      Route.empty,
-      (route) =>
-        route.toHttpRoutes.map(r =>
+      Routes.empty,
+      (routes) =>
+        routes.toHttpRoutes.map(r =>
           Kleisli(req => r.run(req).getOrElseF(app.run(req)))
         )
     )

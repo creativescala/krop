@@ -30,96 +30,109 @@ import org.http4s.HttpRoutes
   * service. The majority of the service will consist of routes (and their
   * associated handlers), with a final catch-all to deal with any requests that
   * are not handled by other routes.
+  *
+  * @tparam P
+  *   The type of the parameters to the [[package.Path]]
+  * @tparam E
+  *   The type of the [[package.Entity]]
+  * @tparam O
+  *   The type of the [[package.Response]]
   */
-final class Route(val routes: Chain[Route.Atomic[?, ?, ?]]) {
+final class Route[P <: Tuple, E <: Tuple, R](
+    val request: Request[P, E],
+    val response: Response[R],
+    val handler: Tuple.Concat[P, E] => IO[R]
+) {
 
-  /** Try this route. If it fails to match, try the other route. */
-  def orElse(that: Route): Route =
-    new Route(this.routes ++ that.routes)
-
-    /** Convert this route into an [[krop.Application]] that first tries this
-      * route and, if the route fails to match, passes the request to the `app`
-      * Application.
-      */
-  def otherwise(app: Application): Application =
-    app.copy(route = this.orElse(app.route))
-
-  /** Convert this [[krop.Route.Route]] into an [[krop.Application]] by
-    * responding to all unmatched requests with a NotFound (404) response.
+  /** Try this Route. If it fails to match, pass control to the
+    * [[package.Routes]].
     */
-  def otherwiseNotFound: Application =
-    this.otherwise(NotFound.notFound)
+  def orElse(that: Routes): Routes =
+    Routes(this +: that.routes)
 
-  /** Convert to the representation used by http4s */
+  /** Overload of `pathTo` for the case where the path has no parameters.
+    */
+  def pathTo(using ev: EmptyTuple =:= P): String =
+    pathTo(ev(EmptyTuple))
+
+  /** Overload of `pathTo` for the case where the path has a single parameter.
+    */
+  def pathTo[B](param: B)(using ev: Tuple1[B] =:= P): String =
+    pathTo(ev(Tuple1(param)))
+
+  /** Create a [[scala.String]] path suitable for embedding in HTML that links
+    * to the path described by this [[package.Route]] with the given parameters.
+    * Use this to create hyperlinks or form actions that call a route, without
+    * needing to hardcode the route in the HTML.
+    *
+    * For example, with the Route
+    *
+    * ```scala
+    * val route =
+    *   Route(
+    *     Request.get(Path.root / "user" / Param.id / "edit"),
+    *     Request.ok(Entity.html)
+    *   )
+    * ```
+    *
+    * calling
+    *
+    * ```scala
+    * route.pathTo(1234)
+    * ```
+    *
+    * produces the `String` `"/user/1234/edit"`.
+    *
+    * This version of `pathTo` takes the parameters as a tuple. There are two
+    * overloads that take unwrapped parameters for the case where there are no
+    * or a single parameter.
+    */
+  def pathTo(params: P): String =
+    request.pathTo(params)
+
+  def toRoutes: Routes =
+    Routes(Chain(this))
+
   def toHttpRoutes: IO[HttpRoutes[IO]] =
-    this.routes.foldLeftM(HttpRoutes.empty[IO])((accum, atom) =>
-      atom.toHttpRoutes.map(r => accum <+> r)
+    IO.pure(
+      Kleisli(req =>
+        OptionT(
+          request
+            .extract(req)
+            .flatMap(maybeIn =>
+              maybeIn.traverse(in =>
+                handler(in).flatMap(out => response.respond(req, out))
+              )
+            )
+        )
+      )
     )
 }
 object Route {
-
-  /** The empty route, which doesn't match any request. */
-  val empty: Route = new Route(Chain.empty[Atomic[?, ?, ?]])
-
-  /** The smallest unit of route. A Route can combine several atomic routes. */
-  final class Atomic[P <: Tuple, E <: Tuple, O](
-      val request: Request[P, E],
-      val response: Response[O],
-      val handler: Tuple.Concat[P, E] => IO[O]
-  ) {
-    def link()(using ev: EmptyTuple =:= P): String =
-      link(ev(EmptyTuple))
-
-    def link[B](param: B)(using ev: Tuple1[B] =:= P): String =
-      link(ev(Tuple1(param)))
-
-    /** Get a string that represents a hyperlink to this route. */
-    def link(params: P): String =
-      request.link(params)
-
-    def toRoute: Route =
-      new Route(Chain(this))
-
-    def toHttpRoutes: IO[HttpRoutes[IO]] =
-      IO.pure(
-        Kleisli(req =>
-          OptionT(
-            request
-              .extract(req)
-              .flatMap(maybeIn =>
-                maybeIn.traverse(in =>
-                  handler(in).flatMap(out => response.respond(req, out))
-                )
-              )
-          )
-        )
-      )
-  }
-
-  def apply[P <: Tuple, E <: Tuple, O](
+  def apply[P <: Tuple, E <: Tuple, R](
       request: Request[P, E],
-      response: Response[O]
+      response: Response[R]
   )(using
-      ta: TupleApply[Tuple.Concat[P, E], O],
-      taIO: TupleApply[Tuple.Concat[P, E], IO[O]]
-  ): RouteBuilder[P, E, ta.Fun, taIO.Fun, O] =
+      ta: TupleApply[Tuple.Concat[P, E], R],
+      taIO: TupleApply[Tuple.Concat[P, E], IO[R]]
+  ): RouteBuilder[P, E, ta.Fun, taIO.Fun, R] =
     RouteBuilder(request, response, ta, taIO)
 
-  final class RouteBuilder[P <: Tuple, E <: Tuple, F, FIO, O](
+  final class RouteBuilder[P <: Tuple, E <: Tuple, F, FIO, R](
       request: Request[P, E],
-      response: Response[O],
-      ta: TupleApply.Aux[Tuple.Concat[P, E], F, O],
-      taIO: TupleApply.Aux[Tuple.Concat[P, E], FIO, IO[O]]
+      response: Response[R],
+      ta: TupleApply.Aux[Tuple.Concat[P, E], F, R],
+      taIO: TupleApply.Aux[Tuple.Concat[P, E], FIO, IO[R]]
   ) {
-    def handle(f: F): Route =
-      Atomic(request, response, i => IO.pure(ta.tuple(f)(i))).toRoute
+    def handle(f: F): Route[P, E, R] =
+      new Route(request, response, i => IO.pure(ta.tuple(f)(i)))
 
-    def handleIO[A](f: FIO): Route =
-      Atomic(request, response, taIO.tuple(f)).toRoute
+    def handleIO[A](f: FIO): Route[P, E, R] =
+      new Route(request, response, taIO.tuple(f))
 
     def passthrough(using
-        pb: PassthroughBuilder[Tuple.Concat[P, E], O]
-    ): Route =
-      Atomic(request, response, pb.build).toRoute
+        pb: PassthroughBuilder[Tuple.Concat[P, E], R]
+    ): Route[P, E, R] =
+      new Route(request, response, pb.build)
   }
 }

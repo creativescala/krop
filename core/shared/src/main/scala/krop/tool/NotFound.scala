@@ -20,7 +20,7 @@ import cats.data.Kleisli
 import cats.effect.IO
 import krop.Application
 import krop.Mode
-import krop.route.Route
+import krop.route.Routes
 import org.http4s.*
 import org.http4s.dsl.io.*
 import org.http4s.headers.`Content-Type`
@@ -38,8 +38,8 @@ object NotFound {
     */
   val development: Application = {
     val supervisor =
-      (route: Route) => {
-        val kropRoutes = route.orElse(KropAssets.kropAssets)
+      (route: Routes) => {
+        val kropRoutes = route.orElse(KropAssets.kropAssets.toRoutes)
 
         val liStart = "<li><pre><code>"
         val liEnd = "</code></pre></li>"
