@@ -17,8 +17,41 @@
 package examples
 
 import krop.all.*
+import krop.tool.Htmx.*
+import scalatags.Text.all.*
 
-val application = Application.notFound
+val reverseRoute =
+  Route(
+    Request.get(Path.root / "reverse" / Param.string),
+    Response.ok(Entity.scalatags)
+  ).handle(str => p(str.reverse))
 
-@main def notFound() =
-  ServerBuilder.default.withApplication(application).run()
+val index =
+  html(
+    head(
+      script(
+        src := "https://unpkg.com/htmx.org@1.9.6",
+        integrity := "sha384-FhXw7b6AlE/jyjlZH5iHa/tTe9EpJ1Y55RjcgPbjeWMskSxZt1v9qkxLJWNJaGni",
+        crossorigin := "anonymous"
+      )
+    ),
+    body(
+      h1("Htmx Example"),
+      div(id := "reverse"),
+      button(
+        hxGet := reverseRoute.pathTo("word"),
+        hxTarget := "#reverse",
+        "Reverse"
+      )
+    )
+  )
+
+val indexRoute =
+  Route(Request.get(Path.root), Response.ok(Entity.scalatags)).handle(() =>
+    index
+  )
+
+@main def htmx() =
+  ServerBuilder.default
+    .withApplication(indexRoute.orElse(reverseRoute).otherwiseNotFound)
+    .run()
