@@ -47,5 +47,5 @@ val indexRoute =
 
 @main def htmx() =
   ServerBuilder.default
-    .withApplication(indexRoute.orElse(reverseRoute).otherwiseNotFound)
+    .withApplication(indexRoute.orElse(reverseRoute).orElseNotFound)
     .run()

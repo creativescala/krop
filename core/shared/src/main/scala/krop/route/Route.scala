@@ -21,6 +21,7 @@ import cats.data.Kleisli
 import cats.data.OptionT
 import cats.effect.IO
 import cats.syntax.all.*
+import krop.Application
 import org.http4s.HttpRoutes
 
 /** Type alias for a [[package.Route]] that has extracts no [[package.Entity]]
@@ -56,6 +57,12 @@ final class Route[P <: Tuple, E <: Tuple, R](
     val response: Response[R],
     val handler: Tuple.Concat[P, E] => IO[R]
 ) {
+
+  /** Try this Route. If it fails to match, pass control to the given
+    * [[krop.Application]].
+    */
+  def orElse(that: Application): Application =
+    this.toRoutes.orElse(that)
 
   /** Try this Route. If it fails to match, pass control to the given
     * [[package.Route]].

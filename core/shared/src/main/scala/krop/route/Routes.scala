@@ -38,14 +38,14 @@ final class Routes(val routes: Chain[Route[?, ?, ?]]) {
     * tries these Routes and, if they fail to match, passes the request to the
     * Application.
     */
-  def otherwise(app: Application): Application =
+  def orElse(app: Application): Application =
     app.copy(routes = this.orElse(app.routes))
 
   /** Convert these [[package.Routes]] into an [[krop.Application]] by
     * responding to all unmatched requests with a NotFound (404) response.
     */
-  def otherwiseNotFound: Application =
-    this.otherwise(NotFound.notFound)
+  def orElseNotFound: Application =
+    this.orElse(NotFound.notFound)
 
   /** Convert to the representation used by http4s */
   def toHttpRoutes: IO[HttpRoutes[IO]] =
