@@ -29,6 +29,12 @@ import org.http4s.HttpRoutes
 final class Routes(val routes: Chain[Route[?, ?, ?]]) {
 
   /** Create a [[package.Routes]] that tries first these routes, and if they
+    * fail to match, the route in the given parameter.
+    */
+  def orElse(that: Route[?, ?, ?]): Routes =
+    Routes(this.routes :+ that)
+
+  /** Create a [[package.Routes]] that tries first these routes, and if they
     * fail to match, the routes in the given parameter.
     */
   def orElse(that: Routes): Routes =
