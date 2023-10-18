@@ -61,9 +61,9 @@
             <pre><code class="nohighlight"><span class="type-name">Path</span><span>.</span><span class="identifier">root</span><span> / </span><span class="string-literal">&quot;assets&quot;</span><span> / </span><span class="type-name">Segment</span><span>.</span><span class="identifier">all</span></code></pre>
             <p>will match <code>/assets/example.css</code> and <code>/assets/css/example.css</code>.</p>
             <p>To capture all segments to the end of the URI&#39;s path, use an instance of
-            <code>Param.All</code> such as <code>Param.vector</code>. So</p>
-            <pre><code class="nohighlight"><span class="type-name">Path</span><span>.</span><span class="identifier">root</span><span> / </span><span class="string-literal">&quot;assets&quot;</span><span> / </span><span class="type-name">Param</span><span>.</span><span class="identifier">vector</span></code></pre>
-            <p>will capture the remainder of the URI&#39;s path as a <code>Vector[String]</code>.</p>
+            <code>Param.All</code> such as <code>Param.seq</code>. So</p>
+            <pre><code class="nohighlight"><span class="type-name">Path</span><span>.</span><span class="identifier">root</span><span> / </span><span class="string-literal">&quot;assets&quot;</span><span> / </span><span class="type-name">Param</span><span>.</span><span class="identifier">seq</span></code></pre>
+            <p>will capture the remainder of the URI&#39;s path as a <code>Seq[String]</code>.</p>
             <p>A <code>Path</code> that matches all segments is called a closed path. Attempting to add an
             element to a closed path will result in an exception.</p>
             <pre><code class="nohighlight"><span class="type-name">Path</span><span>.</span><span class="identifier">root</span><span> / </span><span class="type-name">Segment</span><span>.</span><span class="identifier">all</span><span> / </span><span class="string-literal">&quot;crash&quot;</span><span>
@@ -71,8 +71,8 @@
 // 
 //   A path is closed when it has a segment or parameter that matches all remaining elements.
 //   A closed path cannot have additional segments of parameters added to it.
-// 	at krop.route.Path.assertOpen(Path.scala:228)
-// 	at krop.route.Path.$div(Path.scala:191)
+// 	at krop.route.Path.assertOpen(Path.scala:252)
+// 	at krop.route.Path.$div(Path.scala:225)
 // 	at repl.MdocSession$MdocApp.$init$$$anonfun$1(paths.md:41)</span></code></pre>
             
             <h2 id="params" class="section">Params</h2>
@@ -85,11 +85,11 @@
             <pre><code class="nohighlight"><span class="keyword">val</span><span> </span><span class="identifier">intParam</span><span> = </span><span class="type-name">Param</span><span>.</span><span class="identifier">string</span><span>.</span><span class="identifier">imap</span><span>(</span><span class="identifier">_</span><span>.</span><span class="identifier">toInt</span><span>)(</span><span class="identifier">_</span><span>.</span><span class="identifier">toString</span><span>)</span></code></pre>
             <pre><code class="nohighlight"><span class="identifier">intParam</span><span>.</span><span class="identifier">parse</span><span>(</span><span class="string-literal">&quot;100&quot;</span><span>)
 </span><span class="comment">// res4: Try[Int] = Success(value = 100)</span></code></pre>
-            <p>A <code>Param.One[A]</code> can be lifted to a <code>Param.All[Vector[A]]</code> that uses the given
-            <code>Param.One</code> for every element in the <code>Vector</code>.</p>
+            <p>A <code>Param.One[A]</code> can be lifted to a <code>Param.All[Seq[A]]</code> that uses the given
+            <code>Param.One</code> for every element in the <code>Seq</code>.</p>
             <pre><code class="nohighlight"><span class="keyword">val</span><span> </span><span class="identifier">intParams</span><span> = </span><span class="type-name">Param</span><span>.</span><span class="identifier">lift</span><span>(</span><span class="identifier">intParam</span><span>)</span></code></pre>
-            <pre><code class="nohighlight"><span class="identifier">intParams</span><span>.</span><span class="identifier">unparse</span><span>(</span><span class="type-name">Vector</span><span>(</span><span class="number-literal">1</span><span>, </span><span class="number-literal">2</span><span>, </span><span class="number-literal">3</span><span>))
-</span><span class="comment">// res5: Vector[String] = Vector(&quot;1&quot;, &quot;2&quot;, &quot;3&quot;)</span></code></pre>
+            <pre><code class="nohighlight"><span class="identifier">intParams</span><span>.</span><span class="identifier">unparse</span><span>(</span><span class="type-name">Seq</span><span>(</span><span class="number-literal">1</span><span>, </span><span class="number-literal">2</span><span>, </span><span class="number-literal">3</span><span>))
+</span><span class="comment">// res5: Seq[String] = List(&quot;1&quot;, &quot;2&quot;, &quot;3&quot;)</span></code></pre>
             <p>The <code>mkString</code> method can be used for a <code>Param.All</code> that constructs a <code>String</code>
             containing elements separated by a separator. For example, to accumulate a
             sub-path we could use the following.</p>
@@ -97,7 +97,7 @@
             <pre><code class="nohighlight"><span class="identifier">subPath</span><span>.</span><span class="identifier">parse</span><span>(</span><span class="type-name">Vector</span><span>(</span><span class="string-literal">&quot;assets&quot;</span><span>, </span><span class="string-literal">&quot;css&quot;</span><span>))
 </span><span class="comment">// res6: Try[String] = Success(value = &quot;assets/css&quot;)
 </span><span class="identifier">subPath</span><span>.</span><span class="identifier">unparse</span><span>(</span><span class="string-literal">&quot;assets/css&quot;</span><span>)
-</span><span class="comment">// res7: Vector[String] = Vector(&quot;assets&quot;, &quot;css&quot;)</span></code></pre>
+</span><span class="comment">// res7: Seq[String] = ArraySeq(&quot;assets&quot;, &quot;css&quot;)</span></code></pre>
             <p>Finally, you can directly call the constructors for <code>Param.One</code> and <code>Param.All</code>.</p>
             
             <h3 id="param-names" class="section">Param Names</h3>
