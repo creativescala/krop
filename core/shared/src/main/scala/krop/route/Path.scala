@@ -16,11 +16,15 @@
 
 package krop.route
 
+import cats.syntax.all.*
+import krop.route
 import krop.route.Param.All
 import krop.route.Param.One
+import org.http4s.Uri
 import org.http4s.Uri.{Path as UriPath}
 
 import scala.collection.mutable
+import scala.compiletime.constValue
 import scala.util.Failure
 import scala.util.Success
 
@@ -68,24 +72,13 @@ import scala.util.Success
   * A `Path` that matches all segments is called a closed path. Attempting to
   * add an element to a closed path will result in an exception.
   */
-final class Path[A <: Tuple] private (
-    segments: Vector[Segment | Param[?]],
+final class Path[P <: Tuple, Q] private (
+    val segments: Vector[Segment | Param[?]],
+    val query: Query[Q],
     // Indicates if this path can still have segments added to it. A Path that
     // matches the rest of a path is not open. Otherwise it is open.
     open: Boolean
 ) {
-
-  /** Overload of `pathTo` for the case where this [[package.Path]] has no
-    * parameters.
-    */
-  // def pathTo(using ev: EmptyTuple =:= A): String =
-  //   pathTo(ev(EmptyTuple))
-
-  /** Overload of `pathTo` for the case where this [[package.Path]] has a single
-    * parameter.
-    */
-  // def pathTo[B](param: B)(using ev: Tuple1[B] =:= A): String =
-  //   pathTo(ev(Tuple1(param)))
 
   /** Create a `String` that links to this path with the given parameters. For
     * example, with the path
@@ -106,7 +99,7 @@ final class Path[A <: Tuple] private (
     * overloads that take unwrapped parameters for the case where there are no
     * or a single parameter.
     */
-  def pathTo(params: A): String = {
+  def pathTo(params: P): String = {
     val paramsArray = params.toArray
 
     def loop(
@@ -140,11 +133,24 @@ final class Path[A <: Tuple] private (
       }
     }
 
-    loop(0, segments, mutable.StringBuilder())
+    loop(0, segments, StringBuilder())
+  }
+
+  def pathAndQueryTo(params: P, queryParam: Q): String = {
+    val qParams =
+      query
+        .unparse(queryParam)
+        .filterNot { case (_, params) => params.isEmpty }
+        .map { case (name, params) =>
+          params.mkString(s"${name}=", "&name=", "")
+        }
+        .mkString("&")
+
+    s"pathTo(params)?${qParams}"
   }
 
   /** Optionally extract the captured parts of the URI's path. */
-  def extract(path: UriPath): Option[A] = {
+  def extract(uri: Uri): Option[Request.NormalizedAppend[P, Q]] = {
     def loop(
         matchSegments: Vector[Segment | Param[?]],
         pathSegments: Vector[UriPath.Segment]
@@ -184,35 +190,24 @@ final class Path[A <: Tuple] private (
         }
       }
 
-    loop(segments, path.segments).asInstanceOf[Option[A]]
-  }
+    val result =
+      for {
+        p <- loop(segments, uri.path.segments).asInstanceOf[Option[P]]
+        q <- query.parse(uri.multiParams).toOption
+      } yield q match {
+        case ()         => p
+        case EmptyTuple => p
+        case other      => p :* other
+      }
 
-  def /(segment: String): Path[A] = {
-    assertOpen()
-    Path(segments :+ Segment.One(segment), true)
-  }
-
-  def /(segment: Segment): Path[A] = {
-    assertOpen()
-    segment match {
-      case Segment.One(_) => Path(segments :+ segment, true)
-      case Segment.All    => Path(segments :+ segment, false)
-    }
-  }
-
-  def /[B](param: Param[B]): Path[Tuple.Append[A, B]] = {
-    assertOpen()
-    param match {
-      case Param.One(_, _, _) => Path(segments :+ param, true)
-      case Param.All(_, _, _) => Path(segments :+ param, false)
-    }
+    result.asInstanceOf[Option[Request.NormalizedAppend[P, Q]]]
   }
 
   /** Produces a human-readable representation of this Path. The toString method
     * is used to output the usual programmatic representation.
     */
-  def describe: String =
-    segments
+  def describe: String = {
+    val p = segments
       .map {
         case Segment.One(v)     => v
         case Segment.All        => "rest*"
@@ -220,6 +215,35 @@ final class Path[A <: Tuple] private (
         case Param.All(n, _, _) => s"$n*"
       }
       .mkString("/", "/", "")
+
+    val q = query.describe
+
+    if q.isEmpty then p else s"${p}?${q}"
+  }
+
+  def /(segment: String): Path[P, Q] = {
+    assertOpen()
+    Path(segments :+ Segment.One(segment), query, true)
+  }
+
+  def /(segment: Segment): Path[P, Q] = {
+    assertOpen()
+    segment match {
+      case Segment.One(_) => Path(segments :+ segment, query, true)
+      case Segment.All    => Path(segments :+ segment, query, false)
+    }
+  }
+
+  def /[B](param: Param[B]): Path[Tuple.Append[P, B], Q] = {
+    assertOpen()
+    param match {
+      case Param.One(_, _, _) => Path(segments :+ param, query, true)
+      case Param.All(_, _, _) => Path(segments :+ param, query, false)
+    }
+  }
+
+  def :?[B](query: Query[B]): Path[P, B] =
+    Path(segments, query, false)
 
   private def assertOpen(): Boolean =
     if open then true
@@ -232,5 +256,5 @@ final class Path[A <: Tuple] private (
       )
 }
 object Path {
-  val root = Path[EmptyTuple](Vector.empty, true)
+  val root = Path[EmptyTuple, Unit](Vector.empty, Query.empty, true)
 }

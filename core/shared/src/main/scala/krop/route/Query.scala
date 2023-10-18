@@ -14,15 +14,22 @@
  * limitations under the License.
  */
 
-package krop.tool
+package krop.route
 
-import scalatags.Text.Attr
-import scalatags.Text.all.attr
+import scala.util.Success
+import scala.util.Try
 
-object Htmx {
-  val hxBoost: Attr = attr("hx-boost")
-  val hxGet: Attr = attr("hx-get")
-  val hxInclude: Attr = attr("hx-include")
-  val hxPost: Attr = attr("hx-post")
-  val hxTarget: Attr = attr("hx-target")
+trait Query[A] {
+  def parse(params: Map[String, List[String]]): Try[A]
+  def unparse(a: A): Map[String, List[String]]
+
+  def describe: String
+}
+object Query {
+  def empty: Query[Unit] =
+    new Query {
+      def parse(params: Map[String, List[String]]): Try[Unit] = Success(())
+      def unparse(a: Unit): Map[String, List[String]] = Map.empty
+      val describe = ""
+    }
 }

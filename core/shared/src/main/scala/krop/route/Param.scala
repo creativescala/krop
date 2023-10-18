@@ -19,11 +19,22 @@ package krop.route
 import cats.syntax.all.*
 
 import java.util.regex.Pattern
+import scala.collection.immutable.ArraySeq
 import scala.util.Success
 import scala.util.Try
 
-/** A `Param` parses path segments in a [[krop.route.Path]] into values of type
-  * `A`, and converts values of type `A` into a path segments.
+/** A [[package.Param]] is used to extract values from a URI's path or query
+  * parameters.
+  *
+  * Params can also be inverted, going from a value of type `A` to a `String` or
+  * sequence of `String`. This allows so-called reverse routing, constructing a
+  * URI from the parameters.
+  *
+  * There are two types of `Param`:
+  *
+  * * those that handle a single value (`Param.One`); and
+  *
+  * * those that handle as many values as are available (`Param.All`).
   */
 sealed abstract class Param[A] extends Product, Serializable {
   import Param.*
@@ -34,7 +45,7 @@ sealed abstract class Param[A] extends Product, Serializable {
   def name: String
 
   /** Create a `Path` with a more informative name. For example, you might use
-    * this method to note that an int is in fact a user id.
+    * this method to note that an Int is in fact a user id.
     *
     * ```
     * Param.int.withName("<userId>")
@@ -47,7 +58,7 @@ sealed abstract class Param[A] extends Product, Serializable {
     }
 }
 object Param {
-  /* A `Param` that matches a all parameters.
+  /* A `Param` that transforms a sequence of `String` to a value of type `A`.
    *
    * @param name
    *   The name used when printing this `Param`. Usually a short word in angle
@@ -59,8 +70,8 @@ object Param {
    */
   final case class All[A](
       name: String,
-      parse: Vector[String] => Try[A],
-      unparse: A => Vector[String]
+      parse: Seq[String] => Try[A],
+      unparse: A => Seq[String]
   ) extends Param[A] {
 
     /** Construct a `Param.All[B]` from a `Param.All[A]` using functions to
@@ -101,11 +112,10 @@ object Param {
   val string: Param.One[String] =
     Param.One("<String>", str => Success(str), identity)
 
-  /** `Param` that matches all parameters, accumulating them as a
-    * `Vector[String]`.
+  /** `Param` that simply accumulates all parameters as a `Seq[String]`.
     */
-  val vector: Param.All[Vector[String]] =
-    Param.All("<String>", vector => Success(vector), identity)
+  val seq: Param.All[Seq[String]] =
+    Param.All("<String>", seq => Success(seq), identity)
 
   /** `Param` that matches all parameters and converts them to a `String` by
     * adding `separator` between matched elements. The inverse splits on this
@@ -115,16 +125,16 @@ object Param {
     val quotedSeparator = Pattern.quote(separator)
     Param.All(
       "<String>",
-      vector => Success(vector.mkString(separator)),
-      string => string.split(quotedSeparator).toVector
+      seq => Success(seq.mkString(separator)),
+      string => ArraySeq.unsafeWrapArray(string.split(quotedSeparator))
     )
   }
 
   /** Lift a `Param.One` to a `Param.All`. */
-  def lift[A](one: One[A]): Param.All[Vector[A]] =
+  def lift[A](one: One[A]): Param.All[Seq[A]] =
     Param.All(
       one.name,
-      vector => vector.traverse(one.parse),
+      seq => seq.traverse(one.parse),
       as => as.map(one.unparse)
     )
 }

@@ -32,24 +32,45 @@ import org.http4s.{Request as Http4sRequest}
   * method and URI path, using the methods such as `get`, and `post` on the
   * companion object.
   *
-  * @tparam Path
+  * @tparam P
   *   The type of values extracted from the URI path.
-  * @tparam Extra
+  * @tparam Q
+  *   The type of values extracted from the URI query parameters.
+  * @tparam E
   *   The type of values extracted from other parts of the request (e.g. headers
   *   or entity).
   */
-trait Request[Path <: Tuple, Extra <: Tuple] {
+final class Request[P <: Tuple, Q, E](
+    val method: Method,
+    val path: Path[P, Q],
+    val entity: Entity[E, ?]
+) {
+  import Request.NormalizedAppend
 
   /** Extract the values that this Request matches from a
     * [[org.http4s.Request]], returning [[scala.None]] if the given request
     * doesn't match what this is looking for.
     */
-  def extract(request: Http4sRequest[IO]): IO[Option[Tuple.Concat[Path, Extra]]]
+  def extract(
+      request: Http4sRequest[IO]
+  ): IO[Option[NormalizedAppend[NormalizedAppend[P, Q], E]]] = {
+    given EntityDecoder[IO, E] = entity.decoder
 
-  /** Produces a human-readable representation of this [[package.Request]]. The
-    * toString method is used to output the usual programmatic representation.
-    */
-  def describe: String
+    Option
+      .when(request.method == method)(())
+      .flatMap(_ => path.extract(request.uri)) match {
+      case None => IO.pure(None)
+      case Some(value) =>
+        request
+          .as[E]
+          .map(e =>
+            (e match {
+              case ()    => Some(value)
+              case other => Some(value :* other)
+            }).asInstanceOf[Option[NormalizedAppend[NormalizedAppend[P, Q], E]]]
+          )
+    }
+  }
 
   /** Create a [[scala.String]] path suitable for embedding in HTML that links
     * to the path described by this [[package.Request]]. Use this to create
@@ -60,92 +81,51 @@ trait Request[Path <: Tuple, Extra <: Tuple] {
     * [[package.Request]] may require. It is assumed this will be handled
     * elsewhere.
     */
-  def pathTo(params: Path): String
+  def pathTo(params: P): String =
+    path.pathTo(params)
+
+  /** Produces a human-readable representation of this [[package.Request]]. The
+    * toString method is used to output the usual programmatic representation.
+    */
+  def describe: String =
+    s"${method.toString()} ${path.describe} ${entity.encoder.contentType.map(_.mediaType).getOrElse("")}"
+
+  def withEntity[E2](entity: Entity[E2, ?]): Request[P, Q, E2] =
+    new Request(method, path, entity)
+
+  def withMethod(method: Method): Request[P, Q, E] =
+    new Request(method, path, entity)
+
+  def withPath[P2 <: Tuple, Q2](path: Path[P2, Q2]): Request[P2, Q2, E] =
+    new Request(method, path, entity)
+
 }
 object Request {
-  def delete[P <: Tuple](path: Path[P]): PathRequest[P] =
+
+  /** Tuple.Append that treats Unit as EmptyTuple */
+  type NormalizedAppend[A <: Tuple, B] <: Tuple =
+    B match {
+      case Unit       => A
+      case EmptyTuple => A
+      case _          => Tuple.Append[A, B]
+    }
+
+  def delete[P <: Tuple, Q](path: Path[P, Q]): Request[P, Q, Unit] =
     Request.method(Method.DELETE, path)
 
-  def get[P <: Tuple](path: Path[P]): PathRequest[P] =
+  def get[P <: Tuple, Q](path: Path[P, Q]): Request[P, Q, Unit] =
     Request.method(Method.GET, path)
 
-  def post[P <: Tuple](path: Path[P]): PathRequest[P] =
+  def post[P <: Tuple, Q](path: Path[P, Q]): Request[P, Q, Unit] =
     Request.method(Method.POST, path)
 
-  def put[P <: Tuple](path: Path[P]): PathRequest[P] =
+  def put[P <: Tuple, Q](path: Path[P, Q]): Request[P, Q, Unit] =
     Request.method(Method.PUT, path)
 
-  def method[P <: Tuple](method: Method, path: Path[P]): PathRequest[P] =
-    PathRequest(method, path)
-
-  /** A [[package.Request]] that only specifies a method and a [[package.Path]].
-    * The simplest possible [[package.Request]].
-    */
-  final case class PathRequest[P <: Tuple](
+  def method[P <: Tuple, Q](
       method: Method,
-      path: Path[P]
-  ) extends Request[P, EmptyTuple] {
-    def withEntity[E](entity: Entity[E, ?]): PathEntityRequest[P, E] =
-      PathEntityRequest(method, path, entity)
+      path: Path[P, Q]
+  ): Request[P, Q, Unit] =
+    new Request(method, path, Entity.unit)
 
-    def withMethod(method: Method): PathRequest[P] =
-      this.copy(method = method)
-
-    def withPath[P2 <: Tuple](path: Path[P2]): PathRequest[P2] =
-      this.copy(path = path)
-
-    def pathTo(params: P): String = path.pathTo(params)
-
-    def extract(
-        request: Http4sRequest[IO]
-    ): IO[Option[Tuple.Concat[P, EmptyTuple]]] = {
-      IO.pure(
-        Option
-          .when(request.method == method)(())
-          .flatMap(_ =>
-            path
-              .extract(request.pathInfo)
-              .map(_.asInstanceOf[Tuple.Concat[P, EmptyTuple]])
-          )
-      )
-    }
-
-    def describe: String =
-      s"${method.toString()} ${path.describe}"
-  }
-
-  /** A [[package.Request]] that specifies a method, [[package.Path]], and an
-    * [[package.Entity]].
-    */
-  final case class PathEntityRequest[P <: Tuple, E](
-      method: Method,
-      path: Path[P],
-      entity: Entity[E, ?]
-  ) extends Request[P, Tuple1[E]] {
-
-    def pathTo(params: P): String = path.pathTo(params)
-
-    def extract(
-        request: Http4sRequest[IO]
-    ): IO[Option[Tuple.Concat[P, Tuple1[E]]]] = {
-      given EntityDecoder[IO, E] = entity.decoder
-
-      IO.pure(
-        Option
-          .when(request.method == method)(())
-          .flatMap(_ => path.extract(request.pathInfo))
-      ).flatMap(maybePath =>
-        maybePath match {
-          case None => IO.pure(None)
-          case Some(value) =>
-            request
-              .as[E]
-              .map(e => Some(value ++ Tuple1(e)))
-        }
-      )
-    }
-
-    def describe: String =
-      s"${method.toString()} ${path.describe} ${entity.encoder.contentType.map(_.mediaType).getOrElse("")}"
-  }
 }

@@ -42,13 +42,13 @@ Path.root / "assets" / Segment.all
 will match `/assets/example.css` and `/assets/css/example.css`.
 
 To capture all segments to the end of the URI's path, use an instance of
-`Param.All` such as `Param.vector`. So
+`Param.All` such as `Param.seq`. So
 
 ```scala mdoc:silent
-Path.root / "assets" / Param.vector
+Path.root / "assets" / Param.seq
 ```
 
-will capture the remainder of the URI's path as a `Vector[String]`.
+will capture the remainder of the URI's path as a `Seq[String]`.
 
 A `Path` that matches all segments is called a closed path. Attempting to add an
 element to a closed path will result in an exception.
@@ -75,14 +75,14 @@ val intParam = Param.string.imap(_.toInt)(_.toString)
 intParam.parse("100")
 ```
 
-A `Param.One[A]` can be lifted to a `Param.All[Vector[A]]` that uses the given
-`Param.One` for every element in the `Vector`.
+A `Param.One[A]` can be lifted to a `Param.All[Seq[A]]` that uses the given
+`Param.One` for every element in the `Seq`.
 
 ```scala mdoc:silent
 val intParams = Param.lift(intParam)
 ```
 ```scala mdoc
-intParams.unparse(Vector(1, 2, 3))
+intParams.unparse(Seq(1, 2, 3))
 ```
 
 The `mkString` method can be used for a `Param.All` that constructs a `String`

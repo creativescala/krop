@@ -22,7 +22,9 @@ import scalatags.Text.all.*
 
 val reverseRoute =
   Route(
-    Request.get(Path.root / "reverse" / Param.string),
+    Request.get(
+      Path.root / "reverse" :? QueryParam("word", Param.string).query
+    ),
     Response.ok(Entity.scalatags)
   ).handle(str => p(str.reverse))
 
@@ -31,10 +33,14 @@ val index =
     body(
       h1("Htmx Example"),
       div(id := "reverse"),
-      button(
-        hxGet := reverseRoute.pathTo("word"),
-        hxTarget := "#reverse",
-        "Reverse"
+      form(
+        input(id := "word", name := "word", `type` := "text"),
+        button(
+          hxGet := reverseRoute.pathTo,
+          hxInclude := "#word",
+          hxTarget := "#reverse",
+          "Reverse"
+        )
       ),
       script(src := "https://unpkg.com/htmx.org@1.9.6")
     )
