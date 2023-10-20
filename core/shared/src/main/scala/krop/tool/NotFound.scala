@@ -45,7 +45,7 @@ object NotFound {
         val liEnd = "</code></pre></li>"
 
         val description = kropRoutes.routes
-          .map(_.request.describe)
+          .map(route => Html.quote(route.request.describe))
           .toList
           .mkString(liStart, s"${liEnd}\n${liStart}", liEnd)
 
