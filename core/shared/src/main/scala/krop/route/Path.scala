@@ -209,10 +209,8 @@ final class Path[P <: Tuple, Q] private (
   def describe: String = {
     val p = segments
       .map {
-        case Segment.One(v)     => v
-        case Segment.All        => "rest*"
-        case Param.One(n, _, _) => n
-        case Param.All(n, _, _) => s"$n*"
+        case s: Segment  => s.describe
+        case p: Param[?] => p.describe
       }
       .mkString("/", "/", "")
 

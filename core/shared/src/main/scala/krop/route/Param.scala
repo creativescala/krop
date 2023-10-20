@@ -44,6 +44,13 @@ sealed abstract class Param[A] extends Product, Serializable {
     */
   def name: String
 
+  /** Gets a human-readable description of this `Param`. */
+  def describe: String =
+    this match {
+      case All(name, _, _) => s"${name}*"
+      case One(name, _, _) => name
+    }
+
   /** Create a `Path` with a more informative name. For example, you might use
     * this method to note that an Int is in fact a user id.
     *

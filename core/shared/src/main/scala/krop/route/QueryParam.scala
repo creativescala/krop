@@ -38,6 +38,7 @@ enum QueryParam[A] {
   case Required(name: String, param: Param[A])
   case Optional[A](name: String, param: Param[A]) extends QueryParam[Option[A]]
 
+  /** The key within the query parameters that this `QueryParam` matches */
   def name: String
 
   def and[B](that: QueryParam[B]): QueryBuilder[(A, B)] =
@@ -51,10 +52,11 @@ enum QueryParam[A] {
       TupleApply.tuple1Apply
     )(f)(g.andThen(a => Tuple1(a)))
 
+  /** Get a human-readable description of this `QueryParam`. */
   def describe: String =
     this match {
-      case Required(name, param) => s"${name}=${param.name}"
-      case Optional(name, param) => s"optional(${name}=${param.name})"
+      case Required(name, param) => s"${name}=${param.describe}"
+      case Optional(name, param) => s"optional(${name}=${param.describe})"
     }
 
   def extract(params: List[String]): Try[A] =

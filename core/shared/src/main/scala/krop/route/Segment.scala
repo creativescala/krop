@@ -20,6 +20,14 @@ package krop.route
 enum Segment {
   case All
   case One(value: String)
+
+  /** Gets a human readable description of this Segement */
+  def describe: String =
+    this match {
+      case All        => "rest*"
+      case One(value) => value
+    }
+
 }
 object Segment {
   val all = Segment.All
