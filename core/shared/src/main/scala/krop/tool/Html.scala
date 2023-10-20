@@ -26,6 +26,6 @@ object Html {
     string
       .replace("&", "&amp;")
       .replace("<", "&lt;")
-      .replace(">", "&gh;")
+      .replace(">", "&gt;")
       .replace("\"", "&quot;")
 }
