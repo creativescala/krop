@@ -32,4 +32,7 @@ object Query {
       def unparse(a: Unit): Map[String, List[String]] = Map.empty
       val describe = ""
     }
+
+  def apply[A](name: String, param: Param[A]): QueryParam[A] =
+    QueryParam.Required(name, param)
 }

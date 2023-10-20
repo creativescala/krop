@@ -23,7 +23,7 @@ import scalatags.Text.all.*
 val reverseRoute =
   Route(
     Request.get(
-      Path.root / "reverse" :? QueryParam("word", Param.string).query
+      Path.root / "reverse" :? Query("word", Param.string)
     ),
     Response.ok(Entity.scalatags)
   ).handle(str => p(str.reverse))
