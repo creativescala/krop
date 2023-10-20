@@ -71,11 +71,16 @@ lazy val commonSettings = Seq(
   )
 )
 
-lazy val root = project
+lazy val root = crossProject(JSPlatform, JVMPlatform)
   .in(file("."))
   .settings(moduleName := "krop")
-  .aggregate(
-    core.js,
+lazy val rootJs =
+  root.js.aggregate(
+    core.js
+  )
+
+lazy val rootJvm =
+  root.jvm.aggregate(
     core.jvm,
     examples,
     unidocs
