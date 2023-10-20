@@ -50,9 +50,9 @@ commands += Command.command("build") { state =>
     "compile" ::
     "test" ::
     "docs / tlSite" ::
+    "headerCreateAll" ::
     "scalafixAll" ::
     "scalafmtAll" ::
-    "headerCreateAll" ::
     "githubWorkflowGenerate" ::
     state
 }
