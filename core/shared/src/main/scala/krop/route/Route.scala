@@ -22,6 +22,7 @@ import cats.data.OptionT
 import cats.effect.IO
 import cats.syntax.all.*
 import krop.Application
+import krop.KropRuntime
 import org.http4s.HttpRoutes
 
 /** Type alias for a [[package.Route]] that has extracts no [[package.Entity]]
@@ -124,7 +125,7 @@ final class Route[P <: Tuple, Q, E, R](
   def toRoutes: Routes =
     Routes(Chain(this))
 
-  def toHttpRoutes: IO[HttpRoutes[IO]] =
+  def toHttpRoutes(using runtime: KropRuntime): IO[HttpRoutes[IO]] =
     IO.pure(
       Kleisli(req =>
         OptionT(

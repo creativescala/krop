@@ -55,7 +55,6 @@ object Mode {
       else if (property.toLowerCase() == "development") Mode.Development
       else Mode.Production
 
-    Logger.logger.info(s"Krop starting in $m mode")
     m
   }
 }

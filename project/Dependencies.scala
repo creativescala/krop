@@ -13,6 +13,7 @@ object Dependencies {
   val endpoints4sOpenApiVersion = "4.4.0"
   val scalaJsDomVersion = "2.4.0"
   val scalaTagsVersion = "0.12.0"
+  val log4catsVersion = "2.6.0"
 
   val munitVersion = "0.7.29"
   val munitCatsVersion = "2.0.0-M3"
@@ -22,18 +23,23 @@ object Dependencies {
     Def.setting("org.typelevel" %%% "cats-effect" % catsEffectVersion)
   val catsCore = Def.setting("org.typelevel" %%% "cats-core" % catsVersion)
 
-  val fs2Core = Def.setting("co.fs2" %% "fs2-core" % fs2Version)
+  val fs2Core = Def.setting("co.fs2" %%% "fs2-core" % fs2Version)
+
+  val log4cats =
+    Def.setting("org.typelevel" %%% "log4cats-core" % log4catsVersion)
+  val log4catsSlf4j =
+    Def.setting("org.typelevel" %%% "log4cats-slf4j" % log4catsVersion)
 
   val http4sClient =
-    Def.setting("org.http4s" %% "http4s-ember-client" % http4sVersion)
+    Def.setting("org.http4s" %%% "http4s-ember-client" % http4sVersion)
   val http4sServer =
-    Def.setting("org.http4s" %% "http4s-ember-server" % http4sVersion)
+    Def.setting("org.http4s" %%% "http4s-ember-server" % http4sVersion)
   val http4sDsl = Def.setting("org.http4s" %%% "http4s-dsl" % http4sVersion)
   val http4sCirce = Def.setting("org.http4s" %%% "http4s-circe" % http4sVersion)
 
   val scalaTags = Def.setting("com.lihaoyi" %%% "scalatags" % scalaTagsVersion)
 
-  val munit = Def.setting("org.scalameta" %% "munit" % munitVersion % "test")
+  val munit = Def.setting("org.scalameta" %%% "munit" % munitVersion % "test")
   val munitCats =
     Def.setting(
       "org.typelevel" %%% "munit-cats-effect" % munitCatsVersion % "test"

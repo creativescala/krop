@@ -61,8 +61,8 @@ lazy val css = taskKey[Unit]("Build the CSS")
 
 lazy val commonSettings = Seq(
   libraryDependencies ++= Seq(
-    Dependencies.munit.value,
     Dependencies.munitCats.value,
+    Dependencies.log4cats.value,
     Dependencies.http4sClient.value,
     Dependencies.http4sServer.value,
     Dependencies.http4sDsl.value,
@@ -93,6 +93,7 @@ lazy val core = crossProject(JSPlatform, JVMPlatform)
     commonSettings,
     moduleName := "krop-core"
   )
+  .jvmSettings(libraryDependencies += Dependencies.log4catsSlf4j.value)
 
 lazy val docs =
   project

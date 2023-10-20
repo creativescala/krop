@@ -19,6 +19,7 @@ package krop.tool
 import cats.data.Kleisli
 import cats.effect.IO
 import krop.Application
+import krop.KropRuntime
 import krop.Mode
 import krop.route.Routes
 import org.http4s.*
@@ -36,7 +37,7 @@ object NotFound {
   /** The development version of this tool, which returns useful information in
     * the case of an unmatched request.
     */
-  val development: Application = {
+  def development(using runtime: KropRuntime): Application = {
     val supervisor =
       (route: Routes) => {
         val kropRoutes = route.orElse(KropAssets.kropAssets.toRoutes)
@@ -98,15 +99,16 @@ object NotFound {
   /** The production version of this tool, which returns NotFound to every
     * request.
     */
-  val production: Application = Application(routes =>
-    routes.toHttpRoutes.map(r =>
-      Kleisli((req: Request[IO]) =>
-        r.run(req).getOrElseF(IO.pure(Response.notFound.covary[IO]))
+  def production(using runtime: KropRuntime): Application =
+    Application(routes =>
+      routes.toHttpRoutes.map(r =>
+        Kleisli((req: Request[IO]) =>
+          r.run(req).getOrElseF(IO.pure(Response.notFound.covary[IO]))
+        )
       )
     )
-  )
 
   /** The notFound Application tool. */
-  val notFound: Application =
+  def notFound(using runtime: KropRuntime): Application =
     if Mode.mode.isProduction then production else development
 }

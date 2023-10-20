@@ -16,7 +16,7 @@
 
 package examples
 
-import krop.all.*
+import krop.all.{*, given}
 import krop.tool.Htmx.*
 import scalatags.Text.all.*
 

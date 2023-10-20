@@ -18,6 +18,7 @@ package krop.route
 
 import cats.effect.IO
 import fs2.io.file.{Path as Fs2Path}
+import krop.KropRuntime
 import org.http4s.StaticFile
 import org.http4s.Status
 import org.http4s.dsl.io.*
@@ -32,7 +33,9 @@ trait Response[A] {
   /** Produce the [[org.http4s.Response]] given a request and the value of type
     * A.
     */
-  def respond(request: Http4sRequest[IO], value: A): IO[Http4sResponse[IO]]
+  def respond(request: Http4sRequest[IO], value: A)(using
+      runtime: KropRuntime
+  ): IO[Http4sResponse[IO]]
 }
 object Response {
 
@@ -46,13 +49,15 @@ object Response {
       def respond(
           request: Http4sRequest[IO],
           fileName: String
+      )(using
+          runtime: KropRuntime
       ): IO[Http4sResponse[IO]] = {
         val path = pathPrefix ++ fileName
         StaticFile
           .fromResource(path, Some(request))
           .getOrElseF(
             IO(
-              krop.Logger.logger.error(
+              runtime.logger.error(
                 s"""
                    |Resource.staticResource couldn't load a resource from path ${path}.
                  """.stripMargin
@@ -72,8 +77,8 @@ object Response {
       def respond(
           request: Http4sRequest[IO],
           fileName: Fs2Path
-      ): IO[Http4sResponse[IO]] = {
-        import krop.Logger.given
+      )(using runtime: KropRuntime): IO[Http4sResponse[IO]] = {
+        import runtime.given
 
         StaticFile
           .fromPath[IO](pathPrefix / fileName, Some(request))
@@ -89,8 +94,8 @@ object Response {
       def respond(
           request: Http4sRequest[IO],
           unit: Unit
-      ): IO[Http4sResponse[IO]] = {
-        import krop.Logger.given
+      )(using runtime: KropRuntime): IO[Http4sResponse[IO]] = {
+        import runtime.given
 
         val p = fs2.io.file.Path(path)
 
@@ -100,7 +105,7 @@ object Response {
             fs2.io.file.Files.forIO
               .exists(p)
               .map(exists =>
-                krop.Logger.logger
+                runtime.logger
                   .error(
                     s"""
                        |Resource.staticFile couldn't load a file from path ${path}.
@@ -133,7 +138,7 @@ object Response {
     def respond(
         request: Http4sRequest[IO],
         value: A
-    ): IO[Http4sResponse[IO]] =
+    )(using runtime: KropRuntime): IO[Http4sResponse[IO]] =
       IO.pure(
         Http4sResponse(
           status = status,

@@ -46,7 +46,7 @@ object Application {
     Application(Routes.empty, supervisor)
 
   /** Lift an [[org.http4s.HttpApp]] into an [[krop.Application]]. */
-  def liftApp(app: HttpApp[IO]): Application =
+  def liftApp(app: HttpApp[IO])(using runtime: KropRuntime): Application =
     Application(
       Routes.empty,
       (routes) =>
@@ -55,11 +55,14 @@ object Application {
         )
     )
 
-  def lift(f: Request[IO] => IO[Response[IO]]): Application =
+  def lift(f: Request[IO] => IO[Response[IO]])(using
+      runtime: KropRuntime
+  ): Application =
     Application.liftApp(HttpApp(f))
 
   /** The Application that returns 404 Not Found to all requests. See
     * [[krop.tool.NotFound]] for details on the implementation.
     */
-  val notFound: Application = krop.tool.NotFound.notFound
+  def notFound(using runtime: KropRuntime): Application =
+    krop.tool.NotFound.notFound
 }

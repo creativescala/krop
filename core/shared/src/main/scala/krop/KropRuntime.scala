@@ -17,11 +17,11 @@
 package krop
 
 import cats.effect.IO
-import org.slf4j.LoggerFactory
-import org.typelevel.log4cats.slf4j.Slf4jFactory
-import org.typelevel.log4cats.{LoggerFactory as CatsLoggerFactory}
+import org.typelevel.log4cats.Logger
+import org.typelevel.log4cats.LoggerFactory
 
-object Logger {
-  val logger = LoggerFactory.getLogger("krop")
-  given CatsLoggerFactory[IO] = Slf4jFactory.create[IO]
+/** Provides platform specific services and utilities */
+trait KropRuntime {
+  given loggerFactory: LoggerFactory[IO]
+  given logger: Logger[IO]
 }

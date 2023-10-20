@@ -26,5 +26,5 @@ This will start the server. Visit `http://localhost:8080/` to see the masterpiec
 To start using Krop you need to import the core Krop library. A single import is all you need.
 
 ```scala
-import krop.all.*
+import krop.all.{*, given}
 ```

@@ -23,6 +23,8 @@ import org.http4s.implicits.*
 import org.http4s.{Request as Http4sRequest}
 
 class ResponseSuite extends CatsEffectSuite {
+  given krop.KropRuntime = krop.JvmRuntime
+
   val staticResourceResponse =
     Response.staticResource("/krop/assets/")
 
