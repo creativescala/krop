@@ -7,7 +7,7 @@ Krop is an experiment in making http4s easy to use. Hopefully these ideas will f
 To use Krop, add the following to your `build.sbt`
 
 ```scala
-libraryDependencies += "org.creativescala" %% "krop" % "@VERSION@"
+libraryDependencies += "org.creativescala" %% "krop-core" % "@VERSION@"
 ```
 
 ## ScalaDoc
