@@ -7,7 +7,7 @@ import krop.all.{*, given}
 
 ## Creating a Server
 
-A @:api(krop.Server), unsurprisingly, runs a web application. Every Krop application needs a `Server`, which is usually constructed via a @:api(krop.ServerBuilder).
+A @:api(krop.Server) runs an @:api(krop.Application). Every Krop application needs a `Server`, which is usually constructed via a @:api(krop.ServerBuilder).
 
 Using a `ServerBuilder` can be as simple as
 
