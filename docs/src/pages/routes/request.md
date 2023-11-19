@@ -4,7 +4,7 @@
 import krop.all.*
 ```
 
-A @:api(krop.route.Request) describes a pattern within an HTTP request that a @:(krop.route.Route) attempts to match.
+A @:api(krop.route.Request) describes a pattern within an HTTP request that a @:api(krop.route.Route) attempts to match.
 
 A `Request` always matches an HTTP method and a [Path](paths.md). It may match other components of a request as well. It may also extract elements from the path, query parameters, and other parts of the request. These are passed to the `Route` handler.
 
