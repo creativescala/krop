@@ -42,12 +42,12 @@
             <h1 id="server" class="title">Server</h1>
             
             <h2 id="creating-a-server" class="section">Creating a Server</h2>
-            <p>A <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/Server.html">Server</a> runs an <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/Application.html">Application</a>. Every Krop application needs a <code>Server</code>, which is usually constructed via a <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/ServerBuilder.html">ServerBuilder</a>.</p>
+            <p>A <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/Server.html">Server</a> runs an <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/Application.html">Application</a>. Every <code>Application</code> needs a <code>Server</code>, which is usually constructed via a <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/ServerBuilder.html">ServerBuilder</a>.</p>
             <p>Using a <code>ServerBuilder</code> can be as simple as</p>
             <pre><code class="nohighlight"><span class="keyword">val</span><span> </span><span class="identifier">app</span><span>: </span><span class="type-name">Application</span><span> = </span><span class="type-name">Application</span><span>.</span><span class="identifier">notFound</span><span>
 
 </span><span class="keyword">val</span><span> </span><span class="identifier">builder</span><span> = </span><span class="type-name">ServerBuilder</span><span>.</span><span class="keyword">default</span><span>.</span><span class="identifier">withApplication</span><span>(</span><span class="identifier">app</span><span>)</span></code></pre>
-            <p>This uses the default settings (localhost and port 8080). The are builder methods that allow these to be changed.</p>
+            <p>This uses the default settings (localhost and port 8080). There are builder methods that allow these to be changed.</p>
             <p>Once the builder options have been set, calling the <code>run</code> method will construct a <code>Server</code> and immediately run it.</p>
             <pre><code class="nohighlight"><span class="comment">// If this wasn&#39;t just documentation we&#39;d now have a server listening on port 8080.
 </span><span class="identifier">builder</span><span>.</span><span class="identifier">run</span><span>()</span></code></pre>
