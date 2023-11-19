@@ -40,11 +40,10 @@ type SimpleRoute[P, R] = Route[EmptyTuple, Unit, Unit, R]
   */
 type Path1Route[P, R] = PathRoute[Tuple1[P], R]
 
-/** A [[krop.Route]] accepts a request and may produce a response, but is not
-  * required to produce a response. A Route is the basic unit for building a web
-  * service. The majority of the service will consist of routes (and their
-  * associated handlers), with a final catch-all to deal with any requests that
-  * are not handled by other routes.
+/** A [[krop.Route]] accepts a request and produces a response. A Route is the
+  * basic unit for building a web service. The majority of the service will
+  * consist of routes (and their associated handlers), with a final catch-all to
+  * deal with any requests that are not handled by other routes.
   *
   * @tparam P
   *   The type of the parameters extracted from the [[package.Path]].
