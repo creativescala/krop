@@ -40,6 +40,18 @@
     <div id="content">
         <main class="content">
             <h1 id="request" class="title">Request</h1>
+            <p>A <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Request.html">Request</a> describes a pattern within an HTTP request that a @:(krop.route.Route) attempts to match.</p>
+            <p>A <code>Request</code> always matches an HTTP method and a <a href="paths.html">Path</a>. It may match other components of a request as well. It may also extract elements from the path, query parameters, and other parts of the request. These are passed to the <code>Route</code> handler.</p>
+            
+            <h2 id="creating-requests" class="section">Creating Requests</h2>
+            <p><code>Requests</code> are created by calling the method on the <code>Request</code> object that corresponds to the HTTP method of interest. For example, <code>Request.get</code> for a GET request, <code>Request.post</code> for a POST request, and so on. Thesse methods all accept a <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Path.html">Path</a>, as described in the <a href="paths.html">next section</a>, which is the only part required path of a <code>Request</code> in addition to the HTTP method.</p>
+            <p>Builder methods on <code>Request</code> can be used to match and extract other parts of an HTTP request. The most common is to extract an HTTP entity, using the <code>withEntity</code> method.</p>
+            
+            <h2 id="entities" class="section">Entities</h2>
+            <p>Calling the <code>withEntity</code> method on a <code>Request</code> allows one to specify an <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Entity.html">Entity</a>, which is responsible for extracting data from an HTTP request. The <code>Entity</code> is responsible for checking the HTTP Content-Type header, and, if it matches, decoding the HTTP entity into a Scala value.</p>
+            <p>Here&#39;s an example of a <code>Request</code> that extracts HTML content as a <code>String</code> value.</p>
+            <pre><code class="nohighlight"><span class="keyword">val</span><span> </span><span class="identifier">html</span><span> = </span><span class="type-name">Request</span><span>.</span><span class="identifier">get</span><span>(</span><span class="type-name">Path</span><span>.</span><span class="identifier">root</span><span>).</span><span class="identifier">withEntity</span><span>(</span><span class="type-name">Entity</span><span>.</span><span class="identifier">html</span><span>)</span></code></pre>
+            <p>There are several predefined <code>Entity</code> values on the companion object, but you can easily create your own if needed.</p>
             <p class="nextPage"><a href="paths.html">Paths→</a></p>
         </main>
         <footer>Creative Scala is copyright Noel Welsh</footer>
