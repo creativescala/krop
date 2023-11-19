@@ -43,6 +43,15 @@
             <h1 id="application" class="title">Application</h1>
             <p>An <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/Application.html">Application</a> in what a Krop <a href="server.html">server</a> runs, and thus building an <code>Application</code> is the end goal of working with Krop.</p>
             <p>An <code>Application</code> consists of any number of <a href="routes/">Routes</a> followed by a catch-all that handles any requests not matched by a route. The usual catch-all is <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/tool/Application/notFound.html">notFound</a>.</p>
+            
+            <h2 id="development-and-production-mode" class="section">Development and Production Mode</h2>
+            <p>Krop can run in one of two modes: development and production. In development
+            mode it shows output that is useful for debugging and otherwise inspecting
+            the running state. In production this output is hidden.</p>
+            <p>The mode is set by the <code>krop.mode</code> JVM system property. If it has the value of
+            &quot;development&quot; (without the quotes; any capitalization is fine) then the mode
+            is development. Otherwise it is production.</p>
+            <p>The mode is determined when Krop starts, and is available as the value of <code>krop.Mode</code>.</p>
             <p class="nextPage"><a href="server.html">Server→</a></p>
         </main>
         <footer>Creative Scala is copyright Noel Welsh</footer>
