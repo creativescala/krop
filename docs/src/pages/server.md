@@ -7,7 +7,7 @@ import krop.all.{*, given}
 
 ## Creating a Server
 
-A @:api(krop.Server) runs an @:api(krop.Application). Every Krop application needs a `Server`, which is usually constructed via a @:api(krop.ServerBuilder).
+A @:api(krop.Server) runs an @:api(krop.Application). Every `Application` needs a `Server`, which is usually constructed via a @:api(krop.ServerBuilder).
 
 Using a `ServerBuilder` can be as simple as
 
@@ -17,7 +17,7 @@ val app: Application = Application.notFound
 val builder = ServerBuilder.default.withApplication(app)
 ```
 
-This uses the default settings (localhost and port 8080). The are builder methods that allow these to be changed.
+This uses the default settings (localhost and port 8080). There are builder methods that allow these to be changed.
 
 Once the builder options have been set, calling the `run` method will construct a `Server` and immediately run it.
 
