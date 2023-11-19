@@ -59,8 +59,8 @@ The conversion between tuples and functions is done by given instances of @:api(
 
 ## Reverse Routing
 
-Given a @:(krop.route.Route) you can construct a hyperlink to that route using the `pathTo` method. Here's an example.
-We first create a @:(krop.route.Route).
+Given a @:api(krop.route.Route) you can construct a hyperlink to that route using the `pathTo` method. Here's an example.
+We first create a @:api(krop.route.Route).
 
 ```scala mdoc:silent
 val viewUser = Route(Request.get(Path.root / "user" / Param.int), Response.ok(Entity.text))
@@ -97,4 +97,10 @@ twoParams.pathTo(1234, "McBoopy")
 
 ## Combining Routes
 
-@:api(krop.route.Routes) collects together zero or more @:api(krop.route.Route). The easiest way to construct a @:api(krop.route.Routes) is by calling the `toRoutes` method on @:api(krop.route.Route). Then use `orElse` to add more elements.
+Two or more routes can be combined using the `orElse` method, creating @:api(krop.route.Routes).
+
+``` scala mdoc
+val routes = viewUser.orElse(users).orElse(twoParams)
+```
+
+A `Route` or `Routes` can also be combined with an `Application` using overloads of the `orElse`, which produces an `Application`.
