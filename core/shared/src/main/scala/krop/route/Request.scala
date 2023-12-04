@@ -39,11 +39,14 @@ import org.http4s.{Request as Http4sRequest}
   * @tparam E
   *   The type of values extracted from other parts of the request (e.g. headers
   *   or entity).
+  * @tparam O
+  *   The type of values that construct the entity. Used when creating a request
+  *   that calls the Route containing this Request.
   */
-final class Request[P <: Tuple, Q, E](
+final class Request[P <: Tuple, Q, E, O](
     val method: Method,
     val path: Path[P, Q],
-    val entity: Entity[E, ?]
+    val entity: Entity[E, O]
 ) {
   import Request.NormalizedAppend
 
@@ -90,13 +93,13 @@ final class Request[P <: Tuple, Q, E](
   def describe: String =
     s"${method.toString()} ${path.describe} ${entity.encoder.contentType.map(_.mediaType).getOrElse("")}"
 
-  def withEntity[E2](entity: Entity[E2, ?]): Request[P, Q, E2] =
+  def withEntity[E2, O2](entity: Entity[E2, O2]): Request[P, Q, E2, O2] =
     new Request(method, path, entity)
 
-  def withMethod(method: Method): Request[P, Q, E] =
+  def withMethod(method: Method): Request[P, Q, E, O] =
     new Request(method, path, entity)
 
-  def withPath[P2 <: Tuple, Q2](path: Path[P2, Q2]): Request[P2, Q2, E] =
+  def withPath[P2 <: Tuple, Q2](path: Path[P2, Q2]): Request[P2, Q2, E, O] =
     new Request(method, path, entity)
 
 }
@@ -110,22 +113,22 @@ object Request {
       case _          => Tuple.Append[A, B]
     }
 
-  def delete[P <: Tuple, Q](path: Path[P, Q]): Request[P, Q, Unit] =
+  def delete[P <: Tuple, Q](path: Path[P, Q]): Request[P, Q, Unit, Unit] =
     Request.method(Method.DELETE, path)
 
-  def get[P <: Tuple, Q](path: Path[P, Q]): Request[P, Q, Unit] =
+  def get[P <: Tuple, Q](path: Path[P, Q]): Request[P, Q, Unit, Unit] =
     Request.method(Method.GET, path)
 
-  def post[P <: Tuple, Q](path: Path[P, Q]): Request[P, Q, Unit] =
+  def post[P <: Tuple, Q](path: Path[P, Q]): Request[P, Q, Unit, Unit] =
     Request.method(Method.POST, path)
 
-  def put[P <: Tuple, Q](path: Path[P, Q]): Request[P, Q, Unit] =
+  def put[P <: Tuple, Q](path: Path[P, Q]): Request[P, Q, Unit, Unit] =
     Request.method(Method.PUT, path)
 
   def method[P <: Tuple, Q](
       method: Method,
       path: Path[P, Q]
-  ): Request[P, Q, Unit] =
+  ): Request[P, Q, Unit, Unit] =
     new Request(method, path, Entity.unit)
 
 }
