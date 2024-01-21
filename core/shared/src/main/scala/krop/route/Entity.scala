@@ -17,6 +17,7 @@
 package krop.route
 
 import cats.effect.IO
+import io.circe.Json
 import org.http4s.DecodeResult
 import org.http4s.EntityDecoder
 import org.http4s.EntityEncoder
@@ -25,6 +26,7 @@ import org.http4s.MediaRange
 import org.http4s.headers.`Content-Type`
 import org.http4s.syntax.all.*
 import scalatags.Text.TypedTag
+import org.http4s.circe.{CirceEntityDecoder, CirceEntityEncoder}
 
 /** Type alias for an Entity where the decoded and encoded type are the same. */
 type InvariantEntity[A] = Entity[A, A]
@@ -69,6 +71,12 @@ final case class Entity[D, E](
     )
 }
 object Entity {
+  val json: InvariantEntity[Json] =
+    Entity(
+      CirceEntityDecoder.circeEntityDecoder,
+      CirceEntityEncoder.circeEntityEncoder
+    )
+
   val unit: InvariantEntity[Unit] =
     Entity(
       EntityDecoder.decodeBy[IO, Unit](MediaRange.`*/*`)(_ =>
