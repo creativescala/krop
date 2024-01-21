@@ -17,7 +17,7 @@
 package krop.route
 
 import cats.effect.IO
-import io.circe.Json
+import io.circe.{Decoder, Encoder, Json}
 import org.http4s.DecodeResult
 import org.http4s.EntityDecoder
 import org.http4s.EntityEncoder
@@ -72,6 +72,12 @@ final case class Entity[D, E](
 }
 object Entity {
   val json: InvariantEntity[Json] =
+    Entity(
+      CirceEntityDecoder.circeEntityDecoder,
+      CirceEntityEncoder.circeEntityEncoder
+    )
+
+  def jsonOf[A: Encoder: Decoder]: InvariantEntity[A] =
     Entity(
       CirceEntityDecoder.circeEntityDecoder,
       CirceEntityEncoder.circeEntityEncoder
