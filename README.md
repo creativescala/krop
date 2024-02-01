@@ -18,3 +18,8 @@ Key points:
 - Make very simple things, like creating mostly static sites, very easy.
 
 As an example of what we're aiming for, take a look at [the Phoenix framework](https://www.phoenixframework.org/). Elixir is not a popular language but this framework has outstanding documentation and a well defined story for every common use case.
+
+
+## Development
+
+Use the `build` command in sbt to do everything (build code, run tests, format code, etc.)
