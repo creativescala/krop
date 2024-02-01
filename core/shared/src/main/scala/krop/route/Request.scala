@@ -21,7 +21,7 @@ import cats.syntax.all.*
 import org.http4s.EntityDecoder
 import org.http4s.Media
 import org.http4s.Method
-import org.http4s.{Request as Http4sRequest}
+import org.http4s.Request as Http4sRequest
 
 /** A [[krop.route.Request]] describes a pattern within a [[org.http4s.Request]]
   * that will be routed to a handler. For example, it can look for a particular

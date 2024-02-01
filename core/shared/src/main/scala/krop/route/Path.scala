@@ -18,15 +18,14 @@ package krop.route
 
 import cats.syntax.all.*
 import krop.route
-import krop.route.Param.All
-import krop.route.Param.One
+import krop.route.Param.{All, One}
 import org.http4s.Uri
-import org.http4s.Uri.{Path as UriPath}
+import org.http4s.Uri.Path as UriPath
 
+import scala.annotation.tailrec
 import scala.collection.mutable
 import scala.compiletime.constValue
-import scala.util.Failure
-import scala.util.Success
+import scala.util.{Failure, Success}
 
 /** A [[krop.route.Path]] represents a pattern to match against the path
   * component of the URI of a request.`Paths` are created starting with
@@ -102,6 +101,7 @@ final class Path[P <: Tuple, Q] private (
   def pathTo(params: P): String = {
     val paramsArray = params.toArray
 
+    @tailrec
     def loop(
         idx: Int,
         segments: Vector[Segment | Param[?]],
@@ -146,7 +146,7 @@ final class Path[P <: Tuple, Q] private (
         }
         .mkString("&")
 
-    s"pathTo(params)?${qParams}"
+    s"pathTo(params)?$qParams"
   }
 
   /** Optionally extract the captured parts of the URI's path. */
@@ -161,18 +161,16 @@ final class Path[P <: Tuple, Q] private (
       } else {
         matchSegments.head match {
           case Segment.One(value) =>
-            if !pathSegments.isEmpty && pathSegments(0).decoded() == value then
+            if pathSegments.nonEmpty && pathSegments(0).decoded() == value then
               loop(matchSegments.tail, pathSegments.tail)
             else None
 
-          case Segment.All =>
-            Some(EmptyTuple)
+          case Segment.All => Some(EmptyTuple)
 
           case Param.One(_, parse, _) =>
-            if !pathSegments.isEmpty then {
-              val raw = pathSegments(0).decoded()
-              val attempt = parse(raw)
-              attempt match {
+            if pathSegments.isEmpty then None
+            else
+              parse(pathSegments(0).decoded()) match {
                 case Failure(_) => None
                 case Success(value) =>
                   loop(matchSegments.tail, pathSegments.tail) match {
@@ -180,7 +178,6 @@ final class Path[P <: Tuple, Q] private (
                     case Some(tail) => Some(value *: tail)
                   }
               }
-            } else None
 
           case Param.All(_, parse, _) =>
             parse(pathSegments.map(_.decoded())) match {
@@ -216,7 +213,7 @@ final class Path[P <: Tuple, Q] private (
 
     val q = query.describe
 
-    if q.isEmpty then p else s"${p}?${q}"
+    if q.isEmpty then p else s"$p?$q"
   }
 
   def /(segment: String): Path[P, Q] = {
@@ -254,5 +251,5 @@ final class Path[P <: Tuple, Q] private (
       )
 }
 object Path {
-  val root = Path[EmptyTuple, Unit](Vector.empty, Query.empty, true)
+  final val root = Path[EmptyTuple, Unit](Vector.empty, Query.empty, true)
 }

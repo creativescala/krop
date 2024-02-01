@@ -17,55 +17,81 @@
 package krop.route
 
 import cats.effect.IO
-import fs2.io.file.{Path as Fs2Path}
+import fs2.io.file.Path as Fs2Path
 import krop.KropRuntime
 import org.http4s.StaticFile
 import org.http4s.Status
 import org.http4s.dsl.io.*
-import org.http4s.{Request as Http4sRequest}
-import org.http4s.{Response as Http4sResponse}
+import org.http4s.Request as Http4sRequest
+import org.http4s.Response as Http4sResponse
 
 /** A [[krop.route.Response]] produces a [[org.http4s.Response]] given a value
   * of type A and a [[org.http4s.Request]].
   */
-trait Response[A] {
-
-  /** Produce the [[org.http4s.Response]] given a request and the value of type
-    * A.
-    */
+sealed trait Response[A] {
   def respond(request: Http4sRequest[IO], value: A)(using
       runtime: KropRuntime
   ): IO[Http4sResponse[IO]]
-}
-object Response {
 
-  /** Respond with a resource loaded by the Classloader. The `pathPrefix` is the
-    * prefix within the resources where the Classloader will look. E.g.
-    * "/krop/assets/". The `String` value is the rest of the resource name. E.g
-    * "krop.css".
-    */
+  def orNotFound: Response[Option[A]] =
+    Response.OrNotFound(this)
+
+  def orElse(that: Response[A]): Response[A] =
+    Response.OrElse(this, that)
+
+  def sum[O](that: Response[O]): Response[Either[A, O]] =
+    Response.Sum(this, that)
+}
+
+object Response {
+  case class StaticResource(pathPrefix: String) extends Response[String]:
+    /** Respond with a resource loaded by the Classloader. The `pathPrefix` is
+      * the prefix within the resources where the Classloader will look. E.g.
+      * "/krop/assets/". The `String` value is the rest of the resource name.
+      * E.g "krop.css".
+      */
+    override def respond(request: Http4sRequest[IO], fileName: String)(using
+        runtime: KropRuntime
+    ): IO[Http4sResponse[IO]] =
+      val path = pathPrefix ++ fileName
+      StaticFile
+        .fromResource(path, Some(request))
+        .getOrElseF(
+          IO(
+            runtime.logger.error(
+              s"Resource.staticResource couldn't load a resource from path $path."
+            )
+          ) *> InternalServerError()
+        )
+
+  case class OrNotFound[Z](source: Response[Z]) extends Response[Option[Z]]:
+    override def respond(request: Http4sRequest[IO], value: Option[Z])(using
+        runtime: KropRuntime
+    ): IO[Http4sResponse[IO]] =
+      value match
+        case Some(a) => source.respond(request, a)
+        case None    => IO.pure(Http4sResponse.notFound)
+
+  case class OrElse[O](first: Response[O], second: Response[O])
+      extends Response[O]:
+    override def respond(request: Http4sRequest[IO], value: O)(using
+        runtime: KropRuntime
+    ): IO[Http4sResponse[IO]] =
+      first
+        .respond(request, value)
+        .orElse(second.respond(request, value))
+
+  case class Sum[I, O](left: Response[I], right: Response[O])
+      extends Response[Either[I, O]]:
+    override def respond(request: Http4sRequest[IO], value: Either[I, O])(using
+        runtime: KropRuntime
+    ): IO[Http4sResponse[IO]] =
+      value match
+        case Left(b)  => left.respond(request, b)
+        case Right(a) => right.respond(request, a)
+
   def staticResource(pathPrefix: String): Response[String] =
-    new Response[String] {
-      def respond(
-          request: Http4sRequest[IO],
-          fileName: String
-      )(using
-          runtime: KropRuntime
-      ): IO[Http4sResponse[IO]] = {
-        val path = pathPrefix ++ fileName
-        StaticFile
-          .fromResource(path, Some(request))
-          .getOrElseF(
-            IO(
-              runtime.logger.error(
-                s"""
-                   |Resource.staticResource couldn't load a resource from path ${path}.
-                 """.stripMargin
-              )
-            ) *> InternalServerError()
-          )
-      }
-    }
+    StaticResource(pathPrefix)
 
   /** Respond with a file loaded from the filesystem. The `pathPrefix` is the
     * directory within the file system where the files will be found. E.g.
@@ -108,7 +134,7 @@ object Response {
                 runtime.logger
                   .error(
                     s"""
-                       |Resource.staticFile couldn't load a file from path ${path}.
+                       |Resource.staticFile couldn't load a file from path $path.
                        |
                        |  This path represents ${p.absolute} as an absolute path.
                        |  A file ${

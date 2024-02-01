@@ -47,7 +47,7 @@ sealed abstract class Param[A] extends Product, Serializable {
   /** Gets a human-readable description of this `Param`. */
   def describe: String =
     this match {
-      case All(name, _, _) => s"${name}*"
+      case All(name, _, _) => s"$name*"
       case One(name, _, _) => name
     }
 
@@ -108,21 +108,21 @@ object Param {
       * convert from A to B and B to A.
       */
     def imap[B](f: A => B)(g: B => A): One[B] =
-      One(name, v => parse(v).map(f), b => unparse(g(b)))
+      One(name, parse(_).map(f), g.andThen(unparse))
   }
 
   /** A `Param` that matches a single `Int` parameter */
   val int: Param.One[Int] =
-    Param.One("<Int>", str => Try(str.toInt), i => i.toString)
+    Param.One("<Int>", str => Try(str.toInt), _.toString)
 
   /** A `Param` that matches a single `String` parameter */
   val string: Param.One[String] =
-    Param.One("<String>", str => Success(str), identity)
+    Param.One("<String>", Success(_), identity)
 
   /** `Param` that simply accumulates all parameters as a `Seq[String]`.
     */
   val seq: Param.All[Seq[String]] =
-    Param.All("<String>", seq => Success(seq), identity)
+    Param.All("<String>", Success(_), identity)
 
   /** `Param` that matches all parameters and converts them to a `String` by
     * adding `separator` between matched elements. The inverse splits on this
@@ -141,7 +141,7 @@ object Param {
   def lift[A](one: One[A]): Param.All[Seq[A]] =
     Param.All(
       one.name,
-      seq => seq.traverse(one.parse),
-      as => as.map(one.unparse)
+      _.traverse(one.parse),
+      _.map(one.unparse)
     )
 }
