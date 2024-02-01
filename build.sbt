@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import scala.sys.process._
+import scala.sys.process.*
 import laika.rewrite.link.LinkConfig
 import laika.rewrite.link.ApiLinks
 import laika.theme.Theme
 
 Global / onChangedBuildSource := ReloadOnSourceChanges
 
-ThisBuild / tlBaseVersion := "0.6" // your current series x.y
+ThisBuild / tlBaseVersion := "0.7" // your current series x.y
 
 ThisBuild / organization := "org.creativescala"
 ThisBuild / organizationName := "Creative Scala"
@@ -71,16 +71,15 @@ lazy val commonSettings = Seq(
   )
 )
 
-lazy val root = crossProject(JSPlatform, JVMPlatform)
+lazy val krop = crossProject(JSPlatform, JVMPlatform)
   .in(file("."))
   .settings(moduleName := "krop")
-lazy val rootJs =
-  root.js.aggregate(
-    core.js
-  )
+
+lazy val kropJs =
+  krop.js.aggregate(core.js)
 
 lazy val rootJvm =
-  root.jvm.aggregate(
+  krop.jvm.aggregate(
     core.jvm,
     examples,
     unidocs
@@ -171,6 +170,6 @@ lazy val examples = project
     // developers. If you don't set this, Krop runs in production mode.
     run / javaOptions += "-Dkrop.mode=development",
     run / fork := true,
-    libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.4.11" % Runtime
+    libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.4.12" % Runtime
   )
   .dependsOn(core.jvm)
