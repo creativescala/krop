@@ -170,6 +170,6 @@ lazy val examples = project
     // developers. If you don't set this, Krop runs in production mode.
     run / javaOptions += "-Dkrop.mode=development",
     run / fork := true,
-    libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.4.12" % Runtime
+    libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.4.14" % Runtime
   )
   .dependsOn(core.jvm)

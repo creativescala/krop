@@ -16,7 +16,7 @@ object Dependencies {
   val log4catsVersion = "2.6.0"
 
   val munitVersion = "0.7.29"
-  val munitCatsVersion = "2.0.0-M3"
+  val munitCatsVersion = "2.0.0-M4"
 
   // Libraries
   val catsEffect =
