@@ -40,9 +40,33 @@
     <div id="content">
         <main class="content">
             <h1 id="response" class="title">Response</h1>
-            <p>A <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Response.html">Response</a> describes how a HTTP response can be constructed from Scala values. A response can be anything that implements the <code>Response</code> trait, but the usual way to call one of the constructors on the <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Response$.html">Response</a> companion object. For example</p>
-            <pre><code class="nohighlight"><span class="keyword">val</span><span> </span><span class="identifier">response</span><span> = </span><span class="type-name">Response</span><span>.</span><span class="identifier">ok</span><span>(</span><span class="type-name">Entity</span><span>.</span><span class="identifier">html</span><span>)</span></code></pre>
-            <p>constructs a <code>Response</code> that responds with an HTTP OK, and an HTML entity constructed from a Scala <code>String</code>.</p>
+            <p>A <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Response.html">Response</a> describes how to create a HTTP response from a Scala value. 
+            For example, the following <code>Response</code> will produce an HTTP OK response with a <code>text/plain</code> entity.</p>
+            <pre><code class="nohighlight"><span class="keyword">val</span><span> </span><span class="identifier">ok</span><span>: </span><span class="type-name">Response</span><span>[</span><span class="type-name">String</span><span>] = </span><span class="type-name">Response</span><span>.</span><span class="identifier">ok</span><span>(</span><span class="type-name">Entity</span><span>.</span><span class="identifier">text</span><span>)</span></code></pre>
+            <p>The entity will be constructed from a <code>String</code> that is passed to the <code>respond</code> method on the <code>Response</code>.
+            You usually won&#39;t do this yourself; it is handled by the <code>Route</code> the <code>Response</code> is part of.</p>
+            
+            <h2 id="entities" class="section">Entities</h2>
+            <p>Entities (response bodies) are handled in the same way as <a href="request.html">requests</a>: by specifying an <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Entity.html">Entity</a>. In this case the <code>Entity</code> is responsible for encoding Scala values as data in the HTTP response.</p>
+            <p>Use <code>Entity.unit</code> to indicate that your response has no entity. For example:</p>
+            <pre><code class="nohighlight"><span class="keyword">val</span><span> </span><span class="identifier">noBody</span><span>: </span><span class="type-name">Response</span><span>[</span><span class="type-name">Unit</span><span>] = </span><span class="type-name">Response</span><span>.</span><span class="identifier">ok</span><span>(</span><span class="type-name">Entity</span><span>.</span><span class="identifier">unit</span><span>)</span></code></pre>
+            
+            <h2 id="headers" class="section">Headers</h2>
+            <p>Headers can be added using the <code>withHeader</code> method. This method accepts one of more values in any of the following forms:</p>
+            <ul>
+              <li>A value of type <code>A</code> which has a <code>Header[A]</code> in scope</li>
+              <li>A <code>(name, value)</code> pair of <code>String</code>, which is treated as a <code>Recurring</code>
+              header</li>
+              <li>A <code>Header.Raw</code></li>
+              <li>A <code>Foldable</code> (<code>List</code>, <code>Option</code>, etc) of the above.</li>
+            </ul>
+            <p>In the example below we add a header using the <code>(name, value)</code> form, and a value with a <code>Header[A]</code> in scope.</p>
+            <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">http4s</span><span>.</span><span class="identifier">headers</span><span>.</span><span class="type-name">Allow</span><span>
+
+</span><span class="keyword">val</span><span> </span><span class="identifier">headers</span><span> = </span><span class="type-name">Response</span><span>.</span><span class="identifier">ok</span><span>(</span><span class="type-name">Entity</span><span>.</span><span class="identifier">html</span><span>).</span><span class="identifier">withHeader</span><span>(</span><span class="string-literal">&quot;X-Awesomeness&quot;</span><span> -&gt; </span><span class="string-literal">&quot;10.0&quot;</span><span>, </span><span class="type-name">Allow</span><span>(</span><span class="type-name">Method</span><span>.</span><span class="type-name">GET</span><span>))</span></code></pre>
+            
+            <h2 id="error-handling" class="section">Error Handling</h2>
+            <p>In many cases you&#39;ll need to generate an error response despite a valid request. For example, you would generate a 404 Not Found if the client has sent a well-formed request but the requested resource doesn&#39;t exist. This situation can be handled using the <code>orNotFound</code> method, which converts a <code>Response[A]</code> to a <code>Response[Option[A]]</code>. When passed a <code>None</code> the <code>Response</code> responds with a 404. For more complex cases you can use <code>orElse</code>, which allows you to handle an <code>Either[A, B]</code> and introduce custom error handling.</p>
             
         </main>
         <footer>Creative Scala is copyright Noel Welsh</footer>
