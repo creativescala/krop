@@ -30,12 +30,11 @@ import scala.util.Failure
 import scala.util.Success
 
 /** A [[krop.route.Path]] represents a pattern to match against the path
-  * component of the URI of a request.`Paths` are created starting with
-  * `Path.root` and then calling the `/` method to add segments to the pattern.
-  * For example
+  * component of the URI of a request.`Paths` are created by calling the `/`
+  * method to add segments to the pattern. For example
   *
   * ```
-  * Path.root / "user" / "create"
+  * Path / "user" / "create"
   * ```
   *
   * matches a request with the path `/user/create`.
@@ -44,7 +43,7 @@ import scala.util.Success
   * For example
   *
   * ```
-  * Path.root / "user" / Param.int / "view"
+  * Path / "user" / Param.int / "view"
   * ```
   *
   * matches `/user/<id>/view`, where `<id>` is an `Int`, and makes the `Int`
@@ -56,7 +55,7 @@ import scala.util.Success
   * to the end of the URI's path. For example
   *
   * ```
-  * Path.root / "assets" / Segment.all
+  * Path / "assets" / Segment.all
   * ```
   *
   * will match `/assets/example.css` and `/assets/css/example.css`.
@@ -218,11 +217,13 @@ final class Path[P <: Tuple, Q] private (
     if q.isEmpty then p else s"$p?$q"
   }
 
+  /** Add a segment to this `Path`. */
   def /(segment: String): Path[P, Q] = {
     assertOpen()
     Path(segments :+ Segment.One(segment), query, true)
   }
 
+  /** Add a segment to this `Path`. */
   def /(segment: Segment): Path[P, Q] = {
     assertOpen()
     segment match {
@@ -231,6 +232,7 @@ final class Path[P <: Tuple, Q] private (
     }
   }
 
+  /** Add a segment that extracts a parameter to this `Path`. */
   def /[B](param: Param[B]): Path[Tuple.Append[P, B], Q] = {
     assertOpen()
     param match {
@@ -253,5 +255,24 @@ final class Path[P <: Tuple, Q] private (
       )
 }
 object Path {
+
+  /** The `Path` representing the root. You can start constructing paths using
+    * `Path.root` but it is more idiomatic to call one of the `/` method
+    * directly on the `Path` companion object.
+    */
   final val root = Path[EmptyTuple, Unit](Vector.empty, Query.empty, true)
+
+  /** Create a `Path` that matches theg given segment. */
+  def /(segment: String): Path[EmptyTuple, Unit] =
+    root / segment
+
+  /** Create a `Path` that matches the given segment. */
+  def /(segment: Segment): Path[EmptyTuple, Unit] =
+    root / segment
+
+  /** Create a `Path` that matches the given segment and extracts it as a
+    * parameter.
+    */
+  def /[A](param: Param[A]): Path[Tuple1[A], Unit] =
+    root / param
 }

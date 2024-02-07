@@ -21,10 +21,10 @@ import org.http4s.Uri
 import org.http4s.implicits.*
 
 class PathSuite extends FunSuite {
-  val nonCapturingPath = Path.root / "user" / "create"
-  val nonCapturingAllPath = Path.root / "assets" / "html" / Segment.all
-  val capturingAllPath = Path.root / "assets" / "html" / Param.seq
-  val simplePath = Path.root / "user" / Param.int.withName("<userId>") / "view"
+  val nonCapturingPath = Path / "user" / "create"
+  val nonCapturingAllPath = Path / "assets" / "html" / Segment.all
+  val capturingAllPath = Path / "assets" / "html" / Param.seq
+  val simplePath = Path / "user" / Param.int.withName("<userId>") / "view"
 
   test("Path description is as expected") {
     assertEquals(simplePath.describe, "/user/<userId>/view")

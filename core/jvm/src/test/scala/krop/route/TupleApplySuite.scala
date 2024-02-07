@@ -22,8 +22,8 @@ import munit.FunSuite
 class TupleApplySuite extends FunSuite {
 
   val emptyRequest = Request.get(Path.root)
-  val intRequest = Request.get(Path.root / Param.int)
-  val intStringRequest = Request.get(Path.root / Param.int / Param.string)
+  val intRequest = Request.get(Path / Param.int)
+  val intStringRequest = Request.get(Path / Param.int / Param.string)
 
   test("Type inference works for EmptyTuple") {
     val builder = Route(emptyRequest, Response.ok(Entity.text))

@@ -103,7 +103,7 @@ final class Route[P <: Tuple, Q, E, O, R](
     * ```scala
     * val route =
     *   Route(
-    *     Request.get(Path.root / "user" / Param.id / "edit"),
+    *     Request.get(Path / "user" / Param.id / "edit"),
     *     Request.ok(Entity.html)
     *   )
     * ```

@@ -29,7 +29,7 @@ object DefaultAssets {
     val route =
       Route(
         Request.get(
-          Path.root / "assets" / Param
+          Path / "assets" / Param
             .mkString("/")
             .imap(Fs2Path.apply)(_.toString)
         ),

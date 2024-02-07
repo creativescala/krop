@@ -28,7 +28,7 @@ The idiomatic way to construct a `Route` is by calling the `Route.apply` method,
 Here is a small example showing the process.
 
 ```scala mdoc:silent
-val route = Route(Request.get(Path.root / "user" / Param.int), Response.ok(Entity.text))
+val route = Route(Request.get(Path / "user" / Param.int), Response.ok(Entity.text))
   .handle(userId => s"You asked for the user ${userId.toString}")
 ```
 
@@ -44,7 +44,7 @@ val route = Route(Request.get(Path.root / "user" / Param.int), Response.ok(Entit
 If you dig into the types produced by `Requests`, you notice a lot of tuple types are used. Here's an example, showing a `Request` producing a `Tuple2`.
 
 ```scala mdoc
-val request = Request.get(Path.root / Param.int / Param.string)
+val request = Request.get(Path / Param.int / Param.string)
 ```
 
 However, when you come to use a handler with such a request, you can use a normal function with two arguments *not* a function that accepts a single `Tuple2`.
@@ -63,7 +63,7 @@ Given a @:api(krop.route.Route) you can construct a hyperlink to that route usin
 We first create a @:api(krop.route.Route).
 
 ```scala mdoc:silent
-val viewUser = Route(Request.get(Path.root / "user" / Param.int), Response.ok(Entity.text))
+val viewUser = Route(Request.get(Path / "user" / Param.int), Response.ok(Entity.text))
   .handle(userId => s"You asked for the user ${userId.toString}")
 ```
 
@@ -77,7 +77,7 @@ Note that we pass to `pathTo` the parameters for the @:api(krop.route.Path) comp
 If the route has no path parameters there is an overload with no parameters.
 
 ```scala mdoc:silent
-val users = Route(Request.get(Path.root / "users"), Response.ok(Entity.text))
+val users = Route(Request.get(Path / "users"), Response.ok(Entity.text))
   .handle(() => "Here are the users.")
 ```
 ```scala mdoc
@@ -87,7 +87,7 @@ users.pathTo
 If there is more than one parameter we must collect them in a tuple.
 
 ```scala mdoc:silent
-val twoParams = Route(Request.get(Path.root / "user" / Param.int / Param.string), Response.ok(Entity.text))
+val twoParams = Route(Request.get(Path / "user" / Param.int / Param.string), Response.ok(Entity.text))
   .handle((userId, name) => s"User with id ${userId} and name ${name}.")
 ```
 ```scala mdoc

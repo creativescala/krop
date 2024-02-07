@@ -23,3 +23,5 @@ As an example of what we're aiming for, take a look at [the Phoenix framework](h
 ## Development
 
 Use the `build` command in sbt to do everything (build code, run tests, format code, etc.)
+
+Releases are automatically published whenever a tag like `x.y.z` is pushed to `main`.
