@@ -18,14 +18,16 @@ package krop.route
 
 import cats.syntax.all.*
 import krop.route
-import krop.route.Param.{All, One}
+import krop.route.Param.All
+import krop.route.Param.One
 import org.http4s.Uri
 import org.http4s.Uri.Path as UriPath
 
 import scala.annotation.tailrec
 import scala.collection.mutable
 import scala.compiletime.constValue
-import scala.util.{Failure, Success}
+import scala.util.Failure
+import scala.util.Success
 
 /** A [[krop.route.Path]] represents a pattern to match against the path
   * component of the URI of a request.`Paths` are created starting with

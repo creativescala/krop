@@ -17,16 +17,19 @@
 package krop.route
 
 import cats.effect.IO
-import io.circe.{Decoder, Encoder, Json}
+import io.circe.Decoder
+import io.circe.Encoder
+import io.circe.Json
 import org.http4s.DecodeResult
 import org.http4s.EntityDecoder
 import org.http4s.EntityEncoder
 import org.http4s.Media
 import org.http4s.MediaRange
+import org.http4s.circe.CirceEntityDecoder
+import org.http4s.circe.CirceEntityEncoder
 import org.http4s.headers.`Content-Type`
 import org.http4s.syntax.all.*
 import scalatags.Text.TypedTag
-import org.http4s.circe.{CirceEntityDecoder, CirceEntityEncoder}
 
 /** Type alias for an Entity where the decoded and encoded type are the same. */
 type InvariantEntity[A] = Entity[A, A]
