@@ -79,6 +79,50 @@ final class Path[P <: Tuple, Q] private (
     // matches the rest of a path is not open. Otherwise it is open.
     open: Boolean
 ) {
+  //
+  // Combinators ---------------------------------------------------------------
+  //
+
+  /** Add a segment to this `Path`. */
+  def /(segment: String): Path[P, Q] = {
+    assertOpen()
+    Path(segments :+ Segment.One(segment), query, true)
+  }
+
+  /** Add a segment to this `Path`. */
+  def /(segment: Segment): Path[P, Q] = {
+    assertOpen()
+    segment match {
+      case Segment.One(_) => Path(segments :+ segment, query, true)
+      case Segment.All    => Path(segments :+ segment, query, false)
+    }
+  }
+
+  /** Add a segment that extracts a parameter to this `Path`. */
+  def /[B](param: Param[B]): Path[Tuple.Append[P, B], Q] = {
+    assertOpen()
+    param match {
+      case Param.One(_, _, _) => Path(segments :+ param, query, true)
+      case Param.All(_, _, _) => Path(segments :+ param, query, false)
+    }
+  }
+
+  def :?[B](query: Query[B]): Path[P, B] =
+    Path(segments, query, false)
+
+  private def assertOpen(): Boolean =
+    if open then true
+    else
+      throw new IllegalStateException(
+        s"""Cannot add a segment or parameter to a closed path.
+           |
+           |  A path is closed when it has a segment or parameter that matches all remaining elements.
+           |  A closed path cannot have additional segments of parameters added to it.""".stripMargin
+      )
+
+  //
+  // Interpreters --------------------------------------------------------------
+  //
 
   /** Create a `String` that links to this path with the given parameters. For
     * example, with the path
@@ -94,10 +138,6 @@ final class Path[P <: Tuple, Q] private (
     * ```
     *
     * produces the `String` `"/user/1234/edit"`.
-    *
-    * This version of `pathTo` takes the parameters as a tuple. There are two
-    * overloads that take unwrapped parameters for the case where there are no
-    * or a single parameter.
     */
   def pathTo(params: P): String = {
     val paramsArray = params.toArray
@@ -216,43 +256,6 @@ final class Path[P <: Tuple, Q] private (
 
     if q.isEmpty then p else s"$p?$q"
   }
-
-  /** Add a segment to this `Path`. */
-  def /(segment: String): Path[P, Q] = {
-    assertOpen()
-    Path(segments :+ Segment.One(segment), query, true)
-  }
-
-  /** Add a segment to this `Path`. */
-  def /(segment: Segment): Path[P, Q] = {
-    assertOpen()
-    segment match {
-      case Segment.One(_) => Path(segments :+ segment, query, true)
-      case Segment.All    => Path(segments :+ segment, query, false)
-    }
-  }
-
-  /** Add a segment that extracts a parameter to this `Path`. */
-  def /[B](param: Param[B]): Path[Tuple.Append[P, B], Q] = {
-    assertOpen()
-    param match {
-      case Param.One(_, _, _) => Path(segments :+ param, query, true)
-      case Param.All(_, _, _) => Path(segments :+ param, query, false)
-    }
-  }
-
-  def :?[B](query: Query[B]): Path[P, B] =
-    Path(segments, query, false)
-
-  private def assertOpen(): Boolean =
-    if open then true
-    else
-      throw new IllegalStateException(
-        s"""Cannot add a segment or parameter to a closed path.
-           |
-           |  A path is closed when it has a segment or parameter that matches all remaining elements.
-           |  A closed path cannot have additional segments of parameters added to it.""".stripMargin
-      )
 }
 object Path {
 
