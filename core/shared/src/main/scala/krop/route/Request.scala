@@ -24,9 +24,9 @@ import org.http4s.Method
 import org.http4s.Request as Http4sRequest
 
 /** A [[krop.route.Request]] describes a pattern within a [[org.http4s.Request]]
-  * that will be routed to a handler. For example, it can look for a particular
-  * HTTP method, say GET, and a particular pattern within a path, such as
-  * "/user/create".
+  * that, if matched, will be routed to a handler. For example, it can look for
+  * a particular HTTP method, say GET, and a particular pattern within a path,
+  * such as "/user/create".
   *
   * The idiomatic way to create to a Request is starting with defining the HTTP
   * method and URI path, using the methods such as `get`, and `post` on the
@@ -118,6 +118,12 @@ object Request {
 
   def get[P <: Tuple, Q](path: Path[P, Q]): Request[P, Q, Unit, Unit] =
     Request.method(Method.GET, path)
+
+  def head[P <: Tuple, Q](path: Path[P, Q]): Request[P, Q, Unit, Unit] =
+    Request.method(Method.HEAD, path)
+
+  def patch[P <: Tuple, Q](path: Path[P, Q]): Request[P, Q, Unit, Unit] =
+    Request.method(Method.PATCH, path)
 
   def post[P <: Tuple, Q](path: Path[P, Q]): Request[P, Q, Unit, Unit] =
     Request.method(Method.POST, path)
