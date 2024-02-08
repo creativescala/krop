@@ -43,7 +43,7 @@ import org.http4s.Request as Http4sRequest
   *   The type of values that construct the entity. Used when creating a request
   *   that calls the Route containing this Request.
   */
-final class Request[P <: Tuple, Q, E, O](
+final class Request[P <: Tuple, Q <: Tuple, E, O](
     val method: Method,
     val path: Path[P, Q],
     val entity: Entity[E, O]
@@ -56,7 +56,7 @@ final class Request[P <: Tuple, Q, E, O](
     */
   def extract(
       request: Http4sRequest[IO]
-  ): IO[Option[NormalizedAppend[NormalizedAppend[P, Q], E]]] = {
+  ): IO[Option[NormalizedAppend[Tuple.Concat[P, Q], E]]] = {
     given EntityDecoder[IO, E] = entity.decoder
 
     Option
@@ -70,7 +70,7 @@ final class Request[P <: Tuple, Q, E, O](
             (e match {
               case ()    => Some(value)
               case other => Some(value :* other)
-            }).asInstanceOf[Option[NormalizedAppend[NormalizedAppend[P, Q], E]]]
+            }).asInstanceOf[Option[NormalizedAppend[Tuple.Concat[P, Q], E]]]
           )
     }
   }
@@ -99,7 +99,9 @@ final class Request[P <: Tuple, Q, E, O](
   def withMethod(method: Method): Request[P, Q, E, O] =
     new Request(method, path, entity)
 
-  def withPath[P2 <: Tuple, Q2](path: Path[P2, Q2]): Request[P2, Q2, E, O] =
+  def withPath[P2 <: Tuple, Q2 <: Tuple](
+      path: Path[P2, Q2]
+  ): Request[P2, Q2, E, O] =
     new Request(method, path, entity)
 
 }
@@ -113,25 +115,33 @@ object Request {
       case _          => Tuple.Append[A, B]
     }
 
-  def delete[P <: Tuple, Q](path: Path[P, Q]): Request[P, Q, Unit, Unit] =
+  def delete[P <: Tuple, Q <: Tuple](
+      path: Path[P, Q]
+  ): Request[P, Q, Unit, Unit] =
     Request.method(Method.DELETE, path)
 
-  def get[P <: Tuple, Q](path: Path[P, Q]): Request[P, Q, Unit, Unit] =
+  def get[P <: Tuple, Q <: Tuple](path: Path[P, Q]): Request[P, Q, Unit, Unit] =
     Request.method(Method.GET, path)
 
-  def head[P <: Tuple, Q](path: Path[P, Q]): Request[P, Q, Unit, Unit] =
+  def head[P <: Tuple, Q <: Tuple](
+      path: Path[P, Q]
+  ): Request[P, Q, Unit, Unit] =
     Request.method(Method.HEAD, path)
 
-  def patch[P <: Tuple, Q](path: Path[P, Q]): Request[P, Q, Unit, Unit] =
+  def patch[P <: Tuple, Q <: Tuple](
+      path: Path[P, Q]
+  ): Request[P, Q, Unit, Unit] =
     Request.method(Method.PATCH, path)
 
-  def post[P <: Tuple, Q](path: Path[P, Q]): Request[P, Q, Unit, Unit] =
+  def post[P <: Tuple, Q <: Tuple](
+      path: Path[P, Q]
+  ): Request[P, Q, Unit, Unit] =
     Request.method(Method.POST, path)
 
-  def put[P <: Tuple, Q](path: Path[P, Q]): Request[P, Q, Unit, Unit] =
+  def put[P <: Tuple, Q <: Tuple](path: Path[P, Q]): Request[P, Q, Unit, Unit] =
     Request.method(Method.PUT, path)
 
-  def method[P <: Tuple, Q](
+  def method[P <: Tuple, Q <: Tuple](
       method: Method,
       path: Path[P, Q]
   ): Request[P, Q, Unit, Unit] =

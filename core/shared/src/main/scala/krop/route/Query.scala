@@ -16,23 +16,80 @@
 
 package krop.route
 
-import scala.util.Success
+import cats.syntax.all.*
+
 import scala.util.Try
 
-trait Query[A] {
-  def parse(params: Map[String, List[String]]): Try[A]
-  def unparse(a: A): Map[String, List[String]]
+/** Exception raised when query parsing fails. */
+enum QueryParseException(message: String) extends Exception(message) {
 
-  def describe: String
+  /** Query parsing failed because no value was found in the query parameters
+    * for the given name.
+    */
+  case NoValueForName(name: String)
+      extends QueryParseException(
+        s"There was no query parameter with the name ${name}."
+      )
+}
+
+final case class Query[A <: Tuple](segments: Vector[QueryParam[?]]) {
+  //
+  // Combinators ---------------------------------------------------------------
+  //
+
+  def ++[B <: Tuple](that: Query[B]): Query[Tuple.Concat[A, B]] =
+    Query(this.segments ++ that.segments)
+
+  def and[B](param: QueryParam[B]): Query[Tuple.Append[A, B]] =
+    Query(segments :+ param)
+
+  //
+  // Interpreters --------------------------------------------------------------
+  //
+
+  def parse(params: Map[String, List[String]]): Try[A] =
+    segments
+      .traverse(s => s.parse(params))
+      .map(v => Tuple.fromArray(v.toArray).asInstanceOf[A])
+
+  def unparse(a: A): Map[String, List[String]] = {
+    val aArray = a.toArray
+
+    def loop(
+        idx: Int,
+        segments: Vector[QueryParam[?]],
+        accum: Map[String, List[String]]
+    ): Map[String, List[String]] =
+      if segments.isEmpty then accum
+      else {
+        val hd = segments.head
+        val tl = segments.tail
+
+        hd match {
+          case q: QueryParam.Required[a] =>
+            loop(idx + 1, tl, accum + q.unparse(aArray(idx).asInstanceOf[a]))
+          case q: QueryParam.Optional[a] =>
+            loop(
+              idx + 1,
+              tl,
+              accum + q.unparse(aArray(idx).asInstanceOf[Option[a]])
+            )
+        }
+      }
+
+    loop(0, segments, Map.empty)
+  }
+
+  def describe: String =
+    segments.map(_.describe).mkString("&")
 }
 object Query {
-  def empty: Query[Unit] =
-    new Query {
-      def parse(params: Map[String, List[String]]): Try[Unit] = Success(())
-      def unparse(a: Unit): Map[String, List[String]] = Map.empty
-      val describe = ""
-    }
+  val empty: Query[EmptyTuple] =
+    Query(Vector.empty)
 
-  def apply[A](name: String, param: Param[A]): QueryParam[A] =
-    QueryParam.Required(name, param)
+  def apply[A](param: QueryParam[A]): Query[Tuple1[A]] =
+    Query(Vector(param))
+
+  def apply[A](name: String, param: Param[A]): Query[Tuple1[A]] =
+    Query(Vector(QueryParam(name, param)))
 }

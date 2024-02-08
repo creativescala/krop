@@ -26,7 +26,7 @@ val reverseRoute =
       Path / "reverse" :? Query("word", Param.string)
     ),
     Response.ok(Entity.scalatags)
-  ).handle(str => p(str.reverse))
+  ).handle((str: String) => p(str.reverse))
 
 val index =
   html(

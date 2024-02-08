@@ -34,9 +34,7 @@ import scala.util.Try
   *
   * * optional parameters, that return `None` if there is no value for the name.
   */
-enum QueryParam[A] extends Query[A] {
-  case Required(name: String, param: Param[A])
-  case Optional[A](name: String, param: Param[A]) extends QueryParam[Option[A]]
+enum QueryParam[A] {
 
   /** The key within the query parameters that this `QueryParam` matches */
   def name: String
@@ -48,35 +46,27 @@ enum QueryParam[A] extends Query[A] {
       case Optional(name, param) => s"optional(${name}=${param.describe})"
     }
 
-  def and[B](that: QueryParam[B]): QueryBuilder[(A, B)] =
-    QueryBuilder(this).and(that)
-
   def parse(params: Map[String, List[String]]): Try[A] =
     this.extract(params.getOrElse(name, List.empty))
 
-  def unparse(a: A): Map[String, List[String]] =
+  def unparse(a: A): (String, List[String]) =
     this match {
       case Required(name, param) =>
         param match {
-          case All(_, _, unparse) => Map(name -> unparse(a).toList)
-          case One(_, _, unparse) => Map(name -> List(unparse(a)))
+          case All(_, _, unparse) => (name -> unparse(a).toList)
+          case One(_, _, unparse) => (name -> List(unparse(a)))
         }
 
       case Optional(name, param) =>
         a match {
           case Some(a1) =>
             param match {
-              case All(_, _, unparse) => Map(name -> unparse(a1).toList)
-              case One(_, _, unparse) => Map(name -> List(unparse(a1)))
+              case All(_, _, unparse) => (name -> unparse(a1).toList)
+              case One(_, _, unparse) => (name -> List(unparse(a1)))
             }
-          case None => Map.empty
+          case None => (name -> List.empty)
         }
     }
-
-  def imap[B](f: A => B)(g: B => A): Query[B] =
-    QueryBuilder(this).imap(using
-      TupleApply.tuple1Apply
-    )(f)(g.andThen(a => Tuple1(a)))
 
   def extract(params: List[String]): Try[A] =
     this match {
@@ -100,6 +90,9 @@ enum QueryParam[A] extends Query[A] {
             if params.isEmpty then Success(None)
             else parse(params.head).map(Some(_))
     }
+
+  case Required(name: String, param: Param[A])
+  case Optional[A](name: String, param: Param[A]) extends QueryParam[Option[A]]
 }
 object QueryParam {
   def apply[A](name: String, param: Param[A]): QueryParam[A] =

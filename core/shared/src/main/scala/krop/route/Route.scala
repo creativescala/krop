@@ -28,12 +28,12 @@ import org.http4s.HttpRoutes
 /** Type alias for a [[package.Route]] that has extracts no [[package.Entity]]
   * from the request.
   */
-type PathRoute[P <: Tuple, R] = Route[P, Unit, Unit, Unit, R]
+type PathRoute[P <: Tuple, R] = Route[P, EmptyTuple, Unit, Unit, R]
 
 /** Type alias for a [[package.Route]] that has extracts no [[package.Path]] or
   * [[package.Entity]]] parameters from the request.
   */
-type SimpleRoute[P, R] = Route[EmptyTuple, Unit, Unit, Unit, R]
+type SimpleRoute[P, R] = Route[EmptyTuple, EmptyTuple, Unit, Unit, R]
 
 /** Type alias for a [[package.Route]] that has extracts no [[package.Entity]]
   * from the request and extracts a single parameter from the [[package.Path]].
@@ -56,13 +56,10 @@ type Path1Route[P, R] = PathRoute[Tuple1[P], R]
   * @tparam R
   *   The type of the parameters used to build the [[package.Response]].
   */
-final class Route[P <: Tuple, Q, E, O, R](
+final class Route[P <: Tuple, Q <: Tuple, E, O, R](
     val request: Request[P, Q, E, O],
     val response: Response[R],
-    val handler: Request.NormalizedAppend[
-      Request.NormalizedAppend[P, Q],
-      E
-    ] => IO[R]
+    val handler: Request.NormalizedAppend[Tuple.Concat[P, Q], E] => IO[R]
 ) {
 
   /** Try this Route. If it fails to match, pass control to the given
@@ -144,20 +141,20 @@ final class Route[P <: Tuple, Q, E, O, R](
 object Route {
   import Request.NormalizedAppend
 
-  def apply[P <: Tuple, Q, E, O, R](
+  def apply[P <: Tuple, Q <: Tuple, E, O, R](
       request: Request[P, Q, E, O],
       response: Response[R]
   )(using
-      ta: TupleApply[NormalizedAppend[NormalizedAppend[P, Q], E], R],
-      taIO: TupleApply[NormalizedAppend[NormalizedAppend[P, Q], E], IO[R]]
+      ta: TupleApply[NormalizedAppend[Tuple.Concat[P, Q], E], R],
+      taIO: TupleApply[NormalizedAppend[Tuple.Concat[P, Q], E], IO[R]]
   ): RouteBuilder[P, Q, E, O, ta.Fun, taIO.Fun, R] =
     RouteBuilder(request, response, ta, taIO)
 
-  final class RouteBuilder[P <: Tuple, Q, E, O, F, FIO, R](
+  final class RouteBuilder[P <: Tuple, Q <: Tuple, E, O, F, FIO, R](
       request: Request[P, Q, E, O],
       response: Response[R],
-      ta: TupleApply.Aux[NormalizedAppend[NormalizedAppend[P, Q], E], F, R],
-      taIO: TupleApply.Aux[NormalizedAppend[NormalizedAppend[P, Q], E], FIO, IO[
+      ta: TupleApply.Aux[NormalizedAppend[Tuple.Concat[P, Q], E], F, R],
+      taIO: TupleApply.Aux[NormalizedAppend[Tuple.Concat[P, Q], E], FIO, IO[
         R
       ]]
   ) {
@@ -168,7 +165,7 @@ object Route {
       new Route(request, response, taIO.tuple(f))
 
     def passthrough(using
-        pb: PassthroughBuilder[NormalizedAppend[NormalizedAppend[P, Q], E], R]
+        pb: PassthroughBuilder[NormalizedAppend[Tuple.Concat[P, Q], E], R]
     ): Route[P, Q, E, O, R] =
       new Route(request, response, pb.build)
   }

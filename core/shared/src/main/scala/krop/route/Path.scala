@@ -72,7 +72,7 @@ import scala.util.Success
   * A `Path` that matches all segments is called a closed path. Attempting to
   * add an element to a closed path will result in an exception.
   */
-final class Path[P <: Tuple, Q] private (
+final class Path[P <: Tuple, Q <: Tuple] private (
     val segments: Vector[Segment | Param[?]],
     val query: Query[Q],
     // Indicates if this path can still have segments added to it. A Path that
@@ -107,7 +107,7 @@ final class Path[P <: Tuple, Q] private (
     }
   }
 
-  def :?[B](query: Query[B]): Path[P, B] =
+  def :?[B <: Tuple](query: Query[B]): Path[P, B] =
     Path(segments, query, false)
 
   private def assertOpen(): Boolean =
@@ -191,7 +191,7 @@ final class Path[P <: Tuple, Q] private (
   }
 
   /** Optionally extract the captured parts of the URI's path. */
-  def extract(uri: Uri): Option[Request.NormalizedAppend[P, Q]] = {
+  def extract(uri: Uri): Option[Tuple.Concat[P, Q]] = {
     def loop(
         matchSegments: Vector[Segment | Param[?]],
         pathSegments: Vector[UriPath.Segment]
@@ -233,12 +233,11 @@ final class Path[P <: Tuple, Q] private (
         p <- loop(segments, uri.path.segments).asInstanceOf[Option[P]]
         q <- query.parse(uri.multiParams).toOption
       } yield q match {
-        case ()         => p
         case EmptyTuple => p
         case other      => p :* other
       }
 
-    result.asInstanceOf[Option[Request.NormalizedAppend[P, Q]]]
+    result.asInstanceOf[Option[Tuple.Concat[P, Q]]]
   }
 
   /** Produces a human-readable representation of this Path. The toString method
@@ -263,19 +262,19 @@ object Path {
     * `Path.root` but it is more idiomatic to call one of the `/` method
     * directly on the `Path` companion object.
     */
-  final val root = Path[EmptyTuple, Unit](Vector.empty, Query.empty, true)
+  final val root = Path[EmptyTuple, EmptyTuple](Vector.empty, Query.empty, true)
 
   /** Create a `Path` that matches theg given segment. */
-  def /(segment: String): Path[EmptyTuple, Unit] =
+  def /(segment: String): Path[EmptyTuple, EmptyTuple] =
     root / segment
 
   /** Create a `Path` that matches the given segment. */
-  def /(segment: Segment): Path[EmptyTuple, Unit] =
+  def /(segment: Segment): Path[EmptyTuple, EmptyTuple] =
     root / segment
 
   /** Create a `Path` that matches the given segment and extracts it as a
     * parameter.
     */
-  def /[A](param: Param[A]): Path[Tuple1[A], Unit] =
+  def /[A](param: Param[A]): Path[Tuple1[A], EmptyTuple] =
     root / param
 }
