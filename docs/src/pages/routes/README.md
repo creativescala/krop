@@ -7,13 +7,14 @@ import krop.all.*
 Routing handles the HTTP specific details of incoming requests and outgoing responses. Routing can:
 
 1. match HTTP requests and extract Scala values;
-2. convert Scala values to an HTTP response; and in the future
-3. construct clients that call routes.
+2. convert Scala values to an HTTP response; and
+3. construct clients that do the above in reverse.
 
 There are two main abstractions:
 
 - a @:api(krop.route.Route), which deals with a single request and response; and
 - a @:api(krop.route.Routes), which is a collection of @:api(krop.route.Route).
+
 
 ## Constructing A Route
 
@@ -67,7 +68,7 @@ val viewUser = Route(Request.get(Path / "user" / Param.int), Response.ok(Entity.
   .handle(userId => s"You asked for the user ${userId.toString}")
 ```
 
-Now we can call `pathTo` to construct path to that route, which we could embed in an HTML form or a hyperlink.
+Now we can call `pathTo` to construct a path to that route, which we could embed in an HTML form or a hyperlink.
 
 ```scala mdoc
 viewUser.pathTo(1234)
@@ -103,4 +104,4 @@ Two or more routes can be combined using the `orElse` method, creating @:api(kro
 val routes = viewUser.orElse(users).orElse(twoParams)
 ```
 
-A `Route` or `Routes` can also be combined with an `Application` using overloads of the `orElse`, which produces an `Application`.
+A `Route` or `Routes` can also be combined with an `Application` using overloads of the `orElse` method, which produces an `Application`.
