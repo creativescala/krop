@@ -86,16 +86,61 @@ Constructing a `QueryParam` requires a name and a `Param`, which is the same as 
 val param = QueryParam("id", Param.int)
 ```
 
-Now we can call the `optional` method on the `QueryParam` to indicate that it is optional. Optional parameters don't cause a route to fail to match if the parameter is missing. Instead `None` is returned.
+We can also call the `optional` constructor on the `QueryParam` companion object to create an optional query parameter. Optional parameters don't cause a route to fail to match if the parameter is missing. Instead `None` is returned.
 
 ```scala mdoc:silent
-Path / "user" :? Query(param.optional)
+val optional = QueryParam.optional("id", Param.int)
 ```
 
 To collect all the query parameters as a `Map[String, List[String]]` use `QueryParam.all`.
 
 ```scala mdoc:silent
-Path / "user" :? Query(QueryParam.all)
+val all = QueryParam.all
+```
+
+
+### Query Parameter Semantics
+
+Query parameter semantics can be quite complex. There are four cases to consider:
+
+1. A parameter exists under the given name and the associated value can be parsed.
+2. A parameter exists under the given name and the associated value cannot be parsed.
+3. A parameter exists under the given name but there is no associated value.
+4. No parameter exists under the given name.
+
+The first case is the straightforward one where query parameter parsing always succeeds.
+
+```scala mdoc:reset:invisible
+import krop.all.*
+```
+```scala mdoc:silent
+val required = QueryParam("id", Param.int)
+val optional = QueryParam.optional("id", Param.int)
+```
+```scala mdoc
+required.parse(Map("id" -> List("1")))
+optional.parse(Map("id" -> List("1")))
+```
+
+In the second case both required and optional query parameters fail.
+
+```scala mdoc
+required.parse(Map("id" -> List("abc")))
+optional.parse(Map("id" -> List("abc")))
+```
+
+A required parameter will fail in the third case, but an optional parameter will succeed with `None`.
+
+```scala mdoc
+required.parse(Map("id" -> List()))
+optional.parse(Map("id" -> List()))
+```
+
+Similarly, a required parameter will fail in the third case but an optional parameter will succeed with `None`.
+
+```scala mdoc
+required.parse(Map())
+optional.parse(Map())
 ```
 
 

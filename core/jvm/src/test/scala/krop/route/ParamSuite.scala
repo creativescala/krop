@@ -17,18 +17,35 @@
 package krop.route
 
 import munit.FunSuite
+
 import scala.util.Success
 
 class ParamSuite extends FunSuite {
-  def paramOneParsesValid[A](param: Param.One[A], values: Seq[(String, A)])(using munit.Location) =
-    values.foreach{ case (str, a) => assertEquals(param.parse(str), Success(a)) }
+  def paramOneParsesValid[A](param: Param.One[A], values: Seq[(String, A)])(
+      using munit.Location
+  ) =
+    values.foreach { case (str, a) =>
+      assertEquals(param.parse(str), Success(a))
+    }
 
-  def paramOneParsesInvalid[A](param: Param.One[A], values: Seq[String])(using munit.Location) =
-    values.foreach{ (str) => assert(param.parse(str).isFailure) }
+  def paramOneParsesInvalid[A](param: Param.One[A], values: Seq[String])(using
+      munit.Location
+  ) =
+    values.foreach { (str) => assert(param.parse(str).isFailure) }
 
   test("Param.one parses valid parameter") {
-    paramOneParsesValid(Param.int, Seq(("1" -> 1), ("42" -> 42), ("-10" -> -10)))
-    paramOneParsesValid(Param.string, Seq(("a" -> "a"), ("42" -> "42"), ("baby you and me" -> "baby you and me")))
+    paramOneParsesValid(
+      Param.int,
+      Seq(("1" -> 1), ("42" -> 42), ("-10" -> -10))
+    )
+    paramOneParsesValid(
+      Param.string,
+      Seq(
+        ("a" -> "a"),
+        ("42" -> "42"),
+        ("baby you and me" -> "baby you and me")
+      )
+    )
   }
 
   test("Param.one fails to parse invalid parameter") {

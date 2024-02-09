@@ -16,21 +16,25 @@
 
 package krop.route
 
+import krop.route.Param.One
+
 import scala.util.Failure
 import scala.util.Success
 import scala.util.Try
-import krop.route.Param.One
 
 /** A [[package.QueryParam]] extracts values from a URI's query parameters. It
   * consists of a [[package.Param]], which does the necessary type conversion,
   * and the name under which the parameters should be found.
   *
-  * There are two types of `QueryParam`:
+  * There are three types of `QueryParam`:
   *
   * * required params, which fail if there are no values associated with the
-  * name; and
+  * name;
   *
-  * * optional parameters, that return `None` if there is no value for the name.
+  * * optional parameters, that return `None` if there is no value for the name;
+  * and
+  *
+  * * the `QueryParam` that returns all the query parameters.
   */
 enum QueryParam[A] {
   import QueryParseException.*
@@ -51,21 +55,36 @@ enum QueryParam[A] {
             param match {
               case Param.All(_, parse, _) => parse(values)
               case Param.One(_, parse, _) =>
-                if params.isEmpty then
-                  Failure(NoValuesForName(name).fillInStackTrace())
-                else parse(values.head)
+                if values.isEmpty then Failure(NoValuesForName(name))
+                else {
+                  val hd = values.head
+                  parse(hd).recoverWith(_ =>
+                    Failure(
+                      QueryParseException.ValueParsingFailed(name, hd, param)
+                    )
+                  )
+                }
             }
-          case None => Failure(NoParameterWithName(name).fillInStackTrace())
+          case None => Failure(NoParameterWithName(name))
         }
 
       case Optional(name, param) =>
         params.get(name) match {
           case Some(values) =>
             param match {
-              case Param.All(name, parse, unparse) => parse(values).map(Some(_))
-              case Param.One(name, parse, unparse) =>
-                if params.isEmpty then Success(None)
-                else parse(values.head).map(Some(_))
+              case Param.All(_, parse, _) => parse(values).map(Some(_))
+              case Param.One(_, parse, _) =>
+                if values.isEmpty then Success(None)
+                else {
+                  val hd = values.head
+                  parse(hd)
+                    .map(Some(_))
+                    .recoverWith(_ =>
+                      Failure(
+                        QueryParseException.ValueParsingFailed(name, hd, param)
+                      )
+                    )
+                }
             }
 
           case None => Success(None)
@@ -102,6 +121,9 @@ enum QueryParam[A] {
 object QueryParam {
   def apply[A](name: String, param: Param[A]): QueryParam[A] =
     QueryParam.Required(name, param)
+
+  def optional[A](name: String, param: Param[A]): QueryParam[Option[A]] =
+    QueryParam.Optional(name, param)
 
   val all = QueryParam.All
 }
