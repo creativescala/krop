@@ -23,12 +23,21 @@ import scala.util.Try
 /** Exception raised when query parsing fails. */
 enum QueryParseException(message: String) extends Exception(message) {
 
-  /** Query parsing failed because no value was found in the query parameters
-    * for the given name.
+  /** Query parameter parsing failed because no parameter with the given name
+    * was found in the query parameters.
     */
-  case NoValueForName(name: String)
+  case NoParameterWithName(name: String)
       extends QueryParseException(
         s"There was no query parameter with the name ${name}."
+      )
+
+  /** Query parameter parsing failed because there was a parameter with the
+    * given name in the query parameters, but that parameter was not associated
+    * with any values.
+    */
+  case NoValuesForName(name: String)
+      extends QueryParseException(
+        s"There were no values associated with the name ${name}"
       )
 }
 
@@ -42,6 +51,9 @@ final case class Query[A <: Tuple](segments: Vector[QueryParam[?]]) {
 
   def and[B](param: QueryParam[B]): Query[Tuple.Append[A, B]] =
     Query(segments :+ param)
+
+  def and[B](name: String, param: Param[B]): Query[Tuple.Append[A, B]] =
+    this.and(QueryParam(name, param))
 
   //
   // Interpreters --------------------------------------------------------------
@@ -67,13 +79,20 @@ final case class Query[A <: Tuple](segments: Vector[QueryParam[?]]) {
 
         hd match {
           case q: QueryParam.Required[a] =>
-            loop(idx + 1, tl, accum + q.unparse(aArray(idx).asInstanceOf[a]))
+            loop(
+              idx + 1,
+              tl,
+              q.unparse(aArray(idx).asInstanceOf[a])
+                .fold(accum)(p => accum + p)
+            )
           case q: QueryParam.Optional[a] =>
             loop(
               idx + 1,
               tl,
-              accum + q.unparse(aArray(idx).asInstanceOf[Option[a]])
+              q.unparse(aArray(idx).asInstanceOf[Option[a]])
+                .fold(accum)(p => accum + p)
             )
+          case QueryParam.All => loop(idx + 1, tl, accum)
         }
       }
 

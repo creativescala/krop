@@ -4,21 +4,20 @@
 import krop.all.*
 ```
 
-A @:api(krop.route.Path) represents a pattern to match against the path
-component of the request's URI. `Paths` are created by calling the `/` method to add segments to the pattern. For example
+A @:api(krop.route.Path) represents a pattern to match against the path component of the request's URI. `Paths` are created by calling the `/` method on a `Path` to add segments to the pattern. For example
 
 ```scala mdoc:silent
 Path / "user" / "create"
 ```
 
-matches a request with the path `/user/create`.
+matches the path `/user/create`.
 
-If you want to create a path without any segments you can use `Path.root`.
+To create a path without any segments you can use `Path.root`.
 
 
 ## Capturing Path Segments
 
-Use a @:api(krop.route.Param) to capture part of the path for later processing.
+Use a @:api(krop.route.Param) to capture part of the path for use by the handler.
 For example
 
 ```scala mdoc:silent
@@ -56,6 +55,47 @@ element to a closed path will result in an exception.
 
 ```scala mdoc:crash
 Path / Segment.all / "crash"
+```
+
+
+## Capturing Query Parameters
+
+A `Path` can also match and capture query parameters. For instance, the following path captures the query parameter `id` as an `Int`.
+
+```scala mdoc:silent
+Path / "user" :? Query("id", Param.int)
+```
+
+Multiple parameters can be captured. This example captures an `Int` and `String`.
+
+```scala mdoc:silent
+Path / "user" :? Query("id", Param.int).and("name", Param.string)
+```
+
+There can be multiple parameters with the same name. How this is handled depends on the underlying `Param`. A `Param` that captures only a single element, such as `Param.int` or `Param.string`, will only capture the first of multiple parameters. A `Param` that captures multiple elements, such as `Param.seq` will capture all the parameters with the given name. For example, this will capture all parameters called `name`, producing a `Seq[String]`.
+
+```scala mdoc:silent
+Path / "user" :? Query("name", Param.seq)
+```
+
+A parameter can be optional. To indicate this we need to work directly with @:api(krop.route.QueryParam), which has so far been hidden by convenience methods in the examples above.
+
+Constructing a `QueryParam` requires a name and a `Param`, which is the same as we've seen above.
+
+```scala mdoc:silent
+val param = QueryParam("id", Param.int)
+```
+
+Now we can call the `optional` method on the `QueryParam` to indicate that it is optional. Optional parameters don't cause a route to fail to match if the parameter is missing. Instead `None` is returned.
+
+```scala mdoc:silent
+Path / "user" :? Query(param.optional)
+```
+
+To collect all the query parameters as a `Map[String, List[String]]` use `QueryParam.all`.
+
+```scala mdoc:silent
+Path / "user" :? Query(QueryParam.all)
 ```
 
 

@@ -16,12 +16,10 @@
 
 package krop.route
 
-import krop.route.Param.All
-import krop.route.Param.One
-
 import scala.util.Failure
 import scala.util.Success
 import scala.util.Try
+import krop.route.Param.One
 
 /** A [[package.QueryParam]] extracts values from a URI's query parameters. It
   * consists of a [[package.Param]], which does the necessary type conversion,
@@ -35,66 +33,75 @@ import scala.util.Try
   * * optional parameters, that return `None` if there is no value for the name.
   */
 enum QueryParam[A] {
-
-  /** The key within the query parameters that this `QueryParam` matches */
-  def name: String
+  import QueryParseException.*
 
   /** Get a human-readable description of this `QueryParam`. */
   def describe: String =
     this match {
       case Required(name, param) => s"${name}=${param.describe}"
       case Optional(name, param) => s"optional(${name}=${param.describe})"
+      case All                   => "all"
     }
 
   def parse(params: Map[String, List[String]]): Try[A] =
-    this.extract(params.getOrElse(name, List.empty))
+    this match {
+      case Required(name, param) =>
+        params.get(name) match {
+          case Some(values) =>
+            param match {
+              case Param.All(_, parse, _) => parse(values)
+              case Param.One(_, parse, _) =>
+                if params.isEmpty then
+                  Failure(NoValuesForName(name).fillInStackTrace())
+                else parse(values.head)
+            }
+          case None => Failure(NoParameterWithName(name).fillInStackTrace())
+        }
 
-  def unparse(a: A): (String, List[String]) =
+      case Optional(name, param) =>
+        params.get(name) match {
+          case Some(values) =>
+            param match {
+              case Param.All(name, parse, unparse) => parse(values).map(Some(_))
+              case Param.One(name, parse, unparse) =>
+                if params.isEmpty then Success(None)
+                else parse(values.head).map(Some(_))
+            }
+
+          case None => Success(None)
+        }
+
+      case All => Success(params)
+    }
+
+  def unparse(a: A): Option[(String, List[String])] =
     this match {
       case Required(name, param) =>
         param match {
-          case All(_, _, unparse) => (name -> unparse(a).toList)
-          case One(_, _, unparse) => (name -> List(unparse(a)))
+          case Param.All(_, _, unparse) => Some(name -> unparse(a).toList)
+          case Param.One(_, _, unparse) => Some(name -> List(unparse(a)))
         }
 
       case Optional(name, param) =>
         a match {
           case Some(a1) =>
             param match {
-              case All(_, _, unparse) => (name -> unparse(a1).toList)
-              case One(_, _, unparse) => (name -> List(unparse(a1)))
+              case Param.All(_, _, unparse) => Some(name -> unparse(a1).toList)
+              case Param.One(_, _, unparse) => Some(name -> List(unparse(a1)))
             }
-          case None => (name -> List.empty)
-        }
-    }
-
-  def extract(params: List[String]): Try[A] =
-    this match {
-      case Required(name, param) =>
-        param match {
-          case All(_, parse, _) => parse(params)
-          case One(_, parse, _) =>
-            if params.isEmpty then
-              Failure(
-                IllegalArgumentException(
-                  "Cannot extract a required query parameter from an empty list of parameters"
-                )
-              )
-            else parse(params.head)
+          case None => None
         }
 
-      case Optional(name, param) =>
-        param match
-          case All(_, parse, _) => parse(params).map(Some(_))
-          case One(_, parse, _) =>
-            if params.isEmpty then Success(None)
-            else parse(params.head).map(Some(_))
+      case All => None
     }
 
   case Required(name: String, param: Param[A])
   case Optional[A](name: String, param: Param[A]) extends QueryParam[Option[A]]
+  case All extends QueryParam[Map[String, List[String]]]
 }
 object QueryParam {
   def apply[A](name: String, param: Param[A]): QueryParam[A] =
     QueryParam.Required(name, param)
+
+  val all = QueryParam.All
 }
