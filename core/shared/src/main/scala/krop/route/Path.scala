@@ -124,6 +124,16 @@ final class Path[P <: Tuple, Q <: Tuple] private (
   // Interpreters --------------------------------------------------------------
   //
 
+  /** Overload of `pathTo` for the case where the path has no parameters.
+    */
+  def pathTo(using ev: EmptyTuple =:= P): String =
+    pathTo(ev(EmptyTuple))
+
+  /** Overload of `pathTo` for the case where the path has a single parameter.
+    */
+  def pathTo[B](param: B)(using ev: Tuple1[B] =:= P): String =
+    pathTo(ev(Tuple1(param)))
+
   /** Create a `String` that links to this path with the given parameters. For
     * example, with the path
     *
