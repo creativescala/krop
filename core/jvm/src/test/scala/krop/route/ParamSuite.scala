@@ -20,12 +20,18 @@ import munit.FunSuite
 import scala.util.Success
 
 class ParamSuite extends FunSuite {
+  def paramOneParsesValid[A](param: Param.One[A], values: Seq[(String, A)])(using munit.Location) =
+    values.foreach{ case (str, a) => assertEquals(param.parse(str), Success(a)) }
+
+  def paramOneParsesInvalid[A](param: Param.One[A], values: Seq[String])(using munit.Location) =
+    values.foreach{ (str) => assert(param.parse(str).isFailure) }
+
   test("Param.one parses valid parameter") {
-    assertEquals(Param.int.parse("1"), Success(1))
-    assertEquals(Param.int.parse("42"), Success(42))
+    paramOneParsesValid(Param.int, Seq(("1" -> 1), ("42" -> 42), ("-10" -> -10)))
+    paramOneParsesValid(Param.string, Seq(("a" -> "a"), ("42" -> "42"), ("baby you and me" -> "baby you and me")))
   }
 
   test("Param.one fails to parse invalid parameter") {
-    assert(Param.int.parse("one").isFailure)
+    paramOneParsesInvalid(Param.int, Seq("a", " ", "xyz"))
   }
 }
