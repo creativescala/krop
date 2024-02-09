@@ -131,7 +131,7 @@ object Param {
   def mkString(separator: String): Param.All[String] = {
     val quotedSeparator = Pattern.quote(separator)
     Param.All(
-      "<String>",
+      s"<String>${separator}",
       seq => Success(seq.mkString(separator)),
       string => ArraySeq.unsafeWrapArray(string.split(quotedSeparator))
     )
