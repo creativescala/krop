@@ -70,8 +70,8 @@
 // 
 //   A path is closed when it has a segment or parameter that matches all remaining elements.
 //   A closed path cannot have additional segments of parameters added to it.
-// 	at krop.route.Path.assertOpen(Path.scala:117)
-// 	at krop.route.Path.$div(Path.scala:88)
+// 	at krop.route.Path.assertOpen(Path.scala:115)
+// 	at krop.route.Path.$div(Path.scala:86)
 // 	at repl.MdocSession$MdocApp.$init$$$anonfun$1(paths.md:41)</span></code></pre>
             
             <h2 id="capturing-query-parameters" class="section">Capturing Query Parameters</h2>
@@ -101,44 +101,50 @@
             <pre><code class="nohighlight"><span class="keyword">val</span><span> </span><span class="identifier">required</span><span> = </span><span class="type-name">QueryParam</span><span>(</span><span class="string-literal">&quot;id&quot;</span><span>, </span><span class="type-name">Param</span><span>.</span><span class="identifier">int</span><span>)
 </span><span class="keyword">val</span><span> </span><span class="identifier">optional</span><span> = </span><span class="type-name">QueryParam</span><span>.</span><span class="identifier">optional</span><span>(</span><span class="string-literal">&quot;id&quot;</span><span>, </span><span class="type-name">Param</span><span>.</span><span class="identifier">int</span><span>)</span></code></pre>
             <pre><code class="nohighlight"><span class="identifier">required</span><span>.</span><span class="identifier">parse</span><span>(</span><span class="type-name">Map</span><span>(</span><span class="string-literal">&quot;id&quot;</span><span> -&gt; </span><span class="type-name">List</span><span>(</span><span class="string-literal">&quot;1&quot;</span><span>)))
-</span><span class="comment">// res8: Try[Int] = Success(value = 1)
+</span><span class="comment">// res8: Either[QueryParseFailure, Int] = Right(value = 1)
 </span><span class="identifier">optional</span><span>.</span><span class="identifier">parse</span><span>(</span><span class="type-name">Map</span><span>(</span><span class="string-literal">&quot;id&quot;</span><span> -&gt; </span><span class="type-name">List</span><span>(</span><span class="string-literal">&quot;1&quot;</span><span>)))
-</span><span class="comment">// res9: Try[Option[Int]] = Success(value = Some(value = 1))</span></code></pre>
+</span><span class="comment">// res9: Either[QueryParseFailure, Option[Int]] = Right(
+//   value = Some(value = 1)
+// )</span></code></pre>
             <p>In the second case both required and optional query parameters fail.</p>
             <pre><code class="nohighlight"><span class="identifier">required</span><span>.</span><span class="identifier">parse</span><span>(</span><span class="type-name">Map</span><span>(</span><span class="string-literal">&quot;id&quot;</span><span> -&gt; </span><span class="type-name">List</span><span>(</span><span class="string-literal">&quot;abc&quot;</span><span>)))
-</span><span class="comment">// res10: Try[Int] = Failure(
-//   exception = ValueParsingFailed(
+</span><span class="comment">// res10: Either[QueryParseFailure, Int] = Left(
+//   value = ValueParsingFailed(
 //     name = &quot;id&quot;,
 //     value = &quot;abc&quot;,
 //     param = One(
 //       name = &quot;&lt;Int&gt;&quot;,
-//       parse = krop.route.Param$$$Lambda$14014/1386063053@4e7d66f1,
-//       unparse = krop.route.Param$$$Lambda$14015/1887502939@346843e7
+//       parse = krop.route.Param$$$Lambda$14165/1531488793@34c23aef,
+//       unparse = krop.route.Param$$$Lambda$14166/1748586718@2d37a37a
 //     )
 //   )
 // )
 </span><span class="identifier">optional</span><span>.</span><span class="identifier">parse</span><span>(</span><span class="type-name">Map</span><span>(</span><span class="string-literal">&quot;id&quot;</span><span> -&gt; </span><span class="type-name">List</span><span>(</span><span class="string-literal">&quot;abc&quot;</span><span>)))
-</span><span class="comment">// res11: Try[Option[Int]] = Failure(
-//   exception = ValueParsingFailed(
+</span><span class="comment">// res11: Either[QueryParseFailure, Option[Int]] = Left(
+//   value = ValueParsingFailed(
 //     name = &quot;id&quot;,
 //     value = &quot;abc&quot;,
 //     param = One(
 //       name = &quot;&lt;Int&gt;&quot;,
-//       parse = krop.route.Param$$$Lambda$14014/1386063053@4e7d66f1,
-//       unparse = krop.route.Param$$$Lambda$14015/1887502939@346843e7
+//       parse = krop.route.Param$$$Lambda$14165/1531488793@34c23aef,
+//       unparse = krop.route.Param$$$Lambda$14166/1748586718@2d37a37a
 //     )
 //   )
 // )</span></code></pre>
             <p>A required parameter will fail in the third case, but an optional parameter will succeed with <code>None</code>.</p>
             <pre><code class="nohighlight"><span class="identifier">required</span><span>.</span><span class="identifier">parse</span><span>(</span><span class="type-name">Map</span><span>(</span><span class="string-literal">&quot;id&quot;</span><span> -&gt; </span><span class="type-name">List</span><span>()))
-</span><span class="comment">// res12: Try[Int] = Failure(exception = NoValuesForName(name = &quot;id&quot;))
+</span><span class="comment">// res12: Either[QueryParseFailure, Int] = Left(
+//   value = NoValuesForName(name = &quot;id&quot;)
+// )
 </span><span class="identifier">optional</span><span>.</span><span class="identifier">parse</span><span>(</span><span class="type-name">Map</span><span>(</span><span class="string-literal">&quot;id&quot;</span><span> -&gt; </span><span class="type-name">List</span><span>()))
-</span><span class="comment">// res13: Try[Option[Int]] = Success(value = None)</span></code></pre>
+</span><span class="comment">// res13: Either[QueryParseFailure, Option[Int]] = Right(value = None)</span></code></pre>
             <p>Similarly, a required parameter will fail in the third case but an optional parameter will succeed with <code>None</code>.</p>
             <pre><code class="nohighlight"><span class="identifier">required</span><span>.</span><span class="identifier">parse</span><span>(</span><span class="type-name">Map</span><span>())
-</span><span class="comment">// res14: Try[Int] = Failure(exception = NoParameterWithName(name = &quot;id&quot;))
+</span><span class="comment">// res14: Either[QueryParseFailure, Int] = Left(
+//   value = NoParameterWithName(name = &quot;id&quot;)
+// )
 </span><span class="identifier">optional</span><span>.</span><span class="identifier">parse</span><span>(</span><span class="type-name">Map</span><span>())
-</span><span class="comment">// res15: Try[Option[Int]] = Success(value = None)</span></code></pre>
+</span><span class="comment">// res15: Either[QueryParseFailure, Option[Int]] = Right(value = None)</span></code></pre>
             
             <h2 id="params" class="section">Params</h2>
             <p>There are a small number of predefined <code>Param</code> instances on the
@@ -149,7 +155,7 @@
             built-in <code>Param[String]</code>.</p>
             <pre><code class="nohighlight"><span class="keyword">val</span><span> </span><span class="identifier">intParam</span><span> = </span><span class="type-name">Param</span><span>.</span><span class="identifier">string</span><span>.</span><span class="identifier">imap</span><span>(</span><span class="identifier">_</span><span>.</span><span class="identifier">toInt</span><span>)(</span><span class="identifier">_</span><span>.</span><span class="identifier">toString</span><span>)</span></code></pre>
             <pre><code class="nohighlight"><span class="identifier">intParam</span><span>.</span><span class="identifier">parse</span><span>(</span><span class="string-literal">&quot;100&quot;</span><span>)
-</span><span class="comment">// res16: Try[Int] = Success(value = 100)</span></code></pre>
+</span><span class="comment">// res16: Either[ParamParseFailure, Int] = Right(value = 100)</span></code></pre>
             <p>A <code>Param.One[A]</code> can be lifted to a <code>Param.All[Seq[A]]</code> that uses the given
             <code>Param.One</code> for every element in the <code>Seq</code>.</p>
             <pre><code class="nohighlight"><span class="keyword">val</span><span> </span><span class="identifier">intParams</span><span> = </span><span class="type-name">Param</span><span>.</span><span class="identifier">lift</span><span>(</span><span class="identifier">intParam</span><span>)</span></code></pre>
@@ -160,7 +166,7 @@
             sub-path we could use the following.</p>
             <pre><code class="nohighlight"><span class="keyword">val</span><span> </span><span class="identifier">subPath</span><span> = </span><span class="type-name">Param</span><span>.</span><span class="identifier">mkString</span><span>(</span><span class="string-literal">&quot;/&quot;</span><span>)</span></code></pre>
             <pre><code class="nohighlight"><span class="identifier">subPath</span><span>.</span><span class="identifier">parse</span><span>(</span><span class="type-name">Vector</span><span>(</span><span class="string-literal">&quot;assets&quot;</span><span>, </span><span class="string-literal">&quot;css&quot;</span><span>))
-</span><span class="comment">// res18: Try[String] = Success(value = &quot;assets/css&quot;)
+</span><span class="comment">// res18: Either[ParamParseFailure, String] = Right(value = &quot;assets/css&quot;)
 </span><span class="identifier">subPath</span><span>.</span><span class="identifier">unparse</span><span>(</span><span class="string-literal">&quot;assets/css&quot;</span><span>)
 </span><span class="comment">// res19: Seq[String] = ArraySeq(&quot;assets&quot;, &quot;css&quot;)</span></code></pre>
             <p>Finally, you can directly call the constructors for <code>Param.One</code> and <code>Param.All</code>.</p>
