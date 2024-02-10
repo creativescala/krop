@@ -18,8 +18,6 @@ package krop.route
 
 import munit.FunSuite
 
-import scala.util.Success
-
 class ParamSuite extends FunSuite {
   def paramOneParsesValid[A](param: Param.One[A], values: Seq[(String, A)])(
       using munit.Location
