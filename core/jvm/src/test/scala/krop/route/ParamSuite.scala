@@ -25,13 +25,13 @@ class ParamSuite extends FunSuite {
       using munit.Location
   ) =
     values.foreach { case (str, a) =>
-      assertEquals(param.parse(str), Success(a))
+      assertEquals(param.parse(str), Right(a))
     }
 
   def paramOneParsesInvalid[A](param: Param.One[A], values: Seq[String])(using
       munit.Location
   ) =
-    values.foreach { (str) => assert(param.parse(str).isFailure) }
+    values.foreach { (str) => assert(param.parse(str).isLeft) }
 
   test("Param.one parses valid parameter") {
     paramOneParsesValid(

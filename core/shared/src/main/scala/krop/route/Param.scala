@@ -20,8 +20,6 @@ import cats.syntax.all.*
 
 import java.util.regex.Pattern
 import scala.collection.immutable.ArraySeq
-import scala.util.Success
-import scala.util.Try
 
 /** A [[package.Param]] is used to extract values from a URI's path or query
   * parameters.
@@ -77,7 +75,7 @@ object Param {
    */
   final case class All[A](
       name: String,
-      parse: Seq[String] => Try[A],
+      parse: Seq[String] => Either[ParamParseFailure, A],
       unparse: A => Seq[String]
   ) extends Param[A] {
 
@@ -100,7 +98,7 @@ object Param {
    */
   final case class One[A](
       name: String,
-      parse: String => Try[A],
+      parse: String => Either[ParamParseFailure, A],
       unparse: A => String
   ) extends Param[A] {
 
@@ -113,16 +111,20 @@ object Param {
 
   /** A `Param` that matches a single `Int` parameter */
   val int: Param.One[Int] =
-    Param.One("<Int>", str => Try(str.toInt), _.toString)
+    Param.One(
+      "<Int>",
+      str => str.toIntOption.toRight(ParamParseFailure(str, "<Int>")),
+      _.toString
+    )
 
   /** A `Param` that matches a single `String` parameter */
   val string: Param.One[String] =
-    Param.One("<String>", Success(_), identity)
+    Param.One("<String>", Right(_), identity)
 
   /** `Param` that simply accumulates all parameters as a `Seq[String]`.
     */
   val seq: Param.All[Seq[String]] =
-    Param.All("<String>", Success(_), identity)
+    Param.All("<String>", Right(_), identity)
 
   /** `Param` that matches all parameters and converts them to a `String` by
     * adding `separator` between matched elements. The inverse splits on this
@@ -132,7 +134,7 @@ object Param {
     val quotedSeparator = Pattern.quote(separator)
     Param.All(
       s"<String>${separator}",
-      seq => Success(seq.mkString(separator)),
+      seq => Right(seq.mkString(separator)),
       string => ArraySeq.unsafeWrapArray(string.split(quotedSeparator))
     )
   }

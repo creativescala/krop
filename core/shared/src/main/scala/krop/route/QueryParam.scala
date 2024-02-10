@@ -16,11 +16,8 @@
 
 package krop.route
 
+import cats.syntax.all.*
 import krop.route.Param.One
-
-import scala.util.Failure
-import scala.util.Success
-import scala.util.Try
 
 /** A [[package.QueryParam]] extracts values from a URI's query parameters. It
   * consists of a [[package.Param]], which does the necessary type conversion,
@@ -37,7 +34,7 @@ import scala.util.Try
   * * the `QueryParam` that returns all the query parameters.
   */
 enum QueryParam[A] {
-  import QueryParseException.*
+  import QueryParseFailure.*
 
   /** Get a human-readable description of this `QueryParam`. */
   def describe: String =
@@ -47,50 +44,50 @@ enum QueryParam[A] {
       case All                   => "all"
     }
 
-  def parse(params: Map[String, List[String]]): Try[A] =
+  def parse(params: Map[String, List[String]]): Either[QueryParseFailure, A] =
     this match {
       case Required(name, param) =>
         params.get(name) match {
           case Some(values) =>
             param match {
-              case Param.All(_, parse, _) => parse(values)
+              case Param.All(_, parse, _) =>
+                parse(values).left.map(f =>
+                  ValueParsingFailed(name, f.value, param)
+                )
               case Param.One(_, parse, _) =>
-                if values.isEmpty then Failure(NoValuesForName(name))
+                if values.isEmpty then NoValuesForName(name).asLeft
                 else {
                   val hd = values.head
-                  parse(hd).recoverWith(_ =>
-                    Failure(
-                      QueryParseException.ValueParsingFailed(name, hd, param)
-                    )
-                  )
+                  parse(hd).left.map(_ => ValueParsingFailed(name, hd, param))
                 }
             }
-          case None => Failure(NoParameterWithName(name))
+          case None => NoParameterWithName(name).asLeft
         }
 
       case Optional(name, param) =>
         params.get(name) match {
           case Some(values) =>
             param match {
-              case Param.All(_, parse, _) => parse(values).map(Some(_))
+              case Param.All(_, parse, _) =>
+                parse(values)
+                  .map(Some(_))
+                  .left
+                  .map(f => ValueParsingFailed(name, f.value, param))
               case Param.One(_, parse, _) =>
-                if values.isEmpty then Success(None)
+                if values.isEmpty then None.asRight
                 else {
                   val hd = values.head
                   parse(hd)
                     .map(Some(_))
-                    .recoverWith(_ =>
-                      Failure(
-                        QueryParseException.ValueParsingFailed(name, hd, param)
-                      )
-                    )
+                    .left
+                    .map(_ => ValueParsingFailed(name, hd, param))
                 }
             }
 
-          case None => Success(None)
+          case None => None.asRight
         }
 
-      case All => Success(params)
+      case All => params.asRight
     }
 
   def unparse(a: A): Option[(String, List[String])] =

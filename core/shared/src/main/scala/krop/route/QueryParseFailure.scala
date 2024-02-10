@@ -16,14 +16,14 @@
 
 package krop.route
 
-/** Exception raised when query parsing fails. */
-enum QueryParseException(message: String) extends Exception(message) {
+/** Failure raised when query parsing fails. */
+enum QueryParseFailure(val message: String) {
 
   /** Query parameter parsing failed because no parameter with the given name
     * was found in the query parameters.
     */
   case NoParameterWithName(name: String)
-      extends QueryParseException(
+      extends QueryParseFailure(
         s"There was no query parameter with the name ${name}."
       )
 
@@ -32,12 +32,12 @@ enum QueryParseException(message: String) extends Exception(message) {
     * with any values.
     */
   case NoValuesForName(name: String)
-      extends QueryParseException(
+      extends QueryParseFailure(
         s"There were no values associated with the name ${name}"
       )
 
   case ValueParsingFailed(name: String, value: String, param: Param[?])
-      extends QueryParseException(
+      extends QueryParseFailure(
         s"Parsing the value ${value} as ${param.describe} failed for the query parameter ${name}"
       )
 }

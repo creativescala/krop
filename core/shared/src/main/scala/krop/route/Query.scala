@@ -18,8 +18,6 @@ package krop.route
 
 import cats.syntax.all.*
 
-import scala.util.Try
-
 final case class Query[A <: Tuple](segments: Vector[QueryParam[?]]) {
   //
   // Combinators ---------------------------------------------------------------
@@ -38,7 +36,7 @@ final case class Query[A <: Tuple](segments: Vector[QueryParam[?]]) {
   // Interpreters --------------------------------------------------------------
   //
 
-  def parse(params: Map[String, List[String]]): Try[A] =
+  def parse(params: Map[String, List[String]]): Either[QueryParseFailure, A] =
     segments
       .traverse(s => s.parse(params))
       .map(v => Tuple.fromArray(v.toArray).asInstanceOf[A])

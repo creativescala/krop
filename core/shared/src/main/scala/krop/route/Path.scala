@@ -26,8 +26,6 @@ import org.http4s.Uri.Path as UriPath
 import scala.annotation.tailrec
 import scala.collection.mutable
 import scala.compiletime.constValue
-import scala.util.Failure
-import scala.util.Success
 
 /** A [[krop.route.Path]] represents a pattern to match against the path
   * component of the URI of a request.`Paths` are created by calling the `/`
@@ -222,8 +220,8 @@ final class Path[P <: Tuple, Q <: Tuple] private (
             if pathSegments.isEmpty then None
             else
               parse(pathSegments(0).decoded()) match {
-                case Failure(_) => None
-                case Success(value) =>
+                case Left(_) => None
+                case Right(value) =>
                   loop(matchSegments.tail, pathSegments.tail) match {
                     case None       => None
                     case Some(tail) => Some(value *: tail)
@@ -232,8 +230,8 @@ final class Path[P <: Tuple, Q <: Tuple] private (
 
           case Param.All(_, parse, _) =>
             parse(pathSegments.map(_.decoded())) match {
-              case Failure(_)     => None
-              case Success(value) => Some(value *: EmptyTuple)
+              case Left(_)      => None
+              case Right(value) => Some(value *: EmptyTuple)
             }
         }
       }

@@ -18,19 +18,16 @@ package krop.route
 
 import munit.FunSuite
 
-import scala.util.Failure
-import scala.util.Success
-
 class QueryParamSuite extends FunSuite {
   test("Required QueryParam succeeds if first value parses") {
     val qp = QueryParam("id", Param.int)
     assertEquals(
       qp.parse(Map("id" -> List("1"), "name" -> List("Van Gogh"))),
-      Success(1)
+      Right(1)
     )
     assertEquals(
       qp.parse(Map("id" -> List("1", "foobar"), "name" -> List("Van Gogh"))),
-      Success(1)
+      Right(1)
     )
   }
 
@@ -38,7 +35,7 @@ class QueryParamSuite extends FunSuite {
     val qp = QueryParam("id", Param.int)
     assertEquals(
       qp.parse(Map("id" -> List("abc"))),
-      Failure(QueryParseException.ValueParsingFailed("id", "abc", Param.int))
+      Left(QueryParseFailure.ValueParsingFailed("id", "abc", Param.int))
     )
   }
 
@@ -46,7 +43,7 @@ class QueryParamSuite extends FunSuite {
     val qp = QueryParam("id", Param.int)
     assertEquals(
       qp.parse(Map("id" -> List())),
-      Failure(QueryParseException.NoValuesForName("id"))
+      Left(QueryParseFailure.NoValuesForName("id"))
     )
   }
 
@@ -54,7 +51,7 @@ class QueryParamSuite extends FunSuite {
     val qp = QueryParam("id", Param.int)
     assertEquals(
       qp.parse(Map("foo" -> List("1"))),
-      Failure(QueryParseException.NoParameterWithName("id"))
+      Left(QueryParseFailure.NoParameterWithName("id"))
     )
   }
 
@@ -62,11 +59,11 @@ class QueryParamSuite extends FunSuite {
     val qp = QueryParam.optional("id", Param.int)
     assertEquals(
       qp.parse(Map("id" -> List("1"), "name" -> List("Van Gogh"))),
-      Success(Some(1))
+      Right(Some(1))
     )
     assertEquals(
       qp.parse(Map("id" -> List("1", "foobar"), "name" -> List("Van Gogh"))),
-      Success(Some(1))
+      Right(Some(1))
     )
   }
 
@@ -74,7 +71,7 @@ class QueryParamSuite extends FunSuite {
     val qp = QueryParam.optional("id", Param.int)
     assertEquals(
       qp.parse(Map("id" -> List("abc"))),
-      Failure(QueryParseException.ValueParsingFailed("id", "abc", Param.int))
+      Left(QueryParseFailure.ValueParsingFailed("id", "abc", Param.int))
     )
   }
 
@@ -82,7 +79,7 @@ class QueryParamSuite extends FunSuite {
     val qp = QueryParam.optional("id", Param.int)
     assertEquals(
       qp.parse(Map("id" -> List())),
-      Success(None)
+      Right(None)
     )
   }
 
@@ -90,7 +87,7 @@ class QueryParamSuite extends FunSuite {
     val qp = QueryParam.optional("id", Param.int)
     assertEquals(
       qp.parse(Map("foo" -> List("1"))),
-      Success(None)
+      Right(None)
     )
   }
 }
