@@ -71,7 +71,11 @@ class ParamSuite extends FunSuite {
     )
     paramAllParsesValid(
       Param.lift(Param.int),
-      Seq(Seq() -> Seq(), Seq("1") -> Seq(1), Seq("1", "2", "3") -> Seq(1, 2, 3))
+      Seq(
+        Seq() -> Seq(),
+        Seq("1") -> Seq(1),
+        Seq("1", "2", "3") -> Seq(1, 2, 3)
+      )
     )
   }
 }
