@@ -31,6 +31,16 @@ class ParamSuite extends FunSuite {
   ) =
     values.foreach { (str) => assert(param.parse(str).isLeft) }
 
+  def paramAllParsesValid[A](
+      param: Param.All[A],
+      values: Seq[(Seq[String], A)]
+  )(using
+      munit.Location
+  ) =
+    values.foreach { case (strings, a) =>
+      assertEquals(param.parse(strings), Right(a))
+    }
+
   test("Param.one parses valid parameter") {
     paramOneParsesValid(
       Param.int,
@@ -48,5 +58,20 @@ class ParamSuite extends FunSuite {
 
   test("Param.one fails to parse invalid parameter") {
     paramOneParsesInvalid(Param.int, Seq("a", " ", "xyz"))
+  }
+
+  test("Paral.all parses valid parameters") {
+    paramAllParsesValid(
+      Param.seq,
+      Seq(Seq() -> Seq(), Seq("a", "b", "c") -> Seq("a", "b", "c"))
+    )
+    paramAllParsesValid(
+      Param.mkString(","),
+      Seq(Seq() -> "", Seq("a") -> "a", Seq("a", "b", "c") -> "a,b,c")
+    )
+    paramAllParsesValid(
+      Param.lift(Param.int),
+      Seq(Seq() -> Seq(), Seq("1") -> Seq(1), Seq("1", "2", "3") -> Seq(1, 2, 3))
+    )
   }
 }
