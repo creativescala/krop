@@ -60,7 +60,7 @@ class ParamSuite extends FunSuite {
     paramOneParsesInvalid(Param.int, Seq("a", " ", "xyz"))
   }
 
-  test("Paral.all parses valid parameters") {
+  test("Param.all parses valid parameters") {
     paramAllParsesValid(
       Param.seq,
       Seq(Seq() -> Seq(), Seq("a", "b", "c") -> Seq("a", "b", "c"))
