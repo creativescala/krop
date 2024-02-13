@@ -36,19 +36,58 @@ import org.http4s.Request as Http4sRequest
   *   The type of values extracted from the URI path.
   * @tparam Q
   *   The type of values extracted from the URI query parameters.
+  * @tparam H
+  *   The type of values extracted from headers and other parts of the request.
   * @tparam E
-  *   The type of values extracted from other parts of the request (e.g. headers
-  *   or entity).
+  *   The type of value extracted from the entity.
   * @tparam O
   *   The type of values that construct the entity. Used when creating a request
   *   that calls the Route containing this Request.
   */
-final class Request[P <: Tuple, Q <: Tuple, E, O](
-    val method: Method,
-    val path: Path[P, Q],
-    val entity: Entity[E, O]
+final case class Request[P <: Tuple, Q <: Tuple, H <: Tuple, E, O] private (
+    method: Method,
+    path: Path[P, Q],
+    headers: RequestHeaders[H],
+    entity: Entity[E, O]
 ) {
   import Request.NormalizedAppend
+
+  //
+  // Combinators ---------------------------------------------------------------
+  //
+
+  /** Create a [[scala.String]] path suitable for embedding in HTML that links
+    * to the path described by this [[package.Request]]. Use this to create
+    * hyperlinks or form actions that call a route, without needing to hardcode
+    * the route in the HTML.
+    *
+    * This path will not include settings like the entity or headers that this
+    * [[package.Request]] may require. It is assumed this will be handled
+    * elsewhere.
+    */
+  def pathTo(params: P): String =
+    path.pathTo(params)
+
+  /** Produces a human-readable representation of this [[package.Request]]. The
+    * toString method is used to output the usual programmatic representation.
+    */
+  def describe: String =
+    s"${method.toString()} ${path.describe} ${entity.encoder.contentType.map(_.mediaType).getOrElse("")}"
+
+  def withEntity[E2, O2](entity: Entity[E2, O2]): Request[P, Q, H, E2, O2] =
+    Request(method, path, headers, entity)
+
+  def withMethod(method: Method): Request[P, Q, H, E, O] =
+    Request(method, path, headers, entity)
+
+  def withPath[P2 <: Tuple, Q2 <: Tuple](
+      path: Path[P2, Q2]
+  ): Request[P2, Q2, H, E, O] =
+    Request(method, path, headers, entity)
+
+  //
+  // Interpreters --------------------------------------------------------------
+  //
 
   /** Extract the values that this Request matches from a
     * [[org.http4s.Request]], returning [[scala.None]] if the given request
@@ -75,35 +114,6 @@ final class Request[P <: Tuple, Q <: Tuple, E, O](
     }
   }
 
-  /** Create a [[scala.String]] path suitable for embedding in HTML that links
-    * to the path described by this [[package.Request]]. Use this to create
-    * hyperlinks or form actions that call a route, without needing to hardcode
-    * the route in the HTML.
-    *
-    * This path will not include settings like the entity or headers that this
-    * [[package.Request]] may require. It is assumed this will be handled
-    * elsewhere.
-    */
-  def pathTo(params: P): String =
-    path.pathTo(params)
-
-  /** Produces a human-readable representation of this [[package.Request]]. The
-    * toString method is used to output the usual programmatic representation.
-    */
-  def describe: String =
-    s"${method.toString()} ${path.describe} ${entity.encoder.contentType.map(_.mediaType).getOrElse("")}"
-
-  def withEntity[E2, O2](entity: Entity[E2, O2]): Request[P, Q, E2, O2] =
-    new Request(method, path, entity)
-
-  def withMethod(method: Method): Request[P, Q, E, O] =
-    new Request(method, path, entity)
-
-  def withPath[P2 <: Tuple, Q2 <: Tuple](
-      path: Path[P2, Q2]
-  ): Request[P2, Q2, E, O] =
-    new Request(method, path, entity)
-
 }
 object Request {
 
@@ -117,34 +127,38 @@ object Request {
 
   def delete[P <: Tuple, Q <: Tuple](
       path: Path[P, Q]
-  ): Request[P, Q, Unit, Unit] =
+  ): Request[P, Q, EmptyTuple, Unit, Unit] =
     Request.method(Method.DELETE, path)
 
-  def get[P <: Tuple, Q <: Tuple](path: Path[P, Q]): Request[P, Q, Unit, Unit] =
+  def get[P <: Tuple, Q <: Tuple](
+      path: Path[P, Q]
+  ): Request[P, Q, EmptyTuple, Unit, Unit] =
     Request.method(Method.GET, path)
 
   def head[P <: Tuple, Q <: Tuple](
       path: Path[P, Q]
-  ): Request[P, Q, Unit, Unit] =
+  ): Request[P, Q, EmptyTuple, Unit, Unit] =
     Request.method(Method.HEAD, path)
 
   def patch[P <: Tuple, Q <: Tuple](
       path: Path[P, Q]
-  ): Request[P, Q, Unit, Unit] =
+  ): Request[P, Q, EmptyTuple, Unit, Unit] =
     Request.method(Method.PATCH, path)
 
   def post[P <: Tuple, Q <: Tuple](
       path: Path[P, Q]
-  ): Request[P, Q, Unit, Unit] =
+  ): Request[P, Q, EmptyTuple, Unit, Unit] =
     Request.method(Method.POST, path)
 
-  def put[P <: Tuple, Q <: Tuple](path: Path[P, Q]): Request[P, Q, Unit, Unit] =
+  def put[P <: Tuple, Q <: Tuple](
+      path: Path[P, Q]
+  ): Request[P, Q, EmptyTuple, Unit, Unit] =
     Request.method(Method.PUT, path)
 
   def method[P <: Tuple, Q <: Tuple](
       method: Method,
       path: Path[P, Q]
-  ): Request[P, Q, Unit, Unit] =
-    new Request(method, path, Entity.unit)
+  ): Request[P, Q, EmptyTuple, Unit, Unit] =
+    new Request(method, path, RequestHeaders.empty, Entity.unit)
 
 }
