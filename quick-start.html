@@ -50,6 +50,27 @@
             <pre><code class="nohighlight"><span>backend / run</span></code></pre>
             <p>This will start the server. Visit <code>http://localhost:8080/</code> to see the masterpiece you have just created.</p>
             
+            <h2 id="manual-setup" class="section">Manual Setup</h2>
+            <p>If you don&#39;t want to use the project template above, the steps for using Krop are:</p>
+            <ol class="arabic">
+              <li>
+                <p>Add the Krop dependency to your project&#39;s dependencies.</p>
+                <pre><code class="nohighlight"><span class="identifier">libraryDependencies</span><span> += </span><span class="string-literal">&quot;org.creativescala&quot;</span><span> %% </span><span class="string-literal">&quot;krop-core&quot;</span><span> % </span><span class="string-literal">&quot;0.7.0&quot;</span></code></pre>
+              </li>
+              <li>
+                <p>Fork when running the server, otherwise the server&#39;s socket will not released when the server finishes.</p>
+                <pre><code class="nohighlight"><span class="identifier">run</span><span> / </span><span class="identifier">fork</span><span> := </span><span class="boolean-literal">true</span><span> </span></code></pre>
+              </li>
+              <li>
+                <p>(Optional) Configure Krop so it runs in development mode.</p>
+                <pre><code class="nohighlight"><span class="identifier">run</span><span> / </span><span class="identifier">javaOptions</span><span> += </span><span class="string-literal">&quot;-Dkrop.mode=development&quot;</span></code></pre>
+              </li>
+              <li>
+                <p>(Optional) Add a logging backend.</p>
+                <pre><code class="nohighlight"><span class="identifier">libraryDependencies</span><span> += </span><span class="string-literal">&quot;ch.qos.logback&quot;</span><span> % </span><span class="string-literal">&quot;logback-classic&quot;</span><span> % &quot;</span><span class="number-literal">1.5.0</span><span> % </span><span class="type-name">Runtime</span><span> </span></code></pre>
+              </li>
+            </ol>
+            
             <h2 id="imports" class="section">Imports</h2>
             <p>To start using Krop you need to import the core Krop library. A single import is all you need.</p>
             <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">krop</span><span>.</span><span class="identifier">all</span><span>.{*, </span><span class="identifier">given</span><span>}</span></code></pre>
