@@ -74,6 +74,9 @@ import scala.util.boundary
   */
 final class Path[P <: Tuple, Q <: Tuple] private (
     val segments: Vector[Segment | Param[?]],
+    // The number of segments that are of type Param and hence the length of the
+    // Tuple P
+    val paramCount: Int,
     val query: Query[Q],
     // Indicates if this path can still have segments added to it. A Path that
     // matches the rest of a path is not open. Otherwise it is open.
@@ -86,15 +89,15 @@ final class Path[P <: Tuple, Q <: Tuple] private (
   /** Add a segment to this `Path`. */
   def /(segment: String): Path[P, Q] = {
     assertOpen()
-    Path(segments :+ Segment.One(segment), query, true)
+    Path(segments :+ Segment.One(segment), paramCount, query, true)
   }
 
   /** Add a segment to this `Path`. */
   def /(segment: Segment): Path[P, Q] = {
     assertOpen()
     segment match {
-      case Segment.One(_) => Path(segments :+ segment, query, true)
-      case Segment.All    => Path(segments :+ segment, query, false)
+      case Segment.One(_) => Path(segments :+ segment, paramCount, query, true)
+      case Segment.All    => Path(segments :+ segment, paramCount, query, false)
     }
   }
 
@@ -102,13 +105,15 @@ final class Path[P <: Tuple, Q <: Tuple] private (
   def /[B](param: Param[B]): Path[Tuple.Append[P, B], Q] = {
     assertOpen()
     param match {
-      case Param.One(_, _, _) => Path(segments :+ param, query, true)
-      case Param.All(_, _, _) => Path(segments :+ param, query, false)
+      case Param.One(_, _, _) =>
+        Path(segments :+ param, paramCount + 1, query, true)
+      case Param.All(_, _, _) =>
+        Path(segments :+ param, paramCount + 1, query, false)
     }
   }
 
   def :?[B <: Tuple](query: Query[B]): Path[P, B] =
-    Path(segments, query, false)
+    Path(segments, paramCount, query, false)
 
   private def assertOpen(): Boolean =
     if open then true
@@ -210,30 +215,30 @@ final class Path[P <: Tuple, Q <: Tuple] private (
     ): Tuple =
       if matchSegments.isEmpty then {
         if pathSegments.isEmpty then EmptyTuple
-        else Path.failure.fail(Path.failure.noMoreMatches)
+        else Path.failure.raise(Path.failure.noMoreMatches)
       } else {
         matchSegments.head match {
           case Segment.One(value) =>
             if pathSegments.isEmpty then
-              Path.failure.fail(Path.failure.noMorePathSegments)
+              Path.failure.raise(Path.failure.noMorePathSegments)
             else {
               val decoded = pathSegments(0).decoded()
 
               if decoded == value then
                 loop(matchSegments.tail, pathSegments.tail)
               else
-                Path.failure.fail(Path.failure.segmentMismatch(decoded, value))
+                Path.failure.raise(Path.failure.segmentMismatch(decoded, value))
             }
 
           case Segment.All => EmptyTuple
 
           case Param.One(_, parse, _) =>
             if pathSegments.isEmpty then
-              Path.failure.fail(Path.failure.noMorePathSegments)
+              Path.failure.raise(Path.failure.noMorePathSegments)
             else
               parse(pathSegments(0).decoded()) match {
                 case Left(err) =>
-                  Path.failure.fail(Path.failure.paramMismatch(err))
+                  Path.failure.raise(Path.failure.paramMismatch(err))
                 case Right(value) =>
                   value *: loop(matchSegments.tail, pathSegments.tail)
               }
@@ -241,7 +246,7 @@ final class Path[P <: Tuple, Q <: Tuple] private (
           case Param.All(_, parse, _) =>
             parse(pathSegments.map(_.decoded())) match {
               case Left(err) =>
-                Path.failure.fail(Path.failure.paramMismatch(err))
+                Path.failure.raise(Path.failure.paramMismatch(err))
               case Right(value) => value *: EmptyTuple
             }
         }
@@ -249,7 +254,7 @@ final class Path[P <: Tuple, Q <: Tuple] private (
 
     val p: P = loop(segments, uri.path.segments).asInstanceOf[P]
     val q: Q = query.parse(uri.multiParams) match {
-      case Left(err)    => Path.failure.fail(Path.failure.queryFailure(err))
+      case Left(err)    => Path.failure.raise(Path.failure.queryFailure(err))
       case Right(value) => value
     }
     val result = q match {
@@ -264,8 +269,49 @@ final class Path[P <: Tuple, Q <: Tuple] private (
   def parseToOption(uri: Uri): Option[Types.TupleConcat[P, Q]] =
     Raise.toOption(parse(uri))
 
-  def unparse(params: Types.TupleConcat[P, Q]): Uri =
-    ???
+  /** Produce a Uri that represents this Path applied to the given parameters.
+    * The Uri will be empty except for the path and query components. In
+    * particular, it will have no scheme or authority.
+    */
+  def unparse(params: Types.TupleConcat[P, Q]): Uri = {
+    val ps = params.toIArray
+    val (pArr, qArr) = ps.splitAt(paramCount)
+
+    val q = Tuple.fromIArray(qArr).asInstanceOf[Q]
+    val uriQuery = org.http4s.Query.fromMap(query.unparse(q))
+
+    @tailrec
+    def loop(
+        idx: Int,
+        segments: Vector[Segment | Param[?]],
+        path: Uri.Path
+    ): Uri.Path = {
+      if segments.isEmpty then path
+      else {
+        val hd = segments.head
+        val tl = segments.tail
+
+        hd match {
+          case Segment.All => path.addEndsWithSlash
+          case Segment.One(value) =>
+            loop(idx, tl, path.addSegment(value))
+          case p: Param.All[a] =>
+            path.addSegments(
+              p.unparse(pArr(idx).asInstanceOf[a]).map(Uri.Path.Segment.apply)
+            )
+          case p: Param.One[a] =>
+            loop(
+              idx + 1,
+              tl,
+              path.addSegment(p.unparse(pArr(idx).asInstanceOf[a]))
+            )
+        }
+      }
+    }
+
+    val uriPath = loop(0, segments, Uri.Path.empty)
+    Uri(path = uriPath, query = uriQuery)
+  }
 
   /** Produces a human-readable representation of this Path. The toString method
     * is used to output the usual programmatic representation.
@@ -289,9 +335,10 @@ object Path {
     * `Path.root` but it is more idiomatic to call one of the `/` method
     * directly on the `Path` companion object.
     */
-  final val root = Path[EmptyTuple, EmptyTuple](Vector.empty, Query.empty, true)
+  final val root =
+    Path[EmptyTuple, EmptyTuple](Vector.empty, 0, Query.empty, true)
 
-  /** Create a `Path` that matches theg given segment. */
+  /** Create a `Path` that matches the given segment. */
   def /(segment: String): Path[EmptyTuple, EmptyTuple] =
     root / segment
 
@@ -305,14 +352,14 @@ object Path {
   def /[A](param: Param[A]): Path[Tuple1[A], EmptyTuple] =
     root / param
 
-  /** This contains detailed descriptions of why a Path can fail, and utility to
-    * construct a `ParseFailure` instance from a reason.
+  /** This contains detailed descriptions of why a Path can fail, and utilites
+    * to construct a `ParseFailure` instances and raise them.
     */
   object failure {
     def apply(reason: String): ParseFailure =
       ParseFailure(ParseStage.Uri, reason)
 
-    def fail(reason: String)(using raise: Raise[ParseFailure]) =
+    def raise(reason: String)(using raise: Raise[ParseFailure]) =
       raise.raise(failure(reason))
 
     val noMoreMatches =

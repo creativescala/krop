@@ -20,7 +20,7 @@ import munit.FunSuite
 import org.http4s.Uri
 import org.http4s.implicits.*
 
-class PathSuite extends FunSuite {
+class PathParseSuite extends FunSuite {
   val nonCapturingPath = Path / "user" / "create"
   val nonCapturingAllPath = Path / "assets" / "html" / Segment.all
   val capturingAllPath = Path / "assets" / "html" / Param.seq
@@ -36,13 +36,13 @@ class PathSuite extends FunSuite {
     assertEquals(nonCapturingPath.parseToOption(okUri), Some(EmptyTuple))
   }
 
-  test("Path parseToOptions expected element from http4s path") {
+  test("Path parses expected element from http4s path") {
     val okUri = uri"http://example.org/user/1234/view"
 
     assertEquals(simplePath.parseToOption(okUri), Some(1234 *: EmptyTuple))
   }
 
-  test("Path fails when cannot parseToOption element from URI path") {
+  test("Path fails when cannot parse element from URI path") {
     val badUri = uri"http://example.org/user/foobar/view"
 
     assertEquals(simplePath.parseToOption(badUri), None)
