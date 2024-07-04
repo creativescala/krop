@@ -75,11 +75,11 @@
             <pre><code class="nohighlight"><span class="keyword">val</span><span> </span><span class="identifier">request</span><span> = </span><span class="type-name">Request</span><span>.</span><span class="identifier">get</span><span>(</span><span class="type-name">Path</span><span> / </span><span class="type-name">Param</span><span>.</span><span class="identifier">int</span><span> / </span><span class="type-name">Param</span><span>.</span><span class="identifier">string</span><span>)
 </span><span class="comment">// request: Request[*:[Int, *:[String, EmptyTuple]], EmptyTuple, EmptyTuple, Unit, Unit] = Request(
 //   method = GET,
-//   path = krop.route.Path@57f2946a,
+//   path = krop.route.Path@600ce874,
 //   headers = RequestHeaders(headers = Vector()),
 //   entity = Entity(
-//     decoder = org.http4s.EntityDecoder$$anon$7@63ec2f6d,
-//     encoder = org.http4s.EntityEncoder$$anon$4@554855f0
+//     decoder = org.http4s.EntityDecoder$$anon$7@6e8a94c,
+//     encoder = org.http4s.EntityEncoder$$anon$4@686ade31
 //   )
 // )</span></code></pre>
             <p>However, when you come to use a handler with such a request, you can use a normal function with two arguments <em>not</em> a function that accepts a single <code>Tuple2</code>.</p>
