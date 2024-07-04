@@ -39,7 +39,7 @@ to the end of the URI's path. For example
 Path / "assets" / Segment.all
 ```
 
-will match `/assets/example.css` and `/assets/css/example.css`.
+will match `/assets/`, `/assets/example.css`, and `/assets/css/example.css`.
 
 To capture all segments to the end of the URI's path, use an instance of
 `Param.All` such as `Param.seq`. So
