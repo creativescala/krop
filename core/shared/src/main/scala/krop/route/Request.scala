@@ -18,6 +18,7 @@ package krop.route
 
 import cats.effect.IO
 import cats.syntax.all.*
+import krop.raise.Raise
 import org.http4s.EntityDecoder
 import org.http4s.Media
 import org.http4s.Method
@@ -100,7 +101,7 @@ final case class Request[P <: Tuple, Q <: Tuple, H <: Tuple, E, O] private (
 
     Option
       .when(request.method == method)(())
-      .flatMap(_ => path.extract(request.uri)) match {
+      .flatMap(_ => Raise.toOption(path.parse(request.uri))) match {
       case None => IO.pure(None)
       case Some(value) =>
         request
@@ -113,7 +114,6 @@ final case class Request[P <: Tuple, Q <: Tuple, H <: Tuple, E, O] private (
           )
     }
   }
-
 }
 object Request {
 

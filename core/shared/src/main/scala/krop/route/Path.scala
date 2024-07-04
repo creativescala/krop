@@ -17,7 +17,8 @@
 package krop.route
 
 import cats.syntax.all.*
-import krop.route
+import krop.Types
+import krop.raise.Raise
 import krop.route.Param.All
 import krop.route.Param.One
 import org.http4s.Uri
@@ -26,6 +27,7 @@ import org.http4s.Uri.Path as UriPath
 import scala.annotation.tailrec
 import scala.collection.mutable
 import scala.compiletime.constValue
+import scala.util.boundary
 
 /** A [[krop.route.Path]] represents a pattern to match against the path
   * component of the URI of a request.`Paths` are created by calling the `/`
@@ -198,55 +200,72 @@ final class Path[P <: Tuple, Q <: Tuple] private (
     s"pathTo(params)?$qParams"
   }
 
-  /** Optionally extract the captured parts of the URI's path. */
-  def extract(uri: Uri): Option[Tuple.Concat[P, Q]] = {
+  /** Extract the captured parts of the URI's path. */
+  def parse(
+      uri: Uri
+  )(using raise: Raise[ParseFailure]): Types.TupleConcat[P, Q] = {
     def loop(
         matchSegments: Vector[Segment | Param[?]],
         pathSegments: Vector[UriPath.Segment]
-    ): Option[Tuple] =
+    ): Tuple =
       if matchSegments.isEmpty then {
-        if pathSegments.isEmpty then Some(EmptyTuple)
-        else None
+        if pathSegments.isEmpty then EmptyTuple
+        else Path.failure.fail(Path.failure.noMoreMatches)
       } else {
         matchSegments.head match {
           case Segment.One(value) =>
-            if pathSegments.nonEmpty && pathSegments(0).decoded() == value then
-              loop(matchSegments.tail, pathSegments.tail)
-            else None
+            if pathSegments.isEmpty then
+              Path.failure.fail(Path.failure.noMorePathSegments)
+            else {
+              val decoded = pathSegments(0).decoded()
 
-          case Segment.All => Some(EmptyTuple)
+              if decoded == value then
+                loop(matchSegments.tail, pathSegments.tail)
+              else
+                Path.failure.fail(Path.failure.segmentMismatch(decoded, value))
+            }
+
+          case Segment.All => EmptyTuple
 
           case Param.One(_, parse, _) =>
-            if pathSegments.isEmpty then None
+            if pathSegments.isEmpty then
+              Path.failure.fail(Path.failure.noMorePathSegments)
             else
               parse(pathSegments(0).decoded()) match {
-                case Left(_) => None
+                case Left(err) =>
+                  Path.failure.fail(Path.failure.paramMismatch(err))
                 case Right(value) =>
-                  loop(matchSegments.tail, pathSegments.tail) match {
-                    case None       => None
-                    case Some(tail) => Some(value *: tail)
-                  }
+                  value *: loop(matchSegments.tail, pathSegments.tail)
               }
 
           case Param.All(_, parse, _) =>
             parse(pathSegments.map(_.decoded())) match {
-              case Left(_)      => None
-              case Right(value) => Some(value *: EmptyTuple)
+              case Left(err) =>
+                Path.failure.fail(Path.failure.paramMismatch(err))
+              case Right(value) => value *: EmptyTuple
             }
         }
       }
 
-    val result =
-      for {
-        p <- loop(segments, uri.path.segments).asInstanceOf[Option[P]]
-        q <- query.parse(uri.multiParams).toOption
-      } yield q match {
-        case EmptyTuple => p
-        case other      => p :* other
-      }
+    val p: P = loop(segments, uri.path.segments).asInstanceOf[P]
+    val q: Q = query.parse(uri.multiParams) match {
+      case Left(err)    => Path.failure.fail(Path.failure.queryFailure(err))
+      case Right(value) => value
+    }
+    val result = q match {
+      case EmptyTuple => p
+      case other      => p :* other
+    }
 
-    result.asInstanceOf[Option[Tuple.Concat[P, Q]]]
+    result.asInstanceOf[Types.TupleConcat[P, Q]]
   }
+
+  /** Convenience that is mostly used for testing */
+  def parseToOption(uri: Uri): Option[Types.TupleConcat[P, Q]] =
+    Raise.toOption(parse(uri))
+
+  def unparse(params: Types.TupleConcat[P, Q]): Uri =
+    ???
 
   /** Produces a human-readable representation of this Path. The toString method
     * is used to output the usual programmatic representation.
@@ -285,4 +304,51 @@ object Path {
     */
   def /[A](param: Param[A]): Path[Tuple1[A], EmptyTuple] =
     root / param
+
+  /** This contains detailed descriptions of why a Path can fail, and utility to
+    * construct a `ParseFailure` instance from a reason.
+    */
+  object failure {
+    def apply(reason: String): ParseFailure =
+      ParseFailure(ParseStage.Uri, reason)
+
+    def fail(reason: String)(using raise: Raise[ParseFailure]) =
+      raise.raise(failure(reason))
+
+    val noMoreMatches =
+      """This Path does not match any more segments in the URI
+        |
+        |The URI this Path was matching against still contains segments. However
+        |this Path does not match any more segments. To match and ignore all the
+        |remaining segments use Segment.all. The match and capture all remaining
+        |segments use Param.seq or another variant that captures all
+        |segments.""".stripMargin
+
+    val noMorePathSegments =
+      """The URI does not contain any more segments
+        |
+        |This Path is expecting one or more segments in the URI. However the URI
+        |does not contain any more segment to match against.""".stripMargin
+
+    def segmentMismatch(actual: String, expected: String) =
+      s"""The URI segment does not match the expected segment
+         |
+         |This Path is expecting the segment ${expected}. However the URI
+         |contained the segment ${actual} which does not match.""".stripMargin
+
+    def paramMismatch(error: ParamParseFailure) =
+      s"""The URI segment does not match the parameter
+         |
+         |This Path is expecting a segment to match the Param
+         |${error.description}. However the URI contained the segment
+         |${error.value} which does not match.""".stripMargin
+
+    def queryFailure(error: QueryParseFailure) =
+      s"""The URI's query parameters did contain an expected value
+         |
+         |The URI's query parameters were not successfully parsed with the
+         |following problem:
+         |
+         |  ${error.message}""".stripMargin
+  }
 }

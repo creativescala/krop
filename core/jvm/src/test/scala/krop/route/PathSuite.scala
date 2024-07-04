@@ -33,44 +33,44 @@ class PathSuite extends FunSuite {
   test("Non-capturing path succeeds with empty tuple") {
     val okUri = uri"http://example.org/user/create"
 
-    assertEquals(nonCapturingPath.extract(okUri), Some(EmptyTuple))
+    assertEquals(nonCapturingPath.parseToOption(okUri), Some(EmptyTuple))
   }
 
-  test("Path extracts expected element from http4s path") {
+  test("Path parseToOptions expected element from http4s path") {
     val okUri = uri"http://example.org/user/1234/view"
 
-    assertEquals(simplePath.extract(okUri), Some(1234 *: EmptyTuple))
+    assertEquals(simplePath.parseToOption(okUri), Some(1234 *: EmptyTuple))
   }
 
-  test("Path fails when cannot parse element from URI path") {
+  test("Path fails when cannot parseToOption element from URI path") {
     val badUri = uri"http://example.org/user/foobar/view"
 
-    assertEquals(simplePath.extract(badUri), None)
+    assertEquals(simplePath.parseToOption(badUri), None)
   }
 
   test("Path fails when insufficient segments in URI path") {
     val badUri = uri"http://example.org/user/"
 
-    assertEquals(simplePath.extract(badUri), None)
+    assertEquals(simplePath.parseToOption(badUri), None)
   }
 
   test("Path fails when too many segments in URI path") {
     val badUri = uri"http://example.org/user/1234/view/this/that"
 
-    assertEquals(simplePath.extract(badUri), None)
+    assertEquals(simplePath.parseToOption(badUri), None)
   }
 
   test("Path with all segment matches all extra segments") {
     val okUri = uri"http://example.org/assets/html/this/that/theother.html"
 
-    assertEquals(nonCapturingAllPath.extract(okUri), Some(EmptyTuple))
+    assertEquals(nonCapturingAllPath.parseToOption(okUri), Some(EmptyTuple))
   }
 
   test("Path with all param captures all extra segments") {
     val okUri = uri"http://example.org/assets/html/this/that/theother.html"
 
     assertEquals(
-      capturingAllPath.extract(okUri),
+      capturingAllPath.parseToOption(okUri),
       Some(Vector("this", "that", "theother.html") *: EmptyTuple)
     )
   }
@@ -80,9 +80,9 @@ class PathSuite extends FunSuite {
     val oneUri = uri"http://example.org/assets/html/example.html"
     val manyUri = uri"http://example.org/assets/html/a/b/c/example.html"
 
-    assertEquals(nonCapturingAllPath.extract(zeroUri), Some(EmptyTuple))
-    assertEquals(nonCapturingAllPath.extract(oneUri), Some(EmptyTuple))
-    assertEquals(nonCapturingAllPath.extract(manyUri), Some(EmptyTuple))
+    assertEquals(nonCapturingAllPath.parseToOption(zeroUri), Some(EmptyTuple))
+    assertEquals(nonCapturingAllPath.parseToOption(oneUri), Some(EmptyTuple))
+    assertEquals(nonCapturingAllPath.parseToOption(manyUri), Some(EmptyTuple))
   }
 
   test("Path with all param matches zero or more segments") {
@@ -91,15 +91,15 @@ class PathSuite extends FunSuite {
     val manyUri = uri"http://example.org/assets/html/a/b/c/example.html"
 
     assertEquals(
-      capturingAllPath.extract(zeroUri),
+      capturingAllPath.parseToOption(zeroUri),
       Some(Vector.empty[String] *: EmptyTuple)
     )
     assertEquals(
-      capturingAllPath.extract(oneUri),
+      capturingAllPath.parseToOption(oneUri),
       Some(Vector("example.html") *: EmptyTuple)
     )
     assertEquals(
-      capturingAllPath.extract(manyUri),
+      capturingAllPath.parseToOption(manyUri),
       Some(Vector("a", "b", "c", "example.html") *: EmptyTuple)
     )
   }
