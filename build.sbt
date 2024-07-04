@@ -34,7 +34,7 @@ ThisBuild / developers := List(
 // true by default, set to false to publish to s01.oss.sonatype.org
 ThisBuild / tlSonatypeUseLegacyHost := true
 
-lazy val scala3 = "3.3.1"
+lazy val scala3 = "3.3.3"
 
 ThisBuild / crossScalaVersions := List(scala3)
 ThisBuild / scalaVersion := crossScalaVersions.value.head
@@ -170,6 +170,6 @@ lazy val examples = project
     // developers. If you don't set this, Krop runs in production mode.
     run / javaOptions += "-Dkrop.mode=development",
     run / fork := true,
-    libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.4.14" % Runtime
+    libraryDependencies += Dependencies.logback.value
   )
   .dependsOn(core.jvm)

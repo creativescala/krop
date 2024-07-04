@@ -8,15 +8,16 @@ object Dependencies {
   val catsVersion = "2.10.0"
   val catsEffectVersion = "3.5.1"
   val fs2Version = "3.6.1"
-  val http4sVersion = "1.0.0-M40"
+  val http4sVersion = "1.0.0-M41"
   val endpoints4sVersion = "1.10.0"
   val endpoints4sOpenApiVersion = "4.4.0"
   val scalaJsDomVersion = "2.4.0"
-  val scalaTagsVersion = "0.12.0"
-  val log4catsVersion = "2.6.0"
+  val scalaTagsVersion = "0.13.1"
+  val log4catsVersion = "2.7.0"
+  val logbackVersion = "1.5.6"
 
   val munitVersion = "0.7.29"
-  val munitCatsVersion = "2.0.0-M4"
+  val munitCatsVersion = "2.0.0"
 
   // Libraries
   val catsEffect =
@@ -29,6 +30,8 @@ object Dependencies {
     Def.setting("org.typelevel" %%% "log4cats-core" % log4catsVersion)
   val log4catsSlf4j =
     Def.setting("org.typelevel" %%% "log4cats-slf4j" % log4catsVersion)
+  val logback =
+    Def.setting("ch.qos.logback" % "logback-classic" % logbackVersion % Runtime)
 
   val http4sClient =
     Def.setting("org.http4s" %%% "http4s-ember-client" % http4sVersion)
