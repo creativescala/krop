@@ -16,9 +16,14 @@
 
 package krop.route
 
-final case class ParseFailure(stage: ParseStage, reason: String)
+final case class ParseFailure(
+    stage: ParseStage,
+    summary: String,
+    detail: String
+)
 
 enum ParseStage {
+  case Method
   case Uri
   case Header
   case Entity

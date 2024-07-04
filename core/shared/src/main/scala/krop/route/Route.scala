@@ -16,14 +16,17 @@
 
 package krop.route
 
+import cats.Monad
 import cats.data.Chain
 import cats.data.Kleisli
 import cats.data.OptionT
 import cats.effect.IO
-import cats.syntax.all.*
 import krop.Application
 import krop.KropRuntime
+import krop.raise.Raise
 import org.http4s.HttpRoutes
+import org.http4s.Response as Http4sResponse
+import org.http4s.Request as Http4sRequest
 
 /** Type alias for a [[package.Route]] that has extracts no [[package.Entity]]
   * from the request.
@@ -124,18 +127,28 @@ final class Route[P <: Tuple, Q <: Tuple, H <: Tuple, E, O, R](
   def toRoutes: Routes =
     Routes(Chain(this))
 
+  def run[F[_, _]: Raise.Handler](
+      req: Http4sRequest[IO]
+  )(using
+      Monad[F[ParseFailure, *]],
+      KropRuntime
+  ): IO[F[ParseFailure, Http4sResponse[IO]]] =
+    request
+      .extract(req)
+      .flatMap(extracted =>
+        Raise
+          .mapToIO(extracted)(in =>
+            handler(in).flatMap(out => response.respond(req, out))
+          )
+      )
+
   def toHttpRoutes(using runtime: KropRuntime): IO[HttpRoutes[IO]] =
     IO.pure(
       Kleisli(req =>
-        OptionT(
-          request
-            .extract(req)
-            .flatMap(maybeIn =>
-              maybeIn.traverse(in =>
-                handler(in).flatMap(out => response.respond(req, out))
-              )
-            )
-        )
+        OptionT {
+          given Raise.Handler[Raise.ToOption] = Raise.toOption
+          this.run(req)
+        }
       )
     )
 }

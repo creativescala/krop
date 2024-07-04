@@ -16,6 +16,7 @@
 
 package krop.route
 
+import krop.raise.Raise
 import munit.CatsEffectSuite
 import org.http4s.Method
 import org.http4s.Uri
@@ -24,18 +25,17 @@ import org.http4s.{Request as Http4sRequest}
 
 class RequestSuite extends CatsEffectSuite {
   val simpleRequest = Request.get(Path.root)
-
   test("simple request matches GET /") {
     val request =
       Http4sRequest(method = Method.GET, uri = uri"http://example.org/")
 
-    simpleRequest.extract(request).map(_.isDefined).assert
+    simpleRequest.extract(request)(using Raise.toOption).map(_.isDefined).assert
   }
 
   test("simple request doesn't match PUT /") {
     val request =
       Http4sRequest(method = Method.PUT, uri = uri"http://example.org/")
 
-    simpleRequest.extract(request).map(_.isEmpty).assert
+    simpleRequest.extract(request)(using Raise.toOption).map(_.isEmpty).assert
   }
 }

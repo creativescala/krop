@@ -94,25 +94,36 @@ final case class Request[P <: Tuple, Q <: Tuple, H <: Tuple, E, O] private (
     * [[org.http4s.Request]], returning [[scala.None]] if the given request
     * doesn't match what this is looking for.
     */
-  def extract(
+  def extract[F[_, _]: Raise.Handler](
       request: Http4sRequest[IO]
-  ): IO[Option[NormalizedAppend[Tuple.Concat[P, Q], E]]] = {
+  ): IO[F[ParseFailure, NormalizedAppend[Tuple.Concat[P, Q], E]]] = {
     given EntityDecoder[IO, E] = entity.decoder
 
-    Option
-      .when(request.method == method)(())
-      .flatMap(_ => Raise.toOption(path.parse(request.uri))) match {
-      case None => IO.pure(None)
-      case Some(value) =>
-        request
-          .as[E]
-          .map(e =>
-            (e match {
-              case ()    => Some(value)
-              case other => Some(value :* other)
-            }).asInstanceOf[Option[NormalizedAppend[Tuple.Concat[P, Q], E]]]
+    // F[Tuple.Concat[P, Q]]
+    val fPQ =
+      Raise.handle(
+        if request.method != method
+        then
+          Raise.raise(
+            ParseFailure(
+              ParseStage.Method,
+              s"The request's method is not the expected method",
+              s"Expected the request's method to be ${method}, but it was ${request.method}."
+            )
           )
-    }
+        else path.parse(request.uri)
+      )
+
+    Raise.mapToIO(fPQ)(value =>
+      request
+        .as[E]
+        .map(e =>
+          (e match {
+            case ()    => value
+            case other => (value :* other)
+          }).asInstanceOf[NormalizedAppend[Tuple.Concat[P, Q], E]]
+        )
+    )
   }
 }
 object Request {

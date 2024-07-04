@@ -27,7 +27,6 @@ import org.http4s.Uri.Path as UriPath
 import scala.annotation.tailrec
 import scala.collection.mutable
 import scala.compiletime.constValue
-import scala.util.boundary
 
 /** A [[krop.route.Path]] represents a pattern to match against the path
   * component of the URI of a request.`Paths` are created by calling the `/`
@@ -356,46 +355,53 @@ object Path {
     * to construct a `ParseFailure` instances and raise them.
     */
   object failure {
-    def apply(reason: String): ParseFailure =
-      ParseFailure(ParseStage.Uri, reason)
-
-    def raise(reason: String)(using raise: Raise[ParseFailure]) =
-      raise.raise(failure(reason))
+    def raise(reason: ParseFailure)(using raise: Raise[ParseFailure]) =
+      raise.raise(reason)
 
     val noMoreMatches =
-      """This Path does not match any more segments in the URI
-        |
-        |The URI this Path was matching against still contains segments. However
-        |this Path does not match any more segments. To match and ignore all the
-        |remaining segments use Segment.all. The match and capture all remaining
-        |segments use Param.seq or another variant that captures all
-        |segments.""".stripMargin
+      ParseFailure(
+        ParseStage.Uri,
+        "This Path does not match any more segments in the URI",
+        """The URI this Path was matching against still contains segments. However
+          |this Path does not match any more segments. To match and ignore all the
+          |remaining segments use Segment.all. The match and capture all remaining
+          |segments use Param.seq or another variant that captures all
+          |segments.""".stripMargin
+      )
 
     val noMorePathSegments =
-      """The URI does not contain any more segments
-        |
-        |This Path is expecting one or more segments in the URI. However the URI
-        |does not contain any more segment to match against.""".stripMargin
+      ParseFailure(
+        ParseStage.Uri,
+        "The URI does not contain any more segments",
+        """This Path is expecting one or more segments in the URI. However the URI
+          |does not contain any more segment to match against.""".stripMargin
+      )
 
     def segmentMismatch(actual: String, expected: String) =
-      s"""The URI segment does not match the expected segment
-         |
-         |This Path is expecting the segment ${expected}. However the URI
-         |contained the segment ${actual} which does not match.""".stripMargin
+      ParseFailure(
+        ParseStage.Uri,
+        "The URI segment does not match the expected segment",
+        s"""This Path is expecting the segment ${expected}. However the URI
+           |contained the segment ${actual} which does not match.""".stripMargin
+      )
 
     def paramMismatch(error: ParamParseFailure) =
-      s"""The URI segment does not match the parameter
-         |
-         |This Path is expecting a segment to match the Param
-         |${error.description}. However the URI contained the segment
-         |${error.value} which does not match.""".stripMargin
+      ParseFailure(
+        ParseStage.Uri,
+        "The URI segment does not match the parameter",
+        s"""This Path is expecting a segment to match the Param
+           |${error.description}. However the URI contained the segment
+           |${error.value} which does not match.""".stripMargin
+      )
 
     def queryFailure(error: QueryParseFailure) =
-      s"""The URI's query parameters did contain an expected value
-         |
-         |The URI's query parameters were not successfully parsed with the
-         |following problem:
-         |
-         |  ${error.message}""".stripMargin
+      ParseFailure(
+        ParseStage.Uri,
+        "The URI's query parameters did contain an expected value",
+        s"""The URI's query parameters were not successfully parsed with the
+           |following problem:
+           |
+           |  ${error.message}""".stripMargin
+      )
   }
 }

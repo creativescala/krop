@@ -16,6 +16,8 @@
 
 package krop.raise
 
+import cats.effect.IO
+
 import scala.util.boundary
 import scala.util.boundary.Label
 import scala.util.boundary.break
@@ -32,6 +34,33 @@ trait Raise[E] {
 }
 
 object Raise {
+
+  /** A handler for Raise effects. */
+  trait Handler[F[_, _]] {
+    def apply[E, A](body: Raise[E] ?=> A): F[E, A]
+
+    def succeed[E, A](success: A): F[E, A]
+
+    /** Interoperate with IO */
+    def mapToIO[E, A, B](value: F[E, A])(f: A => IO[B]): IO[F[E, B]]
+  }
+
+  def raise[E](error: => E): Raise[E] ?=> Nothing =
+    raise ?=> raise.raise(error)
+
+  /** Lift a successful value */
+  def succeed[F[_, _], E, A](success: A)(using handler: Handler[F]): F[E, A] =
+    handler.succeed(success)
+
+  def mapToIO[F[_, _], E, A, B](result: F[E, A])(f: A => IO[B])(using
+      handler: Handler[F]
+  ): IO[F[E, B]] =
+    handler.mapToIO(result)(f)
+
+  def handle[F[_, _], E, A](body: Raise[E] ?=> A)(using
+      handler: Handler[F]
+  ): F[E, A] =
+    handler.apply(body)
 
   /** Construct a Raise[E] that produces a value in a context expecting a value
     * of type A.
@@ -58,15 +87,65 @@ object Raise {
   def raiseToOption[E, A](using label: Label[Option[A]]): Raise[E] =
     const(None)
 
-  inline def toEither[E, A](inline body: Raise[E] ?=> A): Either[E, A] =
-    boundary {
-      given Raise[E] = raiseToEither
-      Right(body)
+  val toEither: Handler[Either] =
+    new Handler[Either] {
+      def apply[E, A](body: (Raise[E]) ?=> A): Either[E, A] =
+        boundary {
+          given Raise[E] = raiseToEither
+          Right(body)
+        }
+
+      def succeed[E, A](success: A): Either[E, A] =
+        Right(success)
+
+      def mapToIO[E, A, B](
+          value: Either[E, A]
+      )(f: A => IO[B]): IO[Either[E, B]] =
+        value match {
+          case Left(e)  => IO.pure(Left(e))
+          case Right(a) => f(a).map(b => Right(b))
+        }
     }
 
-  inline def toOption[E, A](inline body: Raise[E] ?=> A): Option[A] =
-    boundary {
-      given Raise[E] = raiseToOption
-      Some(body)
+  type ToOption[E, A] = Option[A]
+  val toOption: Handler[ToOption] =
+    new Handler[ToOption] {
+      def apply[E, A](body: (Raise[E]) ?=> A): ToOption[E, A] =
+        boundary {
+          given Raise[E] = raiseToOption
+          succeed(body)
+        }
+
+      def succeed[E, A](success: A): ToOption[E, A] =
+        Some(success)
+
+      def mapToIO[E, A, B](value: ToOption[E, A])(
+          f: A => IO[B]
+      ): IO[ToOption[E, B]] =
+        value match {
+          case None    => IO.pure(None)
+          case Some(a) => f(a).map(b => Some(b))
+        }
+
+    }
+
+  type ToNull[E, A] = A | Null
+  val toNull: Handler[ToNull] =
+    new Handler[ToNull] {
+      def apply[E, A](body: (Raise[E]) ?=> A): ToNull[E, A] =
+        boundary {
+          given Raise[E] = const(null)
+          body
+        }
+
+      def succeed[E, A](success: A): ToNull[E, A] =
+        success
+
+      def mapToIO[E, A, B](
+          value: ToNull[E, A]
+      )(f: A => IO[B]): IO[ToNull[E, B]] =
+        if (value == null) then IO.pure(null)
+        else f(value.asInstanceOf[A])
+
     }
 }

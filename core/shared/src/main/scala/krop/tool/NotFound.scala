@@ -16,15 +16,21 @@
 
 package krop.tool
 
+import cats.syntax.all.*
 import cats.data.Kleisli
+import cats.data.EitherNec
 import cats.effect.IO
 import krop.Application
 import krop.KropRuntime
 import krop.Mode
 import krop.route.Routes
+import krop.route.Route
+import krop.route.ParseFailure
 import org.http4s.*
 import org.http4s.dsl.io.*
 import org.http4s.headers.`Content-Type`
+import krop.raise.Raise
+import cats.data.NonEmptyChain
 
 /** This is a tool that displays useful information in development mode if no
   * route matches a request. In production mode it simply returns a 404 Not
@@ -34,6 +40,18 @@ object NotFound {
   def requestToString(request: Request[IO]): String =
     s"${request.method} ${request.uri.path}"
 
+  def routeTemplate(
+      route: Route[?, ?, ?, ?, ?, ?],
+      reason: ParseFailure
+  ): String =
+    s"""<li>
+       |  <p><pre><code>${Html.quote(route.request.describe)}</code></pre></p>
+       |  <details>
+       |    <summary>${reason.summary}</summary>
+       |    <p>${reason.detail}</p>
+       |  </details>
+       |</li>""".stripMargin
+
   /** The development version of this tool, which returns useful information in
     * the case of an unmatched request.
     */
@@ -42,17 +60,18 @@ object NotFound {
       (route: Routes) => {
         val kropRoutes = route.orElse(KropAssets.kropAssets.toRoutes)
 
-        val liStart = "<li><pre><code>"
-        val liEnd = "</code></pre></li>"
+        def description(
+            routes: NonEmptyChain[(Route[?, ?, ?, ?, ?, ?], ParseFailure)]
+        ) =
+          routes
+            .map { case (route, reason) => routeTemplate(route, reason) }
+            .toList
+            .mkString("\n")
 
-        val description = kropRoutes.routes
-          .map(route => Html.quote(route.request.describe))
-          .toList
-          .mkString(liStart, s"${liEnd}\n${liStart}", liEnd)
-
-        val httpRoutes = kropRoutes.toHttpRoutes
-
-        def html(req: Request[IO]) =
+        def html(
+            req: Request[IO],
+            routes: NonEmptyChain[(Route[?, ?, ?, ?, ?, ?], ParseFailure)]
+        ) =
           s"""
           |<!doctype html>
           |<html lang=en>
@@ -74,21 +93,59 @@ object NotFound {
           |    <h2>Routes</h2>
           |    <p>The available routes are:</p>
           |    <ul>
-          |    ${description}
-          |    </li>
+          |    ${description(routes)}
+          |    </ul>
           |  </main>
           |</body>
           |</html>
           """.stripMargin
 
-        def response(req: Request[IO]) =
+        def response(
+            req: Request[IO],
+            errors: NonEmptyChain[(Route[?, ?, ?, ?, ?, ?], ParseFailure)]
+        ) =
           org.http4s.dsl.io
-            .NotFound(html(req), `Content-Type`(MediaType.text.html))
+            .NotFound(html(req, errors), `Content-Type`(MediaType.text.html))
 
-        val app: IO[HttpApp[IO]] =
-          httpRoutes.map(r =>
-            Kleisli((req: Request[IO]) => r.run(req).getOrElseF(response(req)))
+        val app: IO[HttpApp[IO]] = {
+          type Annotated = (Route[?, ?, ?, ?, ?, ?], ParseFailure)
+          given Raise.Handler[Either] = Raise.toEither
+
+          IO.pure(
+            Kleisli { req =>
+              val rs = kropRoutes.routes.toList
+              // We have at least one route, the Krop routes we added ourselves
+              val firstRoute = rs.head
+              val results: IO[EitherNec[Annotated, Response[IO]]] =
+                firstRoute
+                  .run(req)
+                  .flatMap(either =>
+                    rs.tail.foldLeftM(
+                      either.leftMap(e => firstRoute -> e).toEitherNec
+                    ) { (result, route) =>
+                      result match {
+                        case Left(errors) =>
+                          // If we have failed we accumulate all the failures to
+                          // display to the developer
+                          route
+                            .run(req)
+                            .map(_.leftMap(e => errors :+ (route -> e)))
+                        case Right(value) =>
+                          // If we have succeeded we keep the first success as our result
+                          IO.pure(Right(value))
+                      }
+                    }
+                  )
+
+              results.flatMap(either =>
+                either match {
+                  case Left(errors)    => response(req, errors)
+                  case Right(response) => IO.pure(response)
+                }
+              )
+            }
           )
+        }
 
         app
       }
