@@ -45,7 +45,7 @@ If you don't want to use the project template above, the steps for using Krop ar
 4. (Optional) Add a logging backend.
 
    ```scala
-   libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.5.0 % Runtime 
+   libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.5.6" % Runtime 
    ```
 
 
