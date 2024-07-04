@@ -361,7 +361,7 @@ object Path {
     val noMoreMatches =
       ParseFailure(
         ParseStage.Uri,
-        "This Path does not match any more segments in the URI",
+        "The URI has more segments than expected",
         """The URI this Path was matching against still contains segments. However
           |this Path does not match any more segments. To match and ignore all the
           |remaining segments use Segment.all. The match and capture all remaining
@@ -380,7 +380,7 @@ object Path {
     def segmentMismatch(actual: String, expected: String) =
       ParseFailure(
         ParseStage.Uri,
-        "The URI segment does not match the expected segment",
+        "A URI segment is not the expected segment",
         s"""This Path is expecting the segment ${expected}. However the URI
            |contained the segment ${actual} which does not match.""".stripMargin
       )
@@ -388,7 +388,7 @@ object Path {
     def paramMismatch(error: ParamParseFailure) =
       ParseFailure(
         ParseStage.Uri,
-        "The URI segment does not match the parameter",
+        "A URI segment does not match a parameter",
         s"""This Path is expecting a segment to match the Param
            |${error.description}. However the URI contained the segment
            |${error.value} which does not match.""".stripMargin
@@ -397,7 +397,7 @@ object Path {
     def queryFailure(error: QueryParseFailure) =
       ParseFailure(
         ParseStage.Uri,
-        "The URI's query parameters did contain an expected value",
+        "The URI's query parameters did not contain an expected value",
         s"""The URI's query parameters were not successfully parsed with the
            |following problem:
            |

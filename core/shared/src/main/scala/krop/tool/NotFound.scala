@@ -47,7 +47,7 @@ object NotFound {
     s"""<li>
        |  <p><pre><code>${Html.quote(route.request.describe)}</code></pre></p>
        |  <details>
-       |    <summary>${reason.summary}</summary>
+       |    <summary><code>${reason.stage.toString}</code> ${reason.summary}</summary>
        |    <p>${reason.detail}</p>
        |  </details>
        |</li>""".stripMargin
