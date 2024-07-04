@@ -16,4 +16,9 @@
 
 package krop.route
 
+/** Represents a failure of a Param to parse a value
+  *
+  * Value is the value that failed to parse. Description is a description of the
+  * Param.
+  */
 final case class ParamParseFailure(value: String, description: String)
