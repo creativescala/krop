@@ -143,7 +143,7 @@ final class Path[P <: Tuple, Q <: Tuple] private (
     *
     * produces the `String` `"/user/1234/edit"`.
     */
-  def pathTo(params: P, queryParams: Q): String = {
+  def pathTo(params: P): String = {
     val paramsArray = params.toArray
 
     @tailrec
@@ -178,9 +178,13 @@ final class Path[P <: Tuple, Q <: Tuple] private (
       }
     }
 
-    val path = loop(0, segments, StringBuilder())
+    loop(0, segments, StringBuilder())
+  }
 
-    val qParams =
+  def pathAndQueryTo(pathParams: P, queryParams: Q): String = {
+    val p = this.pathTo(pathParams)
+
+    val q =
       query
         .unparse(queryParams)
         .filterNot { case (_, params) => params.isEmpty }
@@ -189,7 +193,7 @@ final class Path[P <: Tuple, Q <: Tuple] private (
         }
         .mkString("&")
 
-    s"$path?$qParams"
+    s"$p?$q"
   }
 
   /** Extract the captured parts of the URI's path. */

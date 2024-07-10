@@ -16,21 +16,21 @@
 
 package krop.tool
 
-import cats.syntax.all.*
-import cats.data.Kleisli
 import cats.data.EitherNec
+import cats.data.Kleisli
+import cats.data.NonEmptyChain
 import cats.effect.IO
+import cats.syntax.all.*
 import krop.Application
 import krop.KropRuntime
 import krop.Mode
-import krop.route.Routes
-import krop.route.Route
+import krop.raise.Raise
 import krop.route.ParseFailure
+import krop.route.Route
+import krop.route.Routes
 import org.http4s.*
 import org.http4s.dsl.io.*
 import org.http4s.headers.`Content-Type`
-import krop.raise.Raise
-import cats.data.NonEmptyChain
 
 /** This is a tool that displays useful information in development mode if no
   * route matches a request. In production mode it simply returns a 404 Not
@@ -41,7 +41,7 @@ object NotFound {
     s"${request.method} ${request.uri.path}"
 
   def routeTemplate(
-      route: Route[?, ?, ?, ?],
+      route: Route[?, ?, ?, ?, ?],
       reason: ParseFailure
   ): String =
     s"""<li>
@@ -61,7 +61,7 @@ object NotFound {
         val kropRoutes = route.orElse(KropAssets.kropAssets.toRoutes)
 
         def description(
-            routes: NonEmptyChain[(Route[?, ?, ?, ?], ParseFailure)]
+            routes: NonEmptyChain[(Route[?, ?, ?, ?, ?], ParseFailure)]
         ) =
           routes
             .map { case (route, reason) => routeTemplate(route, reason) }
@@ -70,7 +70,7 @@ object NotFound {
 
         def html(
             req: Request[IO],
-            routes: NonEmptyChain[(Route[?, ?, ?, ?], ParseFailure)]
+            routes: NonEmptyChain[(Route[?, ?, ?, ?, ?], ParseFailure)]
         ) =
           s"""
           |<!doctype html>
@@ -102,13 +102,13 @@ object NotFound {
 
         def response(
             req: Request[IO],
-            errors: NonEmptyChain[(Route[?, ?, ?, ?], ParseFailure)]
+            errors: NonEmptyChain[(Route[?, ?, ?, ?, ?], ParseFailure)]
         ) =
           org.http4s.dsl.io
             .NotFound(html(req, errors), `Content-Type`(MediaType.text.html))
 
         val app: IO[HttpApp[IO]] = {
-          type Annotated = (Route[?, ?, ?, ?], ParseFailure)
+          type Annotated = (Route[?, ?, ?, ?, ?], ParseFailure)
           given Raise.Handler[Either] = Raise.toEither
 
           IO.pure(

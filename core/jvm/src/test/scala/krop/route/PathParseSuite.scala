@@ -110,22 +110,15 @@ class PathParseSuite extends FunSuite {
   }
 
   test("Path.pathTo produces expected path") {
-    assertEquals(nonCapturingPath.pathTo, "/user/create")
     assertEquals(nonCapturingPath.pathTo(EmptyTuple), "/user/create")
 
-    assertEquals(nonCapturingAllPath.pathTo, "/assets/html/")
     assertEquals(nonCapturingAllPath.pathTo(EmptyTuple), "/assets/html/")
 
-    assertEquals(
-      capturingAllPath.pathTo(Seq("css", "main.css")),
-      "/assets/html/css/main.css"
-    )
     assertEquals(
       capturingAllPath.pathTo(Tuple1(Vector("css", "main.css"))),
       "/assets/html/css/main.css"
     )
 
-    assertEquals(simplePath.pathTo(1234), "/user/1234/view")
     assertEquals(simplePath.pathTo(Tuple1(1234)), "/user/1234/view")
   }
 }

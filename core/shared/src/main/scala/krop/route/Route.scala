@@ -25,23 +25,23 @@ import krop.Application
 import krop.KropRuntime
 import krop.raise.Raise
 import org.http4s.HttpRoutes
-import org.http4s.Response as Http4sResponse
 import org.http4s.Request as Http4sRequest
+import org.http4s.Response as Http4sResponse
 
 /** Type alias for a [[package.Route]] that has extracts no [[package.Entity]]
   * from the request.
   */
-type PathRoute[P <: Tuple, R] = Route[P, P, P, R]
+type PathRoute[P <: Tuple, Q <: Tuple, R] = Route[P, Q, P, P, R]
 
 /** Type alias for a [[package.Route]] that has extracts no [[package.Path]] or
   * [[package.Entity]]] parameters from the request.
   */
-type SimpleRoute[R] = Route[EmptyTuple, EmptyTuple, EmptyTuple, R]
+type SimpleRoute[R] = Route[EmptyTuple, EmptyTuple, EmptyTuple, EmptyTuple, R]
 
 /** Type alias for a [[package.Route]] that has extracts no [[package.Entity]]
   * from the request and extracts a single parameter from the [[package.Path]].
   */
-type Path1Route[P, R] = PathRoute[Tuple1[P], R]
+type Path1Route[P, R] = PathRoute[Tuple1[P], EmptyTuple, R]
 
 /** A [[krop.Route]] accepts a request and produces a response. A Route is the
   * basic unit for building a web service. The majority of the service will
@@ -59,8 +59,8 @@ type Path1Route[P, R] = PathRoute[Tuple1[P], R]
   * @tparam R
   *   The type of the parameters used to build the [[package.Response]].
   */
-final class Route[P <: Tuple, I <: Tuple, O <: Tuple, R](
-    val request: Request[P, I, O],
+final class Route[P <: Tuple, Q <: Tuple, I <: Tuple, O <: Tuple, R](
+    val request: Request[P, Q, I, O],
     val response: Response[R],
     val handler: I => IO[R]
 ) {
@@ -74,7 +74,7 @@ final class Route[P <: Tuple, I <: Tuple, O <: Tuple, R](
   /** Try this Route. If it fails to match, pass control to the given
     * [[package.Route]].
     */
-  def orElse(that: Route[?, ?, ?, ?]): Routes =
+  def orElse(that: Route[?, ?, ?, ?, ?]): Routes =
     this.orElse(that.toRoutes)
 
   /** Try this Route. If it fails to match, pass control to the
@@ -152,30 +152,38 @@ final class Route[P <: Tuple, I <: Tuple, O <: Tuple, R](
     )
 }
 object Route {
-  def apply[P <: Tuple, I <: Tuple, O <: Tuple, R](
-      request: Request[P, I, O],
+  def apply[P <: Tuple, Q <: Tuple, I <: Tuple, O <: Tuple, R](
+      request: Request[P, Q, I, O],
       response: Response[R]
   )(using
       ta: TupleApply[I, R],
       taIO: TupleApply[I, IO[R]]
-  ): RouteBuilder[P, I, O, ta.Fun, taIO.Fun, R] =
+  ): RouteBuilder[P, Q, I, O, ta.Fun, taIO.Fun, R] =
     RouteBuilder(request, response, ta, taIO)
 
-  final class RouteBuilder[P <: Tuple, I <: Tuple, O <: Tuple, F, FIO, R](
-      request: Request[P, I, O],
+  final class RouteBuilder[
+      P <: Tuple,
+      Q <: Tuple,
+      I <: Tuple,
+      O <: Tuple,
+      F,
+      FIO,
+      R
+  ](
+      request: Request[P, Q, I, O],
       response: Response[R],
       ta: TupleApply.Aux[I, F, R],
       taIO: TupleApply.Aux[I, FIO, IO[R]]
   ) {
-    def handle(f: F): Route[P, I, O, R] =
+    def handle(f: F): Route[P, Q, I, O, R] =
       new Route(request, response, i => IO.pure(ta.tuple(f)(i)))
 
-    def handleIO[A](f: FIO): Route[P, I, O, R] =
+    def handleIO[A](f: FIO): Route[P, Q, I, O, R] =
       new Route(request, response, taIO.tuple(f))
 
     def passthrough(using
         pb: PassthroughBuilder[I, R]
-    ): Route[P, I, O, R] =
+    ): Route[P, Q, I, O, R] =
       new Route(request, response, pb.build)
   }
 }

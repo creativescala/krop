@@ -19,15 +19,11 @@ package krop.route
 import cats.effect.IO
 import cats.syntax.all.*
 import krop.Types
-import krop.raise.Raise
-import org.http4s.EntityDecoder
-import org.http4s.Media
-import org.http4s.Method
-import org.http4s.Header
-import org.http4s.Request as Http4sRequest
-import org.http4s.Headers
-import org.typelevel.ci.CIString
 import krop.Types.TupleConcat
+import krop.raise.Raise
+import org.http4s.Header
+import org.http4s.Method
+import org.http4s.Request as Http4sRequest
 
 /** A [[krop.route.Request]] describes a pattern within a [[org.http4s.Request]]
   * that, if matched, will be routed to a handler. For example, it can look for
@@ -86,7 +82,7 @@ sealed abstract class Request[P <: Tuple, Q <: Tuple, I <: Tuple, O <: Tuple] {
     */
   def pathTo(params: P): String
 
-  def pathAndQueryTo(params: P, query: Q): String
+  def pathAndQueryTo(pathParams: P, queryParams: Q): String
 
   /** Produces a human-readable representation of this [[package.Request]]. The
     * toString method is used to output the usual programmatic representation.
@@ -109,12 +105,16 @@ object Request {
       method: Method,
       path: Path[P, Q]
   ) extends Request[
-        Types.TupleConcat[P, Q],
+        P,
+        Q,
         Types.TupleConcat[P, Q],
         Types.TupleConcat[P, Q]
       ] {
 
     type Result = Types.TupleConcat[P, Q]
+
+    export path.pathTo
+    export path.pathAndQueryTo
 
     def parse[F[_, _]: Raise.Handler](
         req: Http4sRequest[IO]
@@ -138,11 +138,6 @@ object Request {
     def unparse(params: Result): Http4sRequest[IO] =
       ???
 
-    def pathTo(params: Result): String = {
-      val (p, q) = params.toIArray.splitAt(path.paramCount)
-      path.pathTo(p.asInstanceOf[P], q.asInstanceOf[Q])
-    }
-
     def describe: String =
       s"${method.toString()} ${path.describe}"
 
@@ -150,17 +145,13 @@ object Request {
       */
     def withMethod(
         method: Method
-    ): Request[Result, Result, Result] =
+    ): RequestMethodPath[P, Q] =
       RequestMethodPath(method, path)
 
     /** Change the `Path` that this `Request` matches to the given path. */
     def withPath[P2 <: Tuple, Q2 <: Tuple](
         path: Path[P2, Q2]
-    ): Request[
-      Types.TupleConcat[P2, Q2],
-      Types.TupleConcat[P2, Q2],
-      Types.TupleConcat[P2, Q2]
-    ] =
+    ): RequestMethodPath[P2, Q2] =
       RequestMethodPath(method, path)
 
     /** When matching a request, the given header must exist in the request and
@@ -171,13 +162,8 @@ object Request {
     def extractHeader[A](using
         h: Header[A, ?],
         s: Header.Select[A]
-    ): RequestHeaders[Result, Tuple1[s.F[A]], Tuple1[s.F[A]]] =
-      RequestHeaders(
-        this,
-        List(RequestHeaders.Process.ExtractFromName(h, s)),
-        1,
-        1
-      )
+    ): RequestHeaders[P, Q, Tuple1[s.F[A]], Tuple1[s.F[A]]] =
+      RequestHeaders.empty(this).andExtractHeader[A]
 
     /** When matching a request, the given header must exist in the request and
       * it will be extracted and made available to the handler.
@@ -187,13 +173,8 @@ object Request {
     def extractHeader[A](header: A)(using
         h: Header[A, ?],
         s: Header.Select[A]
-    ): RequestHeaders[Result, Tuple1[s.F[A]], EmptyTuple] =
-      RequestHeaders(
-        this,
-        List(RequestHeaders.Process.Extract(header, h, s)),
-        1,
-        0
-      )
+    ): RequestHeaders[P, Q, Tuple1[s.F[A]], EmptyTuple] =
+      RequestHeaders.empty(this).andExtractHeader[A](header)
 
     /** When matching a request, the given header must exist in the request and
       * match the given value. It will not be made available to the handler.
@@ -203,13 +184,15 @@ object Request {
     def ensureHeader[A](header: A)(using
         h: Header[A, ?],
         s: Header.Select[A]
-    ): RequestHeaders[Result, EmptyTuple, EmptyTuple] =
-      RequestHeaders(
-        this,
-        List(RequestHeaders.Process.Ensure(header, h, s)),
-        0,
-        0
-      )
+    ): RequestHeaders[P, Q, EmptyTuple, EmptyTuple] =
+      RequestHeaders.empty(this).andEnsureHeader(header)
+
+    def withEntity[D, E](
+        entity: Entity[D, E]
+    ): RequestEntity[P, Q, P, Q, D, E] = {
+      val headers = RequestHeaders.empty(this)
+      RequestEntity(headers, entity)
+    }
   }
 
   // I is the type when this Request is viewed as an input. In other words, it's
@@ -218,22 +201,30 @@ object Request {
   // O is the type when this Request is viewed as an output. In other words,
   // it's the type of the value needed to construct a http4s request from this
   // Request.
-  final case class RequestHeaders[P <: Tuple, I <: Tuple, O <: Tuple](
-      path: Request[P, P, P],
+  final case class RequestHeaders[
+      P <: Tuple,
+      Q <: Tuple,
+      I <: Tuple,
+      O <: Tuple
+  ](
+      path: RequestMethodPath[P, Q],
       headers: List[RequestHeaders.Process],
       // Count of values that will be provided to the handler
       inputCount: Int,
       // Count of values that must be supplied to construct a Request
       outputCount: Int
-  ) extends Request[P, Types.TupleConcat[P, I], Types.TupleConcat[P, O]] {
+  ) extends Request[P, Q, Types.TupleConcat[P, I], Types.TupleConcat[P, O]] {
     type Result = Types.TupleConcat[P, I]
 
     import RequestHeaders.Process
 
+    export path.pathTo
+    export path.pathAndQueryTo
+
     def parse[F[_, _]: Raise.Handler](
         req: Http4sRequest[IO]
     ): IO[F[ParseFailure, Result]] = {
-      val ioP: IO[F[ParseFailure, P]] = path.parse(req)
+      val ioPQ: IO[F[ParseFailure, Types.TupleConcat[P, Q]]] = path.parse(req)
 
       extension [A](opt: Option[A]) {
         def orFail(header: Header[?, ?]): Raise[ParseFailure] ?=> A =
@@ -264,10 +255,10 @@ object Request {
         }
 
       Raise.flatMapToIO(extracted) { e =>
-        ioP.flatMap(fP =>
-          Raise.mapToIO(fP)(p =>
+        ioPQ.flatMap(fPQ =>
+          Raise.mapToIO(fPQ)(pq =>
             IO.pure(
-              (p ++ Tuple.fromArray(e.toArray).asInstanceOf[I])
+              (pq ++ Tuple.fromArray(e.toArray).asInstanceOf[I])
                 .asInstanceOf[Result]
             )
           )
@@ -276,9 +267,6 @@ object Request {
     }
 
     def unparse(params: TupleConcat[P, O]): Http4sRequest[IO] = ???
-
-    def pathTo(params: P): String =
-      path.pathTo(params)
 
     def describe: String =
       path.describe
@@ -291,7 +279,7 @@ object Request {
     def andExtractHeader[A](using
         h: Header[A, ?],
         s: Header.Select[A]
-    ): RequestHeaders[P, Tuple.Append[I, A], Tuple.Append[O, A]] =
+    ): RequestHeaders[P, Q, Tuple.Append[I, s.F[A]], Tuple.Append[O, s.F[A]]] =
       RequestHeaders(
         path,
         headers :+ Process.ExtractFromName(h, s),
@@ -307,7 +295,7 @@ object Request {
     def andExtractHeader[A](header: A)(using
         h: Header[A, ?],
         s: Header.Select[A]
-    ): RequestHeaders[P, Tuple.Append[I, A], O] =
+    ): RequestHeaders[P, Q, Tuple.Append[I, s.F[A]], O] =
       RequestHeaders(
         path,
         headers :+ RequestHeaders.Process.Extract(header, h, s),
@@ -323,7 +311,7 @@ object Request {
     def andEnsureHeader[A](header: A)(using
         h: Header[A, ?],
         s: Header.Select[A]
-    ): RequestHeaders[P, I, O] =
+    ): RequestHeaders[P, Q, I, O] =
       RequestHeaders(
         path,
         headers :+ RequestHeaders.Process.Ensure(header, h, s),
@@ -337,15 +325,30 @@ object Request {
       case ExtractFromName[A](header: Header[A, ?], select: Header.Select[A])
       case Ensure[A](value: A, header: Header[A, ?], select: Header.Select[A])
     }
+
+    def empty[P <: Tuple, Q <: Tuple](
+        path: RequestMethodPath[P, Q]
+    ): RequestHeaders[P, Q, EmptyTuple, EmptyTuple] =
+      RequestHeaders(path, List.empty, 0, 0)
   }
 
-  final case class RequestEntity[P <: Tuple, I <: Tuple, O <: Tuple, D, E](
-      headers: Request[P, ?, ?],
+  final case class RequestEntity[
+      P <: Tuple,
+      Q <: Tuple,
+      I <: Tuple,
+      O <: Tuple,
+      D,
+      E
+  ](
+      headers: RequestHeaders[P, Q, ?, ?],
       entity: Entity[D, E]
-  ) extends Request[P, Types.TupleAppend[I, D], Types.TupleAppend[O, E]] {
+  ) extends Request[P, Q, Types.TupleAppend[I, D], Types.TupleAppend[O, E]] {
 
     def pathTo(params: P): String =
       headers.pathTo(params)
+
+    def pathAndQueryTo(pathParams: P, queryParams: Q): String =
+      headers.pathAndQueryTo(pathParams, queryParams)
 
     def describe: String =
       "${headers.describe} ${entity.encoder.contentType.map(_.mediaType).getOrElse(\"\")}"
@@ -357,7 +360,7 @@ object Request {
 
     def withEntity[D2, E2](
         entity: Entity[D2, E2]
-    ): RequestEntity[P, I, O, D2, E2] =
+    ): RequestEntity[P, Q, I, O, D2, E2] =
       RequestEntity(headers, entity)
   }
 
