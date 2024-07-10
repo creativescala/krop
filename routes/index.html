@@ -66,21 +66,16 @@
             <p><a href="request.html">Request</a> and <a href="response.html">Response</a> have separate pages, so here we&#39;ll just discuss the handler. There are three ways to create a handler: using <code>handle</code>, <code>handleIO</code>, or <code>passthrough</code>. Assume the request produces a value of type <code>A</code> and the response needs a value of type <code>B</code>. Then these three methods have the following meaning:</p>
             <ul>
               <li><code>handle</code> is a function <code>A =&gt; B</code>;</li>
-              <li><code>handle</code> is a function <code>A =&gt; IO[B]</code>; and</li>
+              <li><code>handleIO</code> is a function <code>A =&gt; IO[B]</code>; and</li>
               <li><code>passthrough</code>, which can only be called when <code>A</code> is the same type as <code>B</code>, means that the output of the request is connected directly to the input of the response. This is useful, for example, when the response is loading a static file from the file system, and the request produces the name of the file to load.</li>
             </ul>
             
             <h3 id="type-transformations-for-handlers" class="section">Type Transformations for Handlers</h3>
-            <p>If you dig into the types produced by <code>Requests</code>, you notice a lot of tuple types are used. Here&#39;s an example, showing a <code>Request</code> producing a <code>Tuple2</code>.</p>
+            <p>If you dig into the types produced by <code>Requests</code> you will notice a lot of tuple types are used. Here&#39;s an example, showing a <code>Request</code> producing a <code>Tuple2</code>.</p>
             <pre><code class="nohighlight"><span class="keyword">val</span><span> </span><span class="identifier">request</span><span> = </span><span class="type-name">Request</span><span>.</span><span class="identifier">get</span><span>(</span><span class="type-name">Path</span><span> / </span><span class="type-name">Param</span><span>.</span><span class="identifier">int</span><span> / </span><span class="type-name">Param</span><span>.</span><span class="identifier">string</span><span>)
-</span><span class="comment">// request: Request[*:[Int, *:[String, EmptyTuple]], EmptyTuple, EmptyTuple, Unit, Unit] = Request(
+</span><span class="comment">// request: RequestMethodPath[*:[Int, *:[String, EmptyTuple]], EmptyTuple] = RequestMethodPath(
 //   method = GET,
-//   path = krop.route.Path@37c94f37,
-//   headers = RequestHeaders(headers = Vector()),
-//   entity = Entity(
-//     decoder = org.http4s.EntityDecoder$$anon$7@629bcf7e,
-//     encoder = org.http4s.EntityEncoder$$anon$4@e3265a8
-//   )
+//   path = krop.route.Path@6ca48df6
 // )</span></code></pre>
             <p>However, when you come to use a handler with such a request, you can use a normal function with two arguments <em>not</em> a function that accepts a single <code>Tuple2</code>.</p>
             <pre><code class="nohighlight"><span class="type-name">Route</span><span>(</span><span class="identifier">request</span><span>, </span><span class="type-name">Response</span><span>.</span><span class="identifier">ok</span><span>(</span><span class="type-name">Entity</span><span>.</span><span class="identifier">text</span><span>))
