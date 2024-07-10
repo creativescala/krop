@@ -27,12 +27,12 @@ import krop.tool.NotFound
 import org.http4s.HttpRoutes
 
 /** [[package.Routes]] are a collection of zero or more [[package.Route]]. */
-final class Routes(val routes: Chain[Route[?, ?, ?, ?, ?, ?]]) {
+final class Routes(val routes: Chain[Route[?, ?, ?, ?]]) {
 
   /** Create a [[package.Routes]] that tries first these routes, and if they
     * fail to match, the route in the given parameter.
     */
-  def orElse(that: Route[?, ?, ?, ?, ?, ?]): Routes =
+  def orElse(that: Route[?, ?, ?, ?]): Routes =
     Routes(this.routes :+ that)
 
   /** Create a [[package.Routes]] that tries first these routes, and if they
@@ -63,5 +63,5 @@ final class Routes(val routes: Chain[Route[?, ?, ?, ?, ?, ?]]) {
 object Routes {
 
   /** The empty [[package.Routes]], which don't match any request. */
-  val empty: Routes = new Routes(Chain.empty[Route[?, ?, ?, ?, ?, ?]])
+  val empty: Routes = new Routes(Chain.empty[Route[?, ?, ?, ?]])
 }

@@ -43,6 +43,9 @@ object Raise {
 
     /** Interoperate with IO */
     def mapToIO[E, A, B](value: F[E, A])(f: A => IO[B]): IO[F[E, B]]
+
+    /** Interoperate with IO */
+    def flatMapToIO[E, A, B](value: F[E, A])(f: A => IO[F[E, B]]): IO[F[E, B]]
   }
 
   def raise[E](error: => E): Raise[E] ?=> Nothing =
@@ -56,6 +59,11 @@ object Raise {
       handler: Handler[F]
   ): IO[F[E, B]] =
     handler.mapToIO(result)(f)
+
+  def flatMapToIO[F[_, _], E, A, B](result: F[E, A])(f: A => IO[F[E, B]])(using
+      handler: Handler[F]
+  ): IO[F[E, B]] =
+    handler.flatMapToIO(result)(f)
 
   def handle[F[_, _], E, A](body: Raise[E] ?=> A)(using
       handler: Handler[F]
@@ -105,6 +113,14 @@ object Raise {
           case Left(e)  => IO.pure(Left(e))
           case Right(a) => f(a).map(b => Right(b))
         }
+
+      def flatMapToIO[E, A, B](
+          value: Either[E, A]
+      )(f: A => IO[Either[E, B]]): IO[Either[E, B]] =
+        value match {
+          case Left(e)  => IO.pure(Left(e))
+          case Right(a) => f(a)
+        }
     }
 
   type ToOption[E, A] = Option[A]
@@ -127,6 +143,13 @@ object Raise {
           case Some(a) => f(a).map(b => Some(b))
         }
 
+      def flatMapToIO[E, A, B](value: ToOption[E, A])(
+          f: A => IO[ToOption[E, B]]
+      ): IO[ToOption[E, B]] =
+        value match {
+          case None    => IO.pure(None)
+          case Some(a) => f(a)
+        }
     }
 
   type ToNull[E, A] = A | Null
@@ -147,5 +170,10 @@ object Raise {
         if (value == null) then IO.pure(null)
         else f(value.asInstanceOf[A])
 
+      def flatMapToIO[E, A, B](
+          value: ToNull[E, A]
+      )(f: A => IO[ToNull[E, B]]): IO[ToNull[E, B]] =
+        if (value == null) then IO.pure(null)
+        else f(value.asInstanceOf[A])
     }
 }

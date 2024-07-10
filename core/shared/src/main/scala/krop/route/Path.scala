@@ -128,16 +128,6 @@ final class Path[P <: Tuple, Q <: Tuple] private (
   // Interpreters --------------------------------------------------------------
   //
 
-  /** Overload of `pathTo` for the case where the path has no parameters.
-    */
-  def pathTo(using ev: EmptyTuple =:= P): String =
-    pathTo(ev(EmptyTuple))
-
-  /** Overload of `pathTo` for the case where the path has a single parameter.
-    */
-  def pathTo[B](param: B)(using ev: Tuple1[B] =:= P): String =
-    pathTo(ev(Tuple1(param)))
-
   /** Create a `String` that links to this path with the given parameters. For
     * example, with the path
     *
@@ -153,7 +143,7 @@ final class Path[P <: Tuple, Q <: Tuple] private (
     *
     * produces the `String` `"/user/1234/edit"`.
     */
-  def pathTo(params: P): String = {
+  def pathTo(params: P, queryParams: Q): String = {
     val paramsArray = params.toArray
 
     @tailrec
@@ -188,20 +178,18 @@ final class Path[P <: Tuple, Q <: Tuple] private (
       }
     }
 
-    loop(0, segments, StringBuilder())
-  }
+    val path = loop(0, segments, StringBuilder())
 
-  def pathAndQueryTo(params: P, queryParam: Q): String = {
     val qParams =
       query
-        .unparse(queryParam)
+        .unparse(queryParams)
         .filterNot { case (_, params) => params.isEmpty }
         .map { case (name, params) =>
           params.mkString(s"${name}=", "&name=", "")
         }
         .mkString("&")
 
-    s"pathTo(params)?$qParams"
+    s"$path?$qParams"
   }
 
   /** Extract the captured parts of the URI's path. */

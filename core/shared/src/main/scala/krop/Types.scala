@@ -31,4 +31,12 @@ object Types {
           case _          => Tuple.Concat[A, B]
         }
     }
+
+  /** A variant of Tuple.Append that treats Unit as the empty tuple. */
+  type TupleAppend[A <: Tuple, B] <: Tuple =
+    B match {
+      case Unit       => A
+      case EmptyTuple => A
+      case _          => Tuple.Append[A, B]
+    }
 }

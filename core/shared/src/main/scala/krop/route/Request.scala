@@ -18,11 +18,16 @@ package krop.route
 
 import cats.effect.IO
 import cats.syntax.all.*
+import krop.Types
 import krop.raise.Raise
 import org.http4s.EntityDecoder
 import org.http4s.Media
 import org.http4s.Method
+import org.http4s.Header
 import org.http4s.Request as Http4sRequest
+import org.http4s.Headers
+import org.typelevel.ci.CIString
+import krop.Types.TupleConcat
 
 /** A [[krop.route.Request]] describes a pattern within a [[org.http4s.Request]]
   * that, if matched, will be routed to a handler. For example, it can look for
@@ -45,17 +50,30 @@ import org.http4s.Request as Http4sRequest
   *   The type of values that construct the entity. Used when creating a request
   *   that calls the Route containing this Request.
   */
-final case class Request[P <: Tuple, Q <: Tuple, H <: Tuple, E, O] private (
-    method: Method,
-    path: Path[P, Q],
-    headers: RequestHeaders[H],
-    entity: Entity[E, O]
-) {
-  import Request.NormalizedAppend
+// P is the type of path
+// Q is the type of query
+// I is the type when this Request is viewed as producing input for the user's program. In other words, it's the type passed to the handler.
+// O is the type when this Request is viewed as producing output. In other words, it's the type of the value needed to construct a http4s request from this Request.
+sealed abstract class Request[P <: Tuple, Q <: Tuple, I <: Tuple, O <: Tuple] {
 
   //
-  // Combinators ---------------------------------------------------------------
+  // Interpreters --------------------------------------------------------------
   //
+
+  def parse[F[_, _]: Raise.Handler](
+      req: Http4sRequest[IO]
+  ): IO[F[ParseFailure, I]]
+  def unparse(params: O): Http4sRequest[IO]
+
+  /** Overload of `pathTo` for the case where the path has no parameters.
+    */
+  def pathTo(using ev: EmptyTuple =:= P): String =
+    pathTo(ev(EmptyTuple))
+
+  /** Overload of `pathTo` for the case where the path has a single parameter.
+    */
+  def pathTo[B](param: B)(using ev: Tuple1[B] =:= P): String =
+    pathTo(ev(Tuple1(param)))
 
   /** Create a [[scala.String]] path suitable for embedding in HTML that links
     * to the path described by this [[package.Request]]. Use this to create
@@ -66,110 +84,317 @@ final case class Request[P <: Tuple, Q <: Tuple, H <: Tuple, E, O] private (
     * [[package.Request]] may require. It is assumed this will be handled
     * elsewhere.
     */
-  def pathTo(params: P): String =
-    path.pathTo(params)
+  def pathTo(params: P): String
+
+  def pathAndQueryTo(params: P, query: Q): String
 
   /** Produces a human-readable representation of this [[package.Request]]. The
     * toString method is used to output the usual programmatic representation.
     */
-  def describe: String =
-    s"${method.toString()} ${path.describe} ${entity.encoder.contentType.map(_.mediaType).getOrElse("")}"
-
-  def withEntity[E2, O2](entity: Entity[E2, O2]): Request[P, Q, H, E2, O2] =
-    Request(method, path, headers, entity)
-
-  def withMethod(method: Method): Request[P, Q, H, E, O] =
-    Request(method, path, headers, entity)
-
-  def withPath[P2 <: Tuple, Q2 <: Tuple](
-      path: Path[P2, Q2]
-  ): Request[P2, Q2, H, E, O] =
-    Request(method, path, headers, entity)
-
-  //
-  // Interpreters --------------------------------------------------------------
-  //
-
-  /** Extract the values that this Request matches from a
-    * [[org.http4s.Request]], returning [[scala.None]] if the given request
-    * doesn't match what this is looking for.
-    */
-  def extract[F[_, _]: Raise.Handler](
-      request: Http4sRequest[IO]
-  ): IO[F[ParseFailure, NormalizedAppend[Tuple.Concat[P, Q], E]]] = {
-    given EntityDecoder[IO, E] = entity.decoder
-
-    // F[Tuple.Concat[P, Q]]
-    val fPQ =
-      Raise.handle(
-        if request.method != method
-        then
-          Raise.raise(
-            ParseFailure(
-              ParseStage.Method,
-              s"The request's method is not the expected method",
-              s"Expected the request's method to be ${method}, but it was ${request.method}."
-            )
-          )
-        else path.parse(request.uri)
-      )
-
-    Raise.mapToIO(fPQ)(value =>
-      request
-        .as[E]
-        .map(e =>
-          (e match {
-            case ()    => value
-            case other => (value :* other)
-          }).asInstanceOf[NormalizedAppend[Tuple.Concat[P, Q], E]]
-        )
-    )
-  }
+  def describe: String
 }
 object Request {
+  //
+  // Builder Impls -------------------------------------------------------------
+  //
 
-  /** Tuple.Append that treats Unit as EmptyTuple */
-  type NormalizedAppend[A <: Tuple, B] <: Tuple =
-    B match {
-      case Unit       => A
-      case EmptyTuple => A
-      case _          => Tuple.Append[A, B]
+  // These classes form a finite-state machine for building a Request. The usual
+  // way to use them is in a sequence:
+  //
+  // 1. Start by choosing a method and path
+  // 2. Add headers (optional)
+  // 3. Add entity (optional)
+
+  final case class RequestMethodPath[P <: Tuple, Q <: Tuple](
+      method: Method,
+      path: Path[P, Q]
+  ) extends Request[
+        Types.TupleConcat[P, Q],
+        Types.TupleConcat[P, Q],
+        Types.TupleConcat[P, Q]
+      ] {
+
+    type Result = Types.TupleConcat[P, Q]
+
+    def parse[F[_, _]: Raise.Handler](
+        req: Http4sRequest[IO]
+    ): IO[F[ParseFailure, Result]] = {
+      IO.pure(
+        Raise.handle(
+          if req.method != method
+          then
+            Raise.raise(
+              ParseFailure(
+                ParseStage.Method,
+                s"The request's method is not the expected method",
+                s"Expected the request's method to be ${method}, but it was ${req.method}."
+              )
+            )
+          else path.parse(req.uri)
+        )
+      )
     }
+
+    def unparse(params: Result): Http4sRequest[IO] =
+      ???
+
+    def pathTo(params: Result): String = {
+      val (p, q) = params.toIArray.splitAt(path.paramCount)
+      path.pathTo(p.asInstanceOf[P], q.asInstanceOf[Q])
+    }
+
+    def describe: String =
+      s"${method.toString()} ${path.describe}"
+
+    /** Change the HTTP method that this `Request` matches to the given method.
+      */
+    def withMethod(
+        method: Method
+    ): Request[Result, Result, Result] =
+      RequestMethodPath(method, path)
+
+    /** Change the `Path` that this `Request` matches to the given path. */
+    def withPath[P2 <: Tuple, Q2 <: Tuple](
+        path: Path[P2, Q2]
+    ): Request[
+      Types.TupleConcat[P2, Q2],
+      Types.TupleConcat[P2, Q2],
+      Types.TupleConcat[P2, Q2]
+    ] =
+      RequestMethodPath(method, path)
+
+    /** When matching a request, the given header must exist in the request and
+      * it will be extracted and made available to the handler.
+      *
+      * When producing a request, a value of type `A` must be provided.
+      */
+    def extractHeader[A](using
+        h: Header[A, ?],
+        s: Header.Select[A]
+    ): RequestHeaders[Result, Tuple1[s.F[A]], Tuple1[s.F[A]]] =
+      RequestHeaders(
+        this,
+        List(RequestHeaders.Process.ExtractFromName(h, s)),
+        1,
+        1
+      )
+
+    /** When matching a request, the given header must exist in the request and
+      * it will be extracted and made available to the handler.
+      *
+      * When producing a request, the given header will be added to the request.
+      */
+    def extractHeader[A](header: A)(using
+        h: Header[A, ?],
+        s: Header.Select[A]
+    ): RequestHeaders[Result, Tuple1[s.F[A]], EmptyTuple] =
+      RequestHeaders(
+        this,
+        List(RequestHeaders.Process.Extract(header, h, s)),
+        1,
+        0
+      )
+
+    /** When matching a request, the given header must exist in the request and
+      * match the given value. It will not be made available to the handler.
+      *
+      * When producing a request, the given header will be added to the request.
+      */
+    def ensureHeader[A](header: A)(using
+        h: Header[A, ?],
+        s: Header.Select[A]
+    ): RequestHeaders[Result, EmptyTuple, EmptyTuple] =
+      RequestHeaders(
+        this,
+        List(RequestHeaders.Process.Ensure(header, h, s)),
+        0,
+        0
+      )
+  }
+
+  // I is the type when this Request is viewed as an input. In other words, it's
+  // the type passed to the handler.
+  //
+  // O is the type when this Request is viewed as an output. In other words,
+  // it's the type of the value needed to construct a http4s request from this
+  // Request.
+  final case class RequestHeaders[P <: Tuple, I <: Tuple, O <: Tuple](
+      path: Request[P, P, P],
+      headers: List[RequestHeaders.Process],
+      // Count of values that will be provided to the handler
+      inputCount: Int,
+      // Count of values that must be supplied to construct a Request
+      outputCount: Int
+  ) extends Request[P, Types.TupleConcat[P, I], Types.TupleConcat[P, O]] {
+    type Result = Types.TupleConcat[P, I]
+
+    import RequestHeaders.Process
+
+    def parse[F[_, _]: Raise.Handler](
+        req: Http4sRequest[IO]
+    ): IO[F[ParseFailure, Result]] = {
+      val ioP: IO[F[ParseFailure, P]] = path.parse(req)
+
+      extension [A](opt: Option[A]) {
+        def orFail(header: Header[?, ?]): Raise[ParseFailure] ?=> A =
+          opt.getOrElse(
+            Raise.raise(
+              ParseFailure(
+                ParseStage.Header,
+                "Could not extract the header ${header.name}",
+                ""
+              )
+            )
+          )
+      }
+
+      val extracted: F[ParseFailure, List[?]] =
+        Raise.handle { (r: Raise[ParseFailure]) ?=>
+          val reqHeaders = req.headers
+          headers.map(p =>
+            p match {
+              case Process.Extract(value, header, select) =>
+                reqHeaders.get(using select).orFail(header)
+              case Process.ExtractFromName(header, select) =>
+                reqHeaders.get(using select).orFail(header)
+              case Process.Ensure(value, header, select) =>
+                reqHeaders.get(using select).orFail(header)
+            }
+          )
+        }
+
+      Raise.flatMapToIO(extracted) { e =>
+        ioP.flatMap(fP =>
+          Raise.mapToIO(fP)(p =>
+            IO.pure(
+              (p ++ Tuple.fromArray(e.toArray).asInstanceOf[I])
+                .asInstanceOf[Result]
+            )
+          )
+        )
+      }
+    }
+
+    def unparse(params: TupleConcat[P, O]): Http4sRequest[IO] = ???
+
+    def pathTo(params: P): String =
+      path.pathTo(params)
+
+    def describe: String =
+      path.describe
+
+    /** When matching a request, the given header must exist in the request and
+      * it will be extracted and made available to the handler.
+      *
+      * When producing a request, a value of type `A` must be provided.
+      */
+    def andExtractHeader[A](using
+        h: Header[A, ?],
+        s: Header.Select[A]
+    ): RequestHeaders[P, Tuple.Append[I, A], Tuple.Append[O, A]] =
+      RequestHeaders(
+        path,
+        headers :+ Process.ExtractFromName(h, s),
+        inputCount + 1,
+        outputCount + 1
+      )
+
+    /** When matching a request, the given header must exist in the request and
+      * it will be extracted and made available to the handler.
+      *
+      * When producing a request, the given header will be added to the request.
+      */
+    def andExtractHeader[A](header: A)(using
+        h: Header[A, ?],
+        s: Header.Select[A]
+    ): RequestHeaders[P, Tuple.Append[I, A], O] =
+      RequestHeaders(
+        path,
+        headers :+ RequestHeaders.Process.Extract(header, h, s),
+        inputCount + 1,
+        outputCount
+      )
+
+    /** When matching a request, the given header must exist in the request and
+      * match the given value. It will not be made available to the handler.
+      *
+      * When producing a request, the given header will be added to the request.
+      */
+    def andEnsureHeader[A](header: A)(using
+        h: Header[A, ?],
+        s: Header.Select[A]
+    ): RequestHeaders[P, I, O] =
+      RequestHeaders(
+        path,
+        headers :+ RequestHeaders.Process.Ensure(header, h, s),
+        inputCount,
+        outputCount
+      )
+  }
+  object RequestHeaders {
+    enum Process {
+      case Extract[A](value: A, header: Header[A, ?], select: Header.Select[A])
+      case ExtractFromName[A](header: Header[A, ?], select: Header.Select[A])
+      case Ensure[A](value: A, header: Header[A, ?], select: Header.Select[A])
+    }
+  }
+
+  final case class RequestEntity[P <: Tuple, I <: Tuple, O <: Tuple, D, E](
+      headers: Request[P, ?, ?],
+      entity: Entity[D, E]
+  ) extends Request[P, Types.TupleAppend[I, D], Types.TupleAppend[O, E]] {
+
+    def pathTo(params: P): String =
+      headers.pathTo(params)
+
+    def describe: String =
+      "${headers.describe} ${entity.encoder.contentType.map(_.mediaType).getOrElse(\"\")}"
+
+    def parse[F[_, _]: Raise.Handler](
+        req: Http4sRequest[IO]
+    ): IO[F[ParseFailure, Types.TupleAppend[I, D]]] = ???
+    def unparse(params: Types.TupleAppend[O, E]): Http4sRequest[IO] = ???
+
+    def withEntity[D2, E2](
+        entity: Entity[D2, E2]
+    ): RequestEntity[P, I, O, D2, E2] =
+      RequestEntity(headers, entity)
+  }
 
   def delete[P <: Tuple, Q <: Tuple](
       path: Path[P, Q]
-  ): Request[P, Q, EmptyTuple, Unit, Unit] =
+  ): RequestMethodPath[P, Q] =
     Request.method(Method.DELETE, path)
 
   def get[P <: Tuple, Q <: Tuple](
       path: Path[P, Q]
-  ): Request[P, Q, EmptyTuple, Unit, Unit] =
+  ): RequestMethodPath[P, Q] =
     Request.method(Method.GET, path)
 
   def head[P <: Tuple, Q <: Tuple](
       path: Path[P, Q]
-  ): Request[P, Q, EmptyTuple, Unit, Unit] =
+  ): RequestMethodPath[P, Q] =
     Request.method(Method.HEAD, path)
 
   def patch[P <: Tuple, Q <: Tuple](
       path: Path[P, Q]
-  ): Request[P, Q, EmptyTuple, Unit, Unit] =
+  ): RequestMethodPath[P, Q] =
     Request.method(Method.PATCH, path)
 
   def post[P <: Tuple, Q <: Tuple](
       path: Path[P, Q]
-  ): Request[P, Q, EmptyTuple, Unit, Unit] =
+  ): RequestMethodPath[P, Q] =
     Request.method(Method.POST, path)
 
   def put[P <: Tuple, Q <: Tuple](
       path: Path[P, Q]
-  ): Request[P, Q, EmptyTuple, Unit, Unit] =
+  ): RequestMethodPath[P, Q] =
     Request.method(Method.PUT, path)
 
   def method[P <: Tuple, Q <: Tuple](
       method: Method,
       path: Path[P, Q]
-  ): Request[P, Q, EmptyTuple, Unit, Unit] =
-    new Request(method, path, RequestHeaders.empty, Entity.unit)
+  ): RequestMethodPath[P, Q] =
+    RequestMethodPath(method, path)
 
 }
