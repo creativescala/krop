@@ -27,6 +27,13 @@ import org.http4s.implicits.*
 import org.http4s.{Request as Http4sRequest}
 
 class RequestHeaderSuite extends CatsEffectSuite {
+  val jsonContentType = `Content-Type`(MediaType.application.json)
+  val jsonRequest = Http4sRequest(
+    method = Method.GET,
+    uri = uri"http://example.org/",
+    headers = Headers(jsonContentType)
+  )
+
   test("Ensure header fails if header does not exist") {
     val req = Request
       .get(Path.root)
@@ -38,14 +45,36 @@ class RequestHeaderSuite extends CatsEffectSuite {
   }
 
   test("Ensure header succeeds if header does exist") {
-    val header = `Content-Type`(MediaType.application.json)
-    val req = Request.get(Path.root).ensureHeader(header)
-    val request = Http4sRequest(
-      method = Method.GET,
-      uri = uri"http://example.org/",
-      headers = Headers(header)
-    )
+    val req = Request.get(Path.root).ensureHeader(jsonContentType)
 
-    req.parse(request)(using Raise.toOption).map(_.isDefined).assert
+    req.parse(jsonRequest)(using Raise.toOption).map(_.isDefined).assert
+  }
+
+  test("Extract header extracts desired header (by type version)") {
+    val req: Request[?, ?, Tuple1[`Content-Type`], ?] =
+      Request.get(Path.root).extractHeader[`Content-Type`]
+
+    req
+      .parse(jsonRequest)(using Raise.toOption)
+      .map(h =>
+        h match {
+          case None         => fail("Did not parse")
+          case Some(header) => assertEquals(header(0), jsonContentType)
+        }
+      )
+  }
+
+  test("Extract header extracts desired header (by value version)") {
+    val req: Request[?, ?, Tuple1[`Content-Type`], ?] =
+      Request.get(Path.root).extractHeader(jsonContentType)
+
+    req
+      .parse(jsonRequest)(using Raise.toOption)
+      .map(h =>
+        h match {
+          case None         => fail("Did not parse")
+          case Some(header) => assertEquals(header(0), jsonContentType)
+        }
+      )
   }
 }
