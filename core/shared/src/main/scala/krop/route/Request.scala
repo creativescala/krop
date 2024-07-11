@@ -217,6 +217,7 @@ object Request {
     type Result = Types.TupleConcat[P, I]
 
     import RequestHeaders.Process
+    import RequestHeaders.failure
 
     export path.pathTo
     export path.pathAndQueryTo
@@ -229,27 +230,34 @@ object Request {
       extension [A](opt: Option[A]) {
         def orFail(header: Header[?, ?]): Raise[ParseFailure] ?=> A =
           opt.getOrElse(
-            Raise.raise(
-              ParseFailure(
-                ParseStage.Header,
-                "Could not extract the header ${header.name}",
-                ""
-              )
-            )
+            Raise.raise(failure.headerNotFound(header.name.toString))
           )
       }
 
       val extracted: F[ParseFailure, List[?]] =
         Raise.handle { (r: Raise[ParseFailure]) ?=>
           val reqHeaders = req.headers
-          headers.map(p =>
+          headers.foldLeft(List.empty)((accum, p) =>
             p match {
               case Process.Extract(value, header, select) =>
-                reqHeaders.get(using select).orFail(header)
+                accum :+ reqHeaders.get(using select).orFail(header)
               case Process.ExtractFromName(header, select) =>
-                reqHeaders.get(using select).orFail(header)
+                accum :+ reqHeaders.get(using select).orFail(header)
               case Process.Ensure(value, header, select) =>
-                reqHeaders.get(using select).orFail(header)
+                reqHeaders.get(using select) match {
+                  case None =>
+                    Raise.raise(failure.headerNotFound(header.name.toString))
+                  case s @ Some(actual) =>
+                    if actual == value then accum
+                    else
+                      Raise.raise(
+                        failure.headerDidntMatch(
+                          header.name.toString,
+                          actual,
+                          value
+                        )
+                      )
+                }
             }
           )
         }
@@ -324,6 +332,24 @@ object Request {
       case Extract[A](value: A, header: Header[A, ?], select: Header.Select[A])
       case ExtractFromName[A](header: Header[A, ?], select: Header.Select[A])
       case Ensure[A](value: A, header: Header[A, ?], select: Header.Select[A])
+    }
+
+    object failure {
+      def headerNotFound(name: String) =
+        ParseFailure(
+          ParseStage.Header,
+          s"Could not extract the header ${name}",
+          s"""The header named ${name} did not exist in the request's headers,
+             |or the value could not be correctly parsed.""".stripMargin
+        )
+
+      def headerDidntMatch[A](name: String, actual: A, expected: A) =
+        ParseFailure(
+          ParseStage.Header,
+          s"The header $name} did not have the expected value",
+          s"""The header with name ${name} and value ${actual} was found in the request,
+             |but we expected to find the value ${expected}.""".stripMargin
+        )
     }
 
     def empty[P <: Tuple, Q <: Tuple](

@@ -47,7 +47,9 @@ class RequestHeaderSuite extends CatsEffectSuite {
   test("Ensure header succeeds if header does exist") {
     val req = Request.get(Path.root).ensureHeader(jsonContentType)
 
-    req.parse(jsonRequest)(using Raise.toOption).map(_.isDefined).assert
+    req
+      .parse(jsonRequest)(using Raise.toOption)
+      .map(opt => assertEquals(opt, Some(EmptyTuple)))
   }
 
   test("Extract header extracts desired header (by type version)") {
