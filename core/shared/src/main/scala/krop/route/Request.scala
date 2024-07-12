@@ -390,6 +390,11 @@ object Request {
       RequestEntity(headers, entity)
   }
 
+  def connect[P <: Tuple, Q <: Tuple](
+      path: Path[P, Q]
+  ): RequestMethodPath[P, Q] =
+    Request.method(Method.CONNECT, path)
+
   def delete[P <: Tuple, Q <: Tuple](
       path: Path[P, Q]
   ): RequestMethodPath[P, Q] =
@@ -405,6 +410,11 @@ object Request {
   ): RequestMethodPath[P, Q] =
     Request.method(Method.HEAD, path)
 
+  def options[P <: Tuple, Q <: Tuple](
+      path: Path[P, Q]
+  ): RequestMethodPath[P, Q] =
+    Request.method(Method.OPTIONS, path)
+
   def patch[P <: Tuple, Q <: Tuple](
       path: Path[P, Q]
   ): RequestMethodPath[P, Q] =
@@ -419,6 +429,11 @@ object Request {
       path: Path[P, Q]
   ): RequestMethodPath[P, Q] =
     Request.method(Method.PUT, path)
+
+  def trace[P <: Tuple, Q <: Tuple](
+      path: Path[P, Q]
+  ): RequestMethodPath[P, Q] =
+    Request.method(Method.TRACE, path)
 
   def method[P <: Tuple, Q <: Tuple](
       method: Method,
