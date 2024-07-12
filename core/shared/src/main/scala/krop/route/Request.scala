@@ -18,10 +18,12 @@ package krop.route
 
 import cats.effect.IO
 import cats.syntax.all.*
-import krop.Types
+import krop.Types.TupleAppend
 import krop.Types.TupleConcat
 import krop.raise.Raise
+import org.http4s.EntityDecoder
 import org.http4s.Header
+import org.http4s.Headers
 import org.http4s.Method
 import org.http4s.Request as Http4sRequest
 
@@ -38,38 +40,32 @@ import org.http4s.Request as Http4sRequest
   *   The type of values extracted from the URI path.
   * @tparam Q
   *   The type of values extracted from the URI query parameters.
-  * @tparam H
-  *   The type of values extracted from headers and other parts of the request.
-  * @tparam E
-  *   The type of value extracted from the entity.
+  * @tparam I
+  *   The type of values extracted from all parts of the request, including path
+  *   and query.
   * @tparam O
-  *   The type of values that construct the entity. Used when creating a request
-  *   that calls the Route containing this Request.
+  *   The type of values to create a [[org.http4s.Request]] that matches this
+  *   [[krop.route.Request]].
   */
-// P is the type of path
-// Q is the type of query
-// I is the type when this Request is viewed as producing input for the user's program. In other words, it's the type passed to the handler.
-// O is the type when this Request is viewed as producing output. In other words, it's the type of the value needed to construct a http4s request from this Request.
 sealed abstract class Request[P <: Tuple, Q <: Tuple, I <: Tuple, O <: Tuple] {
 
   //
   // Interpreters --------------------------------------------------------------
   //
 
+  /** Given a [[org.http4s.Request]] and an error [[krop.raise.Handler]],
+    * extract the requested values if possible or signal an error if the given
+    * request does not match.
+    */
   def parse[F[_, _]: Raise.Handler](
       req: Http4sRequest[IO]
   ): IO[F[ParseFailure, I]]
+
+  /** Given appropriate values construct a [[org.http4s.Request]] that will
+    * match this [[krop.route.Request]]. This can be used to construct calls to
+    * the [[krop.route.Route]] that uses this [[krop.route.Request]].
+    */
   def unparse(params: O): Http4sRequest[IO]
-
-  /** Overload of `pathTo` for the case where the path has no parameters.
-    */
-  def pathTo(using ev: EmptyTuple =:= P): String =
-    pathTo(ev(EmptyTuple))
-
-  /** Overload of `pathTo` for the case where the path has a single parameter.
-    */
-  def pathTo[B](param: B)(using ev: Tuple1[B] =:= P): String =
-    pathTo(ev(Tuple1(param)))
 
   /** Create a [[scala.String]] path suitable for embedding in HTML that links
     * to the path described by this [[package.Request]]. Use this to create
@@ -82,7 +78,57 @@ sealed abstract class Request[P <: Tuple, Q <: Tuple, I <: Tuple, O <: Tuple] {
     */
   def pathTo(params: P): String
 
+  /** Overload of `pathTo` for the case where the path has no parameters.
+    */
+  def pathTo(using ev: EmptyTuple =:= P): String =
+    pathTo(ev(EmptyTuple))
+
+  /** Overload of `pathTo` for the case where the path has a single parameter.
+    */
+  def pathTo[B](param: B)(using ev: Tuple1[B] =:= P): String =
+    pathTo(ev(Tuple1(param)))
+
+  /** Create a [[scala.String]] path suitable for embedding in HTML that links
+    * to the path described by this [[package.Request]] and also includes query
+    * parameters. Use this to create hyperlinks or form actions that call a
+    * route, without needing to hardcode the route in the HTML.
+    *
+    * This path will not include settings like the entity or headers that this
+    * [[package.Request]] may require. It is assumed this will be handled
+    * elsewhere.
+    */
   def pathAndQueryTo(pathParams: P, queryParams: Q): String
+
+  /** Overload of `pathAndQueryTo` for the case where the path has no
+    * parameters.
+    */
+  def pathAndQueryTo(queryParams: Q)(using ev: EmptyTuple =:= P): String =
+    pathAndQueryTo(ev(EmptyTuple), queryParams)
+
+  /** Overload of `pathAndQueryTo` for the case where the path has a single
+    * parameter.
+    */
+  def pathTo[B](pathParam: B, queryParams: Q)(using
+      ev: Tuple1[B] =:= P
+  ): String =
+    pathAndQueryTo(ev(Tuple1(pathParam)), queryParams)
+
+  /** Overload of `pathAndQueryTo` for the case where the query has a single
+    * parameter.
+    */
+  def pathTo[B](pathParams: P, queryParam: B)(using
+      ev: Tuple1[B] =:= Q
+  ): String =
+    pathAndQueryTo(pathParams, ev(Tuple1(queryParam)))
+
+  /** Overload of `pathAndQueryTo` for the case where the path and query have a
+    * single parameter.
+    */
+  def pathTo[B, C](pathParam: B, queryParam: C)(using
+      evP: Tuple1[B] =:= P,
+      evQ: Tuple1[C] =:= Q
+  ): String =
+    pathAndQueryTo(evP(Tuple1(pathParam)), evQ(Tuple1(queryParam)))
 
   /** Produces a human-readable representation of this [[package.Request]]. The
     * toString method is used to output the usual programmatic representation.
@@ -107,11 +153,11 @@ object Request {
   ) extends Request[
         P,
         Q,
-        Types.TupleConcat[P, Q],
-        Types.TupleConcat[P, Q]
+        TupleConcat[P, Q],
+        TupleConcat[P, Q]
       ] {
 
-    type Result = Types.TupleConcat[P, Q]
+    type Result = TupleConcat[P, Q]
 
     export path.pathTo
     export path.pathAndQueryTo
@@ -135,8 +181,10 @@ object Request {
       )
     }
 
-    def unparse(params: Result): Http4sRequest[IO] =
-      ???
+    def unparse(params: Result): Http4sRequest[IO] = {
+      val uri = path.unparse(params)
+      Http4sRequest(uri = uri)
+    }
 
     def describe: String =
       s"${method.toString()} ${path.describe}"
@@ -213,8 +261,13 @@ object Request {
       inputCount: Int,
       // Count of values that must be supplied to construct a Request
       outputCount: Int
-  ) extends Request[P, Q, Types.TupleConcat[P, I], Types.TupleConcat[P, O]] {
-    type Result = Types.TupleConcat[P, I]
+  ) extends Request[
+        P,
+        Q,
+        TupleConcat[TupleConcat[P, Q], I],
+        TupleConcat[TupleConcat[P, Q], O]
+      ] {
+    type Result = TupleConcat[TupleConcat[P, Q], I]
 
     import RequestHeaders.Process
     import RequestHeaders.failure
@@ -225,7 +278,7 @@ object Request {
     def parse[F[_, _]: Raise.Handler](
         req: Http4sRequest[IO]
     ): IO[F[ParseFailure, Result]] = {
-      val ioPQ: IO[F[ParseFailure, Types.TupleConcat[P, Q]]] = path.parse(req)
+      val ioPQ: IO[F[ParseFailure, TupleConcat[P, Q]]] = path.parse(req)
 
       extension [A](opt: Option[A]) {
         def orFail(header: Header[?, ?]): Raise[ParseFailure] ?=> A =
@@ -274,7 +327,39 @@ object Request {
       }
     }
 
-    def unparse(params: TupleConcat[P, O]): Http4sRequest[IO] = ???
+    def unparse(
+        params: TupleConcat[TupleConcat[P, Q], O]
+    ): Http4sRequest[IO] = {
+      val ps = params.toIArray
+      val (pqArr, oArr) = ps.splitAt(ps.length - outputCount)
+
+      val req =
+        path.unparse(Tuple.fromIArray(pqArr).asInstanceOf[TupleConcat[P, Q]])
+
+      def loop(
+          headers: List[Process],
+          paramIdx: Int,
+          result: Headers
+      ): Headers =
+        headers match {
+          case Nil => result
+          case (e: Process.Extract[a]) :: rest =>
+            given Header[a, ?] = e.header
+            loop(rest, paramIdx, result.put(e.value: a))
+
+          case (e: Process.ExtractFromName[a]) :: rest =>
+            given Header[a, ?] = e.header
+            loop(rest, paramIdx + 1, result.put(oArr(paramIdx).asInstanceOf[a]))
+
+          case (e: Process.Ensure[a]) :: rest =>
+            given Header[a, ?] = e.header
+            loop(rest, paramIdx, result.put(e.value))
+        }
+
+      val hs = loop(headers, 0, Headers.empty)
+
+      Http4sRequest(uri = req.uri, headers = hs)
+    }
 
     def describe: String =
       path.describe
@@ -306,7 +391,7 @@ object Request {
     ): RequestHeaders[P, Q, Tuple.Append[I, s.F[A]], O] =
       RequestHeaders(
         path,
-        headers :+ RequestHeaders.Process.Extract(header, h, s),
+        headers :+ Process.Extract(header, h, s),
         inputCount + 1,
         outputCount
       )
@@ -322,7 +407,7 @@ object Request {
     ): RequestHeaders[P, Q, I, O] =
       RequestHeaders(
         path,
-        headers :+ RequestHeaders.Process.Ensure(header, h, s),
+        headers :+ Process.Ensure(header, h, s),
         inputCount,
         outputCount
       )
@@ -368,7 +453,7 @@ object Request {
   ](
       headers: RequestHeaders[P, Q, ?, ?],
       entity: Entity[D, E]
-  ) extends Request[P, Q, Types.TupleAppend[I, D], Types.TupleAppend[O, E]] {
+  ) extends Request[P, Q, TupleAppend[I, D], TupleAppend[O, E]] {
 
     def pathTo(params: P): String =
       headers.pathTo(params)
@@ -381,8 +466,36 @@ object Request {
 
     def parse[F[_, _]: Raise.Handler](
         req: Http4sRequest[IO]
-    ): IO[F[ParseFailure, Types.TupleAppend[I, D]]] = ???
-    def unparse(params: Types.TupleAppend[O, E]): Http4sRequest[IO] = ???
+    ): IO[F[ParseFailure, TupleAppend[I, D]]] = {
+      headers.parse(req).flatMap { result =>
+        Raise.flatMapToIO(result) { i =>
+          given EntityDecoder[IO, D] = entity.decoder
+          req
+            .as[D]
+            .map { d =>
+              Raise.succeed((d match {
+                case ()    => i
+                case other => i :* other
+              }).asInstanceOf[TupleAppend[I, D]])
+            }
+            .handleErrorWith(err =>
+              IO(
+                Raise.handle(
+                  Raise.raise(
+                    ParseFailure(
+                      ParseStage.Entity,
+                      err.getMessage(),
+                      err.getMessage()
+                    )
+                  )
+                )
+              )
+            )
+        }
+      }
+    }
+
+    def unparse(params: TupleAppend[O, E]): Http4sRequest[IO] = ???
 
     def withEntity[D2, E2](
         entity: Entity[D2, E2]
