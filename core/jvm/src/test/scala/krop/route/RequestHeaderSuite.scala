@@ -41,12 +41,14 @@ class RequestHeaderSuite extends CatsEffectSuite {
   val extractContentTypeWithDefaultRequest =
     Request.get(Path.root).extractHeader(jsonContentType)
 
-
   test("Ensure header fails if header does not exist") {
     val request =
       Http4sRequest(method = Method.GET, uri = uri"http://example.org/")
 
-    ensureJsonHeaderRequest.parse(request)(using Raise.toOption).map(_.isEmpty).assert
+    ensureJsonHeaderRequest
+      .parse(request)(using Raise.toOption)
+      .map(_.isEmpty)
+      .assert
   }
 
   test("Ensure header succeeds if header does exist") {

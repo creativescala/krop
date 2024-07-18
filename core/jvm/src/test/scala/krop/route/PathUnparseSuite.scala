@@ -42,7 +42,7 @@ class PathUnparseSuite extends FunSuite {
     )
   }
 
-  test("Non-capturing all path unparses to expected Uri"){
+  test("Non-capturing all path unparses to expected Uri") {
     assertEquals(
       nonCapturingAllPath.unparse(EmptyTuple),
       Uri(path = (Uri.Path.Root / "assets" / "html").addEndsWithSlash)
