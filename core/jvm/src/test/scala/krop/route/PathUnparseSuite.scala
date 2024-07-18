@@ -21,11 +21,19 @@ import org.http4s.Uri
 import org.http4s.implicits.*
 
 class PathUnparseSuite extends FunSuite {
+  val rootPath = Path.root
   val nonCapturingPath = Path / "user" / "create"
   val nonCapturingAllPath = Path / "assets" / "html" / Segment.all
   val capturingAllPath = Path / "assets" / "html" / Param.seq
   val simplePath = Path / "user" / Param.int.withName("<userId>") / "view"
   val pathWithQuery = Path / "user" / "view" :? Query("id", Param.int)
+
+  test("Root path unparses to expected Uri") {
+    assertEquals(
+      rootPath.unparse(EmptyTuple),
+      Uri(path = Uri.Path.Root)
+    )
+  }
 
   test("Non-capturing path unparses to expected Uri") {
     assertEquals(
@@ -34,7 +42,7 @@ class PathUnparseSuite extends FunSuite {
     )
   }
 
-  test("Non-capturing all path unparses to expected Uri") {
+  test("Non-capturing all path unparses to expected Uri"){
     assertEquals(
       nonCapturingAllPath.unparse(EmptyTuple),
       Uri(path = (Uri.Path.Root / "assets" / "html").addEndsWithSlash)

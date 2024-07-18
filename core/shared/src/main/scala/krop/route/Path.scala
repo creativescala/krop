@@ -300,7 +300,7 @@ final class Path[P <: Tuple, Q <: Tuple] private (
       }
     }
 
-    val uriPath = loop(0, segments, Uri.Path.empty)
+    val uriPath = loop(0, segments, Uri.Path.Root)
     Uri(path = uriPath, query = uriQuery)
   }
 
