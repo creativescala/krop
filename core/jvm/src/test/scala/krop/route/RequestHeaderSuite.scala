@@ -33,30 +33,30 @@ class RequestHeaderSuite extends CatsEffectSuite {
     uri = uri"http://example.org/",
     headers = Headers(jsonContentType)
   )
+  val ensureJsonHeaderRequest = Request
+    .get(Path.root)
+    .ensureHeader(`Content-Type`(MediaType.application.json))
+  val extractContentTypeRequest =
+    Request.get(Path.root).extractHeader[`Content-Type`]
+  val extractContentTypeWithDefaultRequest =
+    Request.get(Path.root).extractHeader(jsonContentType)
+
 
   test("Ensure header fails if header does not exist") {
-    val req = Request
-      .get(Path.root)
-      .ensureHeader(`Content-Type`(MediaType.application.json))
     val request =
       Http4sRequest(method = Method.GET, uri = uri"http://example.org/")
 
-    req.parse(request)(using Raise.toOption).map(_.isEmpty).assert
+    ensureJsonHeaderRequest.parse(request)(using Raise.toOption).map(_.isEmpty).assert
   }
 
   test("Ensure header succeeds if header does exist") {
-    val req = Request.get(Path.root).ensureHeader(jsonContentType)
-
-    req
+    ensureJsonHeaderRequest
       .parse(jsonRequest)(using Raise.toOption)
       .map(opt => assertEquals(opt, Some(EmptyTuple)))
   }
 
   test("Extract header extracts desired header (by type version)") {
-    val req: Request[?, ?, Tuple1[`Content-Type`], ?] =
-      Request.get(Path.root).extractHeader[`Content-Type`]
-
-    req
+    extractContentTypeRequest
       .parse(jsonRequest)(using Raise.toOption)
       .map(h =>
         h match {
@@ -67,10 +67,7 @@ class RequestHeaderSuite extends CatsEffectSuite {
   }
 
   test("Extract header extracts desired header (by value version)") {
-    val req: Request[?, ?, Tuple1[`Content-Type`], ?] =
-      Request.get(Path.root).extractHeader(jsonContentType)
-
-    req
+    extractContentTypeWithDefaultRequest
       .parse(jsonRequest)(using Raise.toOption)
       .map(h =>
         h match {
@@ -78,5 +75,29 @@ class RequestHeaderSuite extends CatsEffectSuite {
           case Some(header) => assertEquals(header(0), jsonContentType)
         }
       )
+  }
+
+  test("Ensure header unparses with expected header") {
+    val unparsed = ensureJsonHeaderRequest.unparse(EmptyTuple)
+
+    assertEquals(unparsed.method, jsonRequest.method)
+    assertEquals(unparsed.uri.path, jsonRequest.uri.path)
+    assertEquals(unparsed.headers, jsonRequest.headers)
+  }
+
+  test("Extract header unparses with expected header") {
+    val unparsed = extractContentTypeRequest.unparse(Tuple1(jsonContentType))
+
+    assertEquals(unparsed.method, jsonRequest.method)
+    assertEquals(unparsed.uri.path, jsonRequest.uri.path)
+    assertEquals(unparsed.headers, jsonRequest.headers)
+  }
+
+  test("Extract header with default unparses with expected header") {
+    val unparsed = extractContentTypeWithDefaultRequest.unparse(EmptyTuple)
+
+    assertEquals(unparsed.method, jsonRequest.method)
+    assertEquals(unparsed.uri.path, jsonRequest.uri.path)
+    assertEquals(unparsed.headers, jsonRequest.headers)
   }
 }

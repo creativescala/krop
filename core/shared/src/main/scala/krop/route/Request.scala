@@ -18,7 +18,6 @@ package krop.route
 
 import cats.effect.IO
 import cats.syntax.all.*
-import krop.Types.TupleAppend
 import krop.Types.TupleConcat
 import krop.raise.Raise
 import org.http4s.EntityDecoder
@@ -48,6 +47,16 @@ import org.http4s.Request as Http4sRequest
   *   [[krop.route.Request]].
   */
 sealed abstract class Request[P <: Tuple, Q <: Tuple, I <: Tuple, O <: Tuple] {
+
+  /** A type alias for the type of values this Request produces when it
+    * successfully parses an incoming request.
+    */
+  type Parsed = I
+
+  /** A type alias for the type of values this Request requires to construct an
+    * incoming request.
+    */
+  type Unparsed = O
 
   //
   // Interpreters --------------------------------------------------------------
@@ -157,14 +166,12 @@ object Request {
         TupleConcat[P, Q]
       ] {
 
-    type Result = TupleConcat[P, Q]
-
     export path.pathTo
     export path.pathAndQueryTo
 
     def parse[F[_, _]: Raise.Handler](
         req: Http4sRequest[IO]
-    ): IO[F[ParseFailure, Result]] = {
+    ): IO[F[ParseFailure, Parsed]] = {
       IO.pure(
         Raise.handle(
           if req.method != method
@@ -181,7 +188,7 @@ object Request {
       )
     }
 
-    def unparse(params: Result): Http4sRequest[IO] = {
+    def unparse(params: Unparsed): Http4sRequest[IO] = {
       val uri = path.unparse(params)
       Http4sRequest(uri = uri)
     }
@@ -267,8 +274,6 @@ object Request {
         TupleConcat[TupleConcat[P, Q], I],
         TupleConcat[TupleConcat[P, Q], O]
       ] {
-    type Result = TupleConcat[TupleConcat[P, Q], I]
-
     import RequestHeaders.Process
     import RequestHeaders.failure
 
@@ -277,7 +282,7 @@ object Request {
 
     def parse[F[_, _]: Raise.Handler](
         req: Http4sRequest[IO]
-    ): IO[F[ParseFailure, Result]] = {
+    ): IO[F[ParseFailure, Parsed]] = {
       val ioPQ: IO[F[ParseFailure, TupleConcat[P, Q]]] = path.parse(req)
 
       extension [A](opt: Option[A]) {
@@ -320,16 +325,14 @@ object Request {
           Raise.mapToIO(fPQ)(pq =>
             IO.pure(
               (pq ++ Tuple.fromArray(e.toArray).asInstanceOf[I])
-                .asInstanceOf[Result]
+                .asInstanceOf[Parsed]
             )
           )
         )
       }
     }
 
-    def unparse(
-        params: TupleConcat[TupleConcat[P, Q], O]
-    ): Http4sRequest[IO] = {
+    def unparse(params: Unparsed): Http4sRequest[IO] = {
       val ps = params.toIArray
       val (pqArr, oArr) = ps.splitAt(ps.length - outputCount)
 
@@ -453,7 +456,7 @@ object Request {
   ](
       headers: RequestHeaders[P, Q, ?, ?],
       entity: Entity[D, E]
-  ) extends Request[P, Q, TupleAppend[I, D], TupleAppend[O, E]] {
+  ) extends Request[P, Q, Tuple.Append[I, D], Tuple.Append[O, E]] {
 
     def pathTo(params: P): String =
       headers.pathTo(params)
@@ -466,17 +469,14 @@ object Request {
 
     def parse[F[_, _]: Raise.Handler](
         req: Http4sRequest[IO]
-    ): IO[F[ParseFailure, TupleAppend[I, D]]] = {
+    ): IO[F[ParseFailure, Parsed]] = {
       headers.parse(req).flatMap { result =>
         Raise.flatMapToIO(result) { i =>
           given EntityDecoder[IO, D] = entity.decoder
           req
             .as[D]
             .map { d =>
-              Raise.succeed((d match {
-                case ()    => i
-                case other => i :* other
-              }).asInstanceOf[TupleAppend[I, D]])
+              Raise.succeed((i :* d).asInstanceOf[Parsed])
             }
             .handleErrorWith(err =>
               IO(
@@ -495,7 +495,12 @@ object Request {
       }
     }
 
-    def unparse(params: TupleAppend[O, E]): Http4sRequest[IO] = ???
+    def unparse(params: Unparsed): Http4sRequest[IO] = {
+      val (o, e) = params.splitAt(headers.outputCount)
+      val request = headers.unparse(o.asInstanceOf[headers.Unparsed])
+      val encoded = entity.encoder.toEntity(e.asInstanceOf[Tuple1[E]](0))
+      request.withEntity(encoded)
+    }
 
     def withEntity[D2, E2](
         entity: Entity[D2, E2]
