@@ -87,7 +87,7 @@
             <pre><code class="nohighlight"><span class="keyword">val</span><span> </span><span class="identifier">request</span><span> = </span><span class="type-name">Request</span><span>.</span><span class="identifier">get</span><span>(</span><span class="type-name">Path</span><span> / </span><span class="type-name">Param</span><span>.</span><span class="identifier">int</span><span> / </span><span class="type-name">Param</span><span>.</span><span class="identifier">string</span><span>)
 </span><span class="comment">// request: RequestMethodPath[*:[Int, *:[String, EmptyTuple]], EmptyTuple] = RequestMethodPath(
 //   method = GET,
-//   path = krop.route.Path@7cdec7d9
+//   path = krop.route.Path@793174fb
 // )</span></code></pre>
             <p>This <code>Tuple2</code> arises because we extract two elements from the HTTP request&#39;s path: one <code>Int</code> and one <code>String</code>.
             However, when you come to use a handler with such a request, you can use a normal function with two arguments <em>not</em> a function that accepts a single <code>Tuple2</code>.</p>
@@ -103,7 +103,7 @@
               <li>constructing a HTTP request that will be matched by the <code>Route</code>.</li>
             </ul>
             
-            <h3 id="reverse-routing-path" class="section">Reverse Routing Path</h3>
+            <h3 id="reverse-routing-for-paths" class="section">Reverse Routing for Paths</h3>
             <p>Given a <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Route.html">Route</a> you can construct a <code>String</code> containing the path to that route using the <code>pathTo</code> method. This can be used, for example, to embed hyperlinks to routes in generated HTML. Here&#39;s an example.</p>
             <p>We first create a <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Route.html">Route</a>.</p>
             <pre><code class="nohighlight"><span class="keyword">val</span><span> </span><span class="identifier">viewUser</span><span> = </span><span class="type-name">Route</span><span>(</span><span class="type-name">Request</span><span>.</span><span class="identifier">get</span><span>(</span><span class="type-name">Path</span><span> / </span><span class="string-literal">&quot;user&quot;</span><span> / </span><span class="type-name">Param</span><span>.</span><span class="identifier">int</span><span>), </span><span class="type-name">Response</span><span>.</span><span class="identifier">ok</span><span>(</span><span class="type-name">Entity</span><span>.</span><span class="identifier">text</span><span>))
@@ -127,7 +127,17 @@
             <pre><code class="nohighlight"><span class="identifier">twoParams</span><span>.</span><span class="identifier">pathTo</span><span>((</span><span class="number-literal">1234</span><span>, </span><span class="string-literal">&quot;McBoopy&quot;</span><span>))
 </span><span class="comment">// res3: String = &quot;/user/1234/McBoopy&quot;</span></code></pre>
             
-            <h3 id="reverse-routing-path-and-query" class="section">Reverse Routing Path and Query</h3>
+            <h3 id="reverse-routing-for-paths-and-queries" class="section">Reverse Routing for Paths and Queries</h3>
+            <p>You can use the <code>pathAndQueryTo</code> method to construct a <code>String</code> contains both the path and query parameters to a <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Route.html">Route</a>.</p>
+            <p>Here&#39;s an example of a <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Route.html">Route</a> that extracts elements from both the path and the query parameters.</p>
+            <pre><code class="nohighlight"><span class="keyword">val</span><span> </span><span class="identifier">searchUsers</span><span> = </span><span class="type-name">Route</span><span>(
+  </span><span class="type-name">Request</span><span>.</span><span class="identifier">get</span><span>(
+    </span><span class="type-name">Path</span><span> / </span><span class="string-literal">&quot;users&quot;</span><span> / </span><span class="string-literal">&quot;search&quot;</span><span> / </span><span class="type-name">Param</span><span>.</span><span class="identifier">string</span><span> :? </span><span class="type-name">Query</span><span>(</span><span class="string-literal">&quot;start&quot;</span><span>, </span><span class="type-name">Param</span><span>.</span><span class="identifier">int</span><span>)
+      .</span><span class="identifier">and</span><span>(</span><span class="string-literal">&quot;stop&quot;</span><span>, </span><span class="type-name">Param</span><span>.</span><span class="identifier">int</span><span>)
+  ),
+  </span><span class="type-name">Response</span><span>.</span><span class="identifier">ok</span><span>(</span><span class="type-name">Entity</span><span>.</span><span class="identifier">text</span><span>)
+).</span><span class="identifier">handle</span><span>((</span><span class="identifier">term</span><span>, </span><span class="identifier">start</span><span>, </span><span class="identifier">stop</span><span>) =&gt; </span><span class="string-literal">s&quot;Searching for users named </span><span class="substitution">$term</span><span class="string-literal">, from page </span><span class="substitution">$start</span><span class="string-literal"> to </span><span class="substitution">$stop</span><span class="string-literal">&quot;</span><span>)</span></code></pre>
+            <pre><code class="nohighlight"><span class="identifier">searchUsers</span><span>.</span><span class="identifier">pathAndQueryTo</span><span>(</span><span class="string-literal">&quot;scala&quot;</span><span>, (</span><span class="number-literal">1</span><span>, </span><span class="number-literal">10</span><span>))</span></code></pre>
             
             <h2 id="combining-routes" class="section">Combining Routes</h2>
             <p>Two or more routes can be combined using the <code>orElse</code> method, creating <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Routes.html">Routes</a>.</p>
