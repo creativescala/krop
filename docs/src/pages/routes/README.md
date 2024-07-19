@@ -150,7 +150,7 @@ val searchUsers = Route(
 ).handle((term, start, stop) => s"Searching for users named $term, from page $start to $stop")
 ```
 
-```scala mdoc:silent
+```scala mdoc
 searchUsers.pathAndQueryTo("scala", (1, 10))
 ```
 
