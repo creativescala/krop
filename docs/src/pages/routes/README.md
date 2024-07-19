@@ -87,7 +87,7 @@ There are three forms of reverse routing:
 * constructing a HTTP request that will be matched by the `Route`.
 
 
-### Reverse Routing Path
+### Reverse Routing for Paths
 
 Given a @:api(krop.route.Route) you can construct a `String` containing the path to that route using the `pathTo` method. This can be used, for example, to embed hyperlinks to routes in generated HTML. Here's an example.
 
@@ -134,8 +134,25 @@ twoParams.pathTo((1234, "McBoopy"))
 ```
 
 
-### Reverse Routing Path and Query
+### Reverse Routing for Paths and Queries
 
+You can use the `pathAndQueryTo` method to construct a `String` contains both the path and query parameters to a @:api(krop.route.Route).
+
+Here's an example of a @:api(krop.route.Route) that extracts elements from both the path and the query parameters.
+
+```scala mdoc:silent
+val searchUsers = Route(
+  Request.get(
+    Path / "users" / "search" / Param.string :? Query("start", Param.int)
+      .and("stop", Param.int)
+  ),
+  Response.ok(Entity.text)
+).handle((term, start, stop) => s"Searching for users named $term, from page $start to $stop")
+```
+
+```scala mdoc:silent
+searchUsers.pathAndQueryTo("scala", (1, 10))
+```
 
 
 
