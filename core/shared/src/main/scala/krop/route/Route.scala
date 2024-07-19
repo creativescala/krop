@@ -52,12 +52,12 @@ type Path1Route[P, R] = PathRoute[Tuple1[P], EmptyTuple, R]
   *   The type of the parameters extracted from the [[package.Path]].
   * @tparam Q
   *   The type of the query parameters extracted from the [[package.Path]].
-  * @tparam E
-  *   The type of the [[package.Entity]] extracted from the request.
+  * @tparam I
+  *   The type of all the values extracted from the request.
   * @tparam O
-  *   The type of the parameters used to build the [[package.Response]].
+  *   The type of the values used to construct a request.
   * @tparam R
-  *   The type of the parameters used to build the [[package.Response]].
+  *   The type of the value used to build the [[package.Response]].
   */
 final class Route[P <: Tuple, Q <: Tuple, I <: Tuple, O <: Tuple, R](
     val request: Request[P, Q, I, O],
