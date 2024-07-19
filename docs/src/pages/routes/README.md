@@ -4,11 +4,11 @@
 import krop.all.*
 ```
 
-Routing handles the HTTP specific details of incoming requests and outgoing responses. Routing can:
+Routing handles the HTTP specific details of incoming requests and outgoing responses. The main uses of routes are to:
 
 1. match HTTP requests and extract Scala values;
 2. convert Scala values to an HTTP response; and
-3. construct clients that do the above in reverse.
+3. do the above in reverse in various forms.
 
 There are two main abstractions:
 
@@ -33,6 +33,8 @@ val route = Route(Request.get(Path / "user" / Param.int), Response.ok(Entity.tex
   .handle(userId => s"You asked for the user ${userId.toString}")
 ```
 
+This route will match, for example, a GET request to the path `/user/1234` and respond with the string `"You asked for the user 1234"`.
+
 [Request](request.md) and [Response](response.md) have separate pages, so here we'll just discuss the handler. There are three ways to create a handler: using `handle`, `handleIO`, or `passthrough`. Assume the request produces a value of type `A` and the response needs a value of type `B`. Then these three methods have the following meaning:
 
 - `handle` is a function `A => B`;
@@ -42,7 +44,7 @@ val route = Route(Request.get(Path / "user" / Param.int), Response.ok(Entity.tex
 
 ### Type Transformations for Handlers
 
-If you dig into the types produced by `Requests` you will notice a lot of tuple types are used. Here's an example, showing a `Request` producing a `Tuple2`.
+If you dig into the types produced by `Request` you will notice a lot of tuple types are used. Here's an example, showing a `Request` producing a `Tuple2`.
 
 ```scala mdoc
 val request = Request.get(Path / Param.int / Param.string)
@@ -60,7 +62,17 @@ The conversion between tuples and functions is done by given instances of @:api(
 
 ## Reverse Routing
 
-Given a @:api(krop.route.Route) you can construct a hyperlink to that route using the `pathTo` method. Here's an example.
+There are three forms of reverse routing:
+
+* constructing a `String` that corresponds to the path matched by the `Route`;
+* constructing a `String` corresponding to the path and query parameters matched by the `Route`;
+* constructing a HTTP request that will be matched by the `Route`.
+
+
+### Reverse Routing Path
+
+Given a @:api(krop.route.Route) you can construct a `String` containing the path to that route using the `pathTo` method. This can be used, for example, to embed hyperlinks to routes in generated HTML. Here's an example.
+
 We first create a @:api(krop.route.Route).
 
 ```scala mdoc:silent
@@ -94,6 +106,11 @@ val twoParams = Route(Request.get(Path / "user" / Param.int / Param.string), Res
 ```scala mdoc
 twoParams.pathTo(1234, "McBoopy")
 ```
+
+
+### Reverse Routing Path and Query
+
+
 
 
 ## Combining Routes
