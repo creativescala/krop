@@ -123,6 +123,49 @@ final class Route[P <: Tuple, Q <: Tuple, I <: Tuple, O <: Tuple, R](
   def pathTo(params: P): String =
     request.pathTo(params)
 
+  /** Overload of `pathAndQueryTo` for the case where the path has no
+    * parameters.
+    */
+  def pathAndQueryTo(queryParams: Q)(using ev: EmptyTuple =:= P): String =
+    pathAndQueryTo(ev(EmptyTuple), queryParams)
+
+  /** Overload of `pathAndQueryTo` for the case where the path has a single
+    * parameter.
+    */
+  def pathAndQueryTo[B](pathParam: B, queryParams: Q)(using
+      ev: Tuple1[B] =:= P
+  ): String =
+    pathAndQueryTo(ev(Tuple1(pathParam)), queryParams)
+
+  /** Overload of `pathAndQueryTo` for the case where the query has a single
+    * parameter.
+    */
+  def pathAndQueryTo[B](pathParams: P, queryParam: B)(using
+      ev: Tuple1[B] =:= Q
+  ): String =
+    pathAndQueryTo(pathParams, ev(Tuple1(queryParam)))
+
+  /** Overload of `pathAndQueryTo` for the case where the path and query have a
+    * single parameter.
+    */
+  def pathTo[B, C](pathParam: B, queryParam: C)(using
+      evP: Tuple1[B] =:= P,
+      evQ: Tuple1[C] =:= Q
+  ): String =
+    pathAndQueryTo(evP(Tuple1(pathParam)), evQ(Tuple1(queryParam)))
+
+  /** Create a [[scala.String]] path suitable for embedding in HTML that links
+    * to the path described by this [[package.Request]] and also includes query
+    * parameters. Use this to create hyperlinks or form actions that call a
+    * route, without needing to hardcode the route in the HTML.
+    *
+    * This path will not include settings like the entity or headers that this
+    * [[package.Request]] may require. It is assumed this will be handled
+    * elsewhere.
+    */
+  def pathAndQueryTo(pathParams: P, queryParams: Q): String =
+    request.pathAndQueryTo(pathParams, queryParams)
+
   def toRoutes: Routes =
     Routes(Chain(this))
 

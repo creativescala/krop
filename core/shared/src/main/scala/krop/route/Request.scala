@@ -117,7 +117,7 @@ sealed abstract class Request[P <: Tuple, Q <: Tuple, I <: Tuple, O <: Tuple] {
   /** Overload of `pathAndQueryTo` for the case where the path has a single
     * parameter.
     */
-  def pathTo[B](pathParam: B, queryParams: Q)(using
+  def pathAndQueryTo[B](pathParam: B, queryParams: Q)(using
       ev: Tuple1[B] =:= P
   ): String =
     pathAndQueryTo(ev(Tuple1(pathParam)), queryParams)
@@ -125,7 +125,7 @@ sealed abstract class Request[P <: Tuple, Q <: Tuple, I <: Tuple, O <: Tuple] {
   /** Overload of `pathAndQueryTo` for the case where the query has a single
     * parameter.
     */
-  def pathTo[B](pathParams: P, queryParam: B)(using
+  def pathAndQueryTo[B](pathParams: P, queryParam: B)(using
       ev: Tuple1[B] =:= Q
   ): String =
     pathAndQueryTo(pathParams, ev(Tuple1(queryParam)))
