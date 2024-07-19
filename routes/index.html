@@ -87,7 +87,7 @@
             <pre><code class="nohighlight"><span class="keyword">val</span><span> </span><span class="identifier">request</span><span> = </span><span class="type-name">Request</span><span>.</span><span class="identifier">get</span><span>(</span><span class="type-name">Path</span><span> / </span><span class="type-name">Param</span><span>.</span><span class="identifier">int</span><span> / </span><span class="type-name">Param</span><span>.</span><span class="identifier">string</span><span>)
 </span><span class="comment">// request: RequestMethodPath[*:[Int, *:[String, EmptyTuple]], EmptyTuple] = RequestMethodPath(
 //   method = GET,
-//   path = krop.route.Path@793174fb
+//   path = krop.route.Path@26a596f5
 // )</span></code></pre>
             <p>This <code>Tuple2</code> arises because we extract two elements from the HTTP request&#39;s path: one <code>Int</code> and one <code>String</code>.
             However, when you come to use a handler with such a request, you can use a normal function with two arguments <em>not</em> a function that accepts a single <code>Tuple2</code>.</p>
@@ -137,7 +137,8 @@
   ),
   </span><span class="type-name">Response</span><span>.</span><span class="identifier">ok</span><span>(</span><span class="type-name">Entity</span><span>.</span><span class="identifier">text</span><span>)
 ).</span><span class="identifier">handle</span><span>((</span><span class="identifier">term</span><span>, </span><span class="identifier">start</span><span>, </span><span class="identifier">stop</span><span>) =&gt; </span><span class="string-literal">s&quot;Searching for users named </span><span class="substitution">$term</span><span class="string-literal">, from page </span><span class="substitution">$start</span><span class="string-literal"> to </span><span class="substitution">$stop</span><span class="string-literal">&quot;</span><span>)</span></code></pre>
-            <pre><code class="nohighlight"><span class="identifier">searchUsers</span><span>.</span><span class="identifier">pathAndQueryTo</span><span>(</span><span class="string-literal">&quot;scala&quot;</span><span>, (</span><span class="number-literal">1</span><span>, </span><span class="number-literal">10</span><span>))</span></code></pre>
+            <pre><code class="nohighlight"><span class="identifier">searchUsers</span><span>.</span><span class="identifier">pathAndQueryTo</span><span>(</span><span class="string-literal">&quot;scala&quot;</span><span>, (</span><span class="number-literal">1</span><span>, </span><span class="number-literal">10</span><span>))
+</span><span class="comment">// res4: String = &quot;/users/search/scala?start=1&amp;stop=10&quot;</span></code></pre>
             
             <h2 id="combining-routes" class="section">Combining Routes</h2>
             <p>Two or more routes can be combined using the <code>orElse</code> method, creating <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Routes.html">Routes</a>.</p>
