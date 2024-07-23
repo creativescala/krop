@@ -17,7 +17,7 @@ To create a path without any segments you can use `Path.root`.
 
 ## Capturing Path Segments
 
-Use a @:api(krop.route.Param) to capture part of the path for use by the handler.
+Use a @:api(krop.route.Param) to capture part of the path for later use by the handler.
 For example
 
 ```scala mdoc:silent
@@ -136,7 +136,7 @@ required.parse(Map("id" -> List()))
 optional.parse(Map("id" -> List()))
 ```
 
-Similarly, a required parameter will fail in the third case but an optional parameter will succeed with `None`.
+Similarly, a required parameter will fail in the fourth case but an optional parameter will succeed with `None`.
 
 ```scala mdoc
 required.parse(Map())

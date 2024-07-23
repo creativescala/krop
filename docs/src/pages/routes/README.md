@@ -16,10 +16,10 @@ and a @:api(krop.route.Routes) is a collection of @:api(krop.route.Route).
 
 ## The Route Type
 
-The `Route` type is fairly complex, though you can ignore this is most uses.
+The `Route` type is fairly complex, though you can ignore this in most uses.
 
 ``` scala
-final class Route[P <: Tuple, Q <: Tuple, I <: Tuple, O <: Tuple, R]
+Route[P <: Tuple, Q <: Tuple, I <: Tuple, O <: Tuple, R]
 ```
 
 The types have the following meanings:

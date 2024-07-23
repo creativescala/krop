@@ -8,12 +8,45 @@ A @:api(krop.route.Request) describes a pattern within an HTTP request that a @:
 
 A `Request` always matches an HTTP method and a [Path](paths.md). It may match other components of a request as well. It may also extract elements from the path, query parameters, and other parts of the request. These are passed to the `Route` handler.
 
+## The Request Type
+
+You can usually avoid writing @:api(krop.route.Request) types explicitly, but in case you have to write them down a @:api(krop.route.Request) is defined as
+
+```scala
+Request[P <: Tuple, Q <: Tuple, I <: Tuple, O <: Tuple]
+```
+
+where
+
+* `P` is the type of any path parameters extracted from the @:api(krop.route.Path); 
+* `Q` is the type of any query parameters extracted from the @:api(krop.route.Path); 
+* `I` is the type of all the values extracted from the @:api(krop.route.Request); and
+* `O` is all type of all the values need to construct a HTTP request matched by this @:api(krop.route.Request).
+
 
 ## Creating Requests
 
 `Requests` are created by calling the method on the `Request` object that corresponds to the HTTP method of interest. For example, `Request.get` for a GET request, `Request.post` for a POST request, and so on. Thesse methods all accept a @:api(krop.route.Path), as described in the [next section](paths.md), which is the only required part of a `Request` in addition to the HTTP method.
 
-Builder methods on `Request` can be used to match and extract other parts of an HTTP request. You can either specify headers, and, optionally, a HTTP entity (in that order), just an entity, or neither headers nor entity if you aren't interested in matching parts of the HTTP request beyond the method and path.
+Here is an example that matches a GET request to the path `/user/<int>`, where `<int>` is an integer.
+
+```scala mdoc:silent 
+Request.get(Path / "user" / Param.int)
+```
+
+Working with paths is quite complex, so this has [it's own documentation](paths.md).
+
+You can optionally match and extract values from the headers and entity of a HTTP request. If you want to extract match or extract values from the headers, you must call these methods before you call methods that deal with the entity. This design makes it a bit easier to deal with the types inside @:api(krop.route.Request).
+
+
+### Dealing with Headers
+
+You can extract the value of any particular header in the HTTP request, and make that value available to the request handler. Alternatively you can ensure that the header exists and has a particular value, but not make that value availabe to the handler.
+
+There are two variants of the `extractHeader` method, which will get the value of a header and make it available to the handler. In the first variant you specify just the type of the header, which is usually found in the `org.https4s.headers` package.
+
+Here is an example the extracts the value associated with the `Content-Type` header.
+
 
 ## Entities
 
