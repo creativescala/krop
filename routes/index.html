@@ -50,8 +50,8 @@
             and a <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Routes.html">Routes</a> is a collection of <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Route.html">Route</a>.</p>
             
             <h2 id="the-route-type" class="section">The Route Type</h2>
-            <p>The <code>Route</code> type is fairly complex, though you can ignore this is most uses.</p>
-            <pre><code class="nohighlight"><span class="keyword">final</span><span> </span><span class="keyword">class</span><span> </span><span class="type-name">Route</span><span>[</span><span class="type-name">P</span><span> &lt;: </span><span class="type-name">Tuple</span><span>, </span><span class="type-name">Q</span><span> &lt;: </span><span class="type-name">Tuple</span><span>, </span><span class="type-name">I</span><span> &lt;: </span><span class="type-name">Tuple</span><span>, </span><span class="type-name">O</span><span> &lt;: </span><span class="type-name">Tuple</span><span>, </span><span class="type-name">R</span><span>]</span></code></pre>
+            <p>The <code>Route</code> type is fairly complex, though you can ignore this in most uses.</p>
+            <pre><code class="nohighlight"><span class="type-name">Route</span><span>[</span><span class="type-name">P</span><span> &lt;: </span><span class="type-name">Tuple</span><span>, </span><span class="type-name">Q</span><span> &lt;: </span><span class="type-name">Tuple</span><span>, </span><span class="type-name">I</span><span> &lt;: </span><span class="type-name">Tuple</span><span>, </span><span class="type-name">O</span><span> &lt;: </span><span class="type-name">Tuple</span><span>, </span><span class="type-name">R</span><span>]</span></code></pre>
             <p>The types have the following meanings:</p>
             <ul>
               <li><code>P</code> is the type of values extracted from the request&#39;s path by the <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Path.html">Path</a>.</li>
@@ -87,7 +87,7 @@
             <pre><code class="nohighlight"><span class="keyword">val</span><span> </span><span class="identifier">request</span><span> = </span><span class="type-name">Request</span><span>.</span><span class="identifier">get</span><span>(</span><span class="type-name">Path</span><span> / </span><span class="type-name">Param</span><span>.</span><span class="identifier">int</span><span> / </span><span class="type-name">Param</span><span>.</span><span class="identifier">string</span><span>)
 </span><span class="comment">// request: RequestMethodPath[*:[Int, *:[String, EmptyTuple]], EmptyTuple] = RequestMethodPath(
 //   method = GET,
-//   path = krop.route.Path@26a596f5
+//   path = krop.route.Path@6161d200
 // )</span></code></pre>
             <p>This <code>Tuple2</code> arises because we extract two elements from the HTTP request&#39;s path: one <code>Int</code> and one <code>String</code>.
             However, when you come to use a handler with such a request, you can use a normal function with two arguments <em>not</em> a function that accepts a single <code>Tuple2</code>.</p>

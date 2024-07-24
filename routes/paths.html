@@ -46,7 +46,7 @@
             <p>To create a path without any segments you can use <code>Path.root</code>.</p>
             
             <h2 id="capturing-path-segments" class="section">Capturing Path Segments</h2>
-            <p>Use a <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Param.html">Param</a> to capture part of the path for use by the handler.
+            <p>Use a <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Param.html">Param</a> to capture part of the path for later use by the handler.
             For example</p>
             <pre><code class="nohighlight"><span class="type-name">Path</span><span> / </span><span class="string-literal">&quot;user&quot;</span><span> / </span><span class="type-name">Param</span><span>.</span><span class="identifier">int</span><span> / </span><span class="string-literal">&quot;view&quot;</span></code></pre>
             <p>matches <code>/user/&lt;id&gt;/view</code>, where <code>&lt;id&gt;</code> is an <code>Int</code>, and makes the <code>Int</code>
@@ -114,8 +114,8 @@
 //     value = &quot;abc&quot;,
 //     param = One(
 //       name = &quot;&lt;Int&gt;&quot;,
-//       parse = krop.route.Param$$$Lambda$14271/224478380@4e8301ac,
-//       unparse = krop.route.Param$$$Lambda$14272/855239425@5646e8ee
+//       parse = krop.route.Param$$$Lambda$14255/1878265991@365c22ec,
+//       unparse = krop.route.Param$$$Lambda$14256/216469884@51e3340
 //     )
 //   )
 // )
@@ -126,8 +126,8 @@
 //     value = &quot;abc&quot;,
 //     param = One(
 //       name = &quot;&lt;Int&gt;&quot;,
-//       parse = krop.route.Param$$$Lambda$14271/224478380@4e8301ac,
-//       unparse = krop.route.Param$$$Lambda$14272/855239425@5646e8ee
+//       parse = krop.route.Param$$$Lambda$14255/1878265991@365c22ec,
+//       unparse = krop.route.Param$$$Lambda$14256/216469884@51e3340
 //     )
 //   )
 // )</span></code></pre>
@@ -138,7 +138,7 @@
 // )
 </span><span class="identifier">optional</span><span>.</span><span class="identifier">parse</span><span>(</span><span class="type-name">Map</span><span>(</span><span class="string-literal">&quot;id&quot;</span><span> -&gt; </span><span class="type-name">List</span><span>()))
 </span><span class="comment">// res13: Either[QueryParseFailure, Option[Int]] = Right(value = None)</span></code></pre>
-            <p>Similarly, a required parameter will fail in the third case but an optional parameter will succeed with <code>None</code>.</p>
+            <p>Similarly, a required parameter will fail in the fourth case but an optional parameter will succeed with <code>None</code>.</p>
             <pre><code class="nohighlight"><span class="identifier">required</span><span>.</span><span class="identifier">parse</span><span>(</span><span class="type-name">Map</span><span>())
 </span><span class="comment">// res14: Either[QueryParseFailure, Int] = Left(
 //   value = NoParameterWithName(name = &quot;id&quot;)
