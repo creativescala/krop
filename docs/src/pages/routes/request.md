@@ -47,6 +47,45 @@ There are two variants of the `extractHeader` method, which will get the value o
 
 Here is an example the extracts the value associated with the `Content-Type` header.
 
+```scala mdoc:silent
+import org.http4s.headers.*
+
+Request.get(Path / "user" / Param.int)
+  .extractHeader[`Content-Type`]
+```
+
+If we want to extract more than one header we call `andExtractHeader` for each additional header after the first.
+
+```scala mdoc:silent
+Request.get(Path / "user" / Param.int)
+  .extractHeader[`Content-Type`]
+  .andExtractHeader[Referer]
+```
+
+This variant of `extractHeader` requires us to specify a value for the header when we do reverse routing. We can avoid this by providing a header when we call `extractHeader`.
+
+In this example we construct a JSON `Content-Type` header and pass that value to `extractHeader`. Now `jsonContentType` will be used when constructing an HTTP request matching this request.
+
+```scala mdoc:silent
+import org.http4s.MediaType
+
+val jsonContentType = `Content-Type`(MediaType.application.json)
+
+Request.get(Path / "user" / Param.int)
+  .extractHeader(jsonContentType)
+```
+
+We often want to ensure that a header matches a particular value, but don't want to otherwise do anything with the value. In other words, we don't want to the header's value passed to the handler once we have verified it exists. For these cases we can use `ensureHeader`.
+
+```scala mdoc:silent
+Request.get(Path / "user" / Param.int)
+  .ensureHeader(jsonContentType)
+```
+
+As with `extractHeader`, we use `andEnsureHeader` to ensure two or more headers.
+
+Finally, not that although we've used content type headers in the examples you don't normally have to deal with them. If you specify a @:api(krop.route.Entity) that will check the headers are correct. We've used them in this examples as they are probably the headers that are most familiar to most web developers.
+
 
 ## Entities
 
