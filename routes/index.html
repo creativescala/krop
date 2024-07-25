@@ -87,7 +87,7 @@
             <pre><code class="nohighlight"><span class="keyword">val</span><span> </span><span class="identifier">request</span><span> = </span><span class="type-name">Request</span><span>.</span><span class="identifier">get</span><span>(</span><span class="type-name">Path</span><span> / </span><span class="type-name">Param</span><span>.</span><span class="identifier">int</span><span> / </span><span class="type-name">Param</span><span>.</span><span class="identifier">string</span><span>)
 </span><span class="comment">// request: RequestMethodPath[*:[Int, *:[String, EmptyTuple]], EmptyTuple] = RequestMethodPath(
 //   method = GET,
-//   path = krop.route.Path@38e18636
+//   path = krop.route.Path@169938c6
 // )</span></code></pre>
             <p>This <code>Tuple2</code> arises because we extract two elements from the HTTP request&#39;s path: one <code>Int</code> and one <code>String</code>.
             However, when you come to use a handler with such a request, you can use a normal function with two arguments <em>not</em> a function that accepts a single <code>Tuple2</code>.</p>

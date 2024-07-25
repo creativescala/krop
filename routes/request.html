@@ -61,7 +61,7 @@
             <p>Working with paths is quite complex, so this has <a href="paths.html">it&#39;s own documentation</a>.</p>
             <p>You can optionally match and extract values from the headers and entity of a HTTP request. If you want to extract match or extract values from the headers, you must call these methods before you call methods that deal with the entity. This design makes it a bit easier to deal with the types inside <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Request.html">Request</a>.</p>
             
-            <h3 id="dealing-with-headers" class="section">Dealing with Headers</h3>
+            <h3 id="headers" class="section">Headers</h3>
             <p>You can extract the value of any particular header in the HTTP request, and make that value available to the request handler. Alternatively you can ensure that the header exists and has a particular value, but not make that value availabe to the handler.</p>
             <p>There are two variants of the <code>extractHeader</code> method, which will get the value of a header and make it available to the handler. In the first variant you specify just the type of the header, which is usually found in the <code>org.https4s.headers</code> package.</p>
             <p>Here is an example the extracts the value associated with the <code>Content-Type</code> header.</p>
@@ -87,7 +87,7 @@
             <p>As with <code>extractHeader</code>, we use <code>andEnsureHeader</code> to ensure two or more headers.</p>
             <p>Finally, not that although we&#39;ve used Content-Type headers in the examples you don&#39;t normally have to deal with them. If you specify a <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Entity.html">Entity</a> that will check the headers are correct. We&#39;ve used them in this examples as they are probably the headers that are most familiar to most web developers.</p>
             
-            <h2 id="entities" class="section">Entities</h2>
+            <h3 id="entities" class="section">Entities</h3>
             <p>Calling the <code>withEntity</code> method on a <code>Request</code> allows you to specify an <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Entity.html">Entity</a>, which is responsible for extracting data from an HTTP request. The <code>Entity</code> is responsible for checking the HTTP Content-Type header, and, if it matches, decoding the HTTP entity into a Scala value.</p>
             <p>Here&#39;s an example of a <code>Request</code> that extracts HTML content as a <code>String</code> value.</p>
             <pre><code class="nohighlight"><span class="type-name">Request</span><span>.</span><span class="identifier">get</span><span>(</span><span class="type-name">Path</span><span>.</span><span class="identifier">root</span><span>).</span><span class="identifier">withEntity</span><span>(</span><span class="type-name">Entity</span><span>.</span><span class="identifier">html</span><span>)</span></code></pre>
