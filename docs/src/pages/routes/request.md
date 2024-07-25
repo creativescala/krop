@@ -39,7 +39,7 @@ Working with paths is quite complex, so this has [it's own documentation](paths.
 You can optionally match and extract values from the headers and entity of a HTTP request. If you want to extract match or extract values from the headers, you must call these methods before you call methods that deal with the entity. This design makes it a bit easier to deal with the types inside @:api(krop.route.Request).
 
 
-### Dealing with Headers
+### Headers
 
 You can extract the value of any particular header in the HTTP request, and make that value available to the request handler. Alternatively you can ensure that the header exists and has a particular value, but not make that value availabe to the handler.
 
@@ -87,7 +87,7 @@ As with `extractHeader`, we use `andEnsureHeader` to ensure two or more headers.
 Finally, not that although we've used Content-Type headers in the examples you don't normally have to deal with them. If you specify a @:api(krop.route.Entity) that will check the headers are correct. We've used them in this examples as they are probably the headers that are most familiar to most web developers.
 
 
-## Entities
+### Entities
 
 Calling the `withEntity` method on a `Request` allows you to specify an @:api(krop.route.Entity), which is responsible for extracting data from an HTTP request. The `Entity` is responsible for checking the HTTP Content-Type header, and, if it matches, decoding the HTTP entity into a Scala value.
 
