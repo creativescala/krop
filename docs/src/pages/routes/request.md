@@ -84,17 +84,17 @@ Request.get(Path / "user" / Param.int)
 
 As with `extractHeader`, we use `andEnsureHeader` to ensure two or more headers.
 
-Finally, not that although we've used content type headers in the examples you don't normally have to deal with them. If you specify a @:api(krop.route.Entity) that will check the headers are correct. We've used them in this examples as they are probably the headers that are most familiar to most web developers.
+Finally, not that although we've used Content-Type headers in the examples you don't normally have to deal with them. If you specify a @:api(krop.route.Entity) that will check the headers are correct. We've used them in this examples as they are probably the headers that are most familiar to most web developers.
 
 
 ## Entities
 
-Calling the `withEntity` method on a `Request` allows one to specify an @:api(krop.route.Entity), which is responsible for extracting data from an HTTP request. The `Entity` is responsible for checking the HTTP Content-Type header, and, if it matches, decoding the HTTP entity into a Scala value.
+Calling the `withEntity` method on a `Request` allows you to specify an @:api(krop.route.Entity), which is responsible for extracting data from an HTTP request. The `Entity` is responsible for checking the HTTP Content-Type header, and, if it matches, decoding the HTTP entity into a Scala value.
 
 Here's an example of a `Request` that extracts HTML content as a `String` value.
 
 ```scala mdoc:silent
-val html = Request.get(Path.root).withEntity(Entity.html)
+Request.get(Path.root).withEntity(Entity.html)
 ```
 
 There are several predefined `Entity` values on the companion object, but you can easily create your own if needed.
