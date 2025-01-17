@@ -23,8 +23,8 @@ import org.http4s.MediaType
 import org.http4s.Method
 import org.http4s.Uri
 import org.http4s.headers.`Content-Type`
-import org.http4s.implicits.*
-import org.http4s.{Request as Http4sRequest}
+import org.http4s.implicits._
+import org.http4s.{Request => Http4sRequest}
 
 class RequestHeaderSuite extends CatsEffectSuite {
   val jsonContentType = `Content-Type`(MediaType.application.json)

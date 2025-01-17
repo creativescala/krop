@@ -28,7 +28,7 @@ import org.http4s.MediaRange
 import org.http4s.circe.CirceEntityDecoder
 import org.http4s.circe.CirceEntityEncoder
 import org.http4s.headers.`Content-Type`
-import org.http4s.syntax.all.*
+import org.http4s.syntax.all._
 import scalatags.Text.TypedTag
 
 /** Type alias for an Entity where the decoded and encoded type are the same. */

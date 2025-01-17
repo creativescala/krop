@@ -20,7 +20,7 @@ import cats.data.Chain
 import cats.data.Kleisli
 import cats.data.OptionT
 import cats.effect.IO
-import cats.syntax.all.*
+import cats.syntax.all._
 import krop.Application
 import krop.KropRuntime
 import krop.tool.NotFound

@@ -20,9 +20,9 @@ import krop.raise.Raise
 import munit.CatsEffectSuite
 import org.http4s.Method
 import org.http4s.Uri
-import org.http4s.implicits.*
-import org.http4s.{Entity as Http4sEntity}
-import org.http4s.{Request as Http4sRequest}
+import org.http4s.implicits._
+import org.http4s.{Entity => Http4sEntity}
+import org.http4s.{Request => Http4sRequest}
 
 class RequestEntitySuite extends CatsEffectSuite {
   val unitRequest = Request.get(Path.root).withEntity(Entity.unit)

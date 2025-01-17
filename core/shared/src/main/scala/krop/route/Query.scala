@@ -16,7 +16,7 @@
 
 package krop.route
 
-import cats.syntax.all.*
+import cats.syntax.all._
 
 final case class Query[A <: Tuple](segments: Vector[QueryParam[?]]) {
   //

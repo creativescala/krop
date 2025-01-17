@@ -16,7 +16,7 @@
 
 package krop.tool
 
-import fs2.io.file.{Path as Fs2Path}
+import fs2.io.file.{Path => Fs2Path}
 import krop.route.Param
 import krop.route.Path
 import krop.route.Path1Route

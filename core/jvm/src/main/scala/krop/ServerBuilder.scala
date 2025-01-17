@@ -19,7 +19,7 @@ package krop
 import cats.effect.IO
 import com.comcast.ip4s.Host
 import com.comcast.ip4s.Port
-import org.http4s.ember.server.*
+import org.http4s.ember.server._
 import org.typelevel.log4cats.LoggerFactory
 import org.typelevel.log4cats.slf4j.Slf4jFactory
 

@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 import scala.sys.process.*
-import laika.rewrite.link.LinkConfig
-import laika.rewrite.link.ApiLinks
+import laika.config.LinkConfig
+import laika.config.ApiLinks
 import laika.theme.Theme
+import laika.helium.config.TextLink
 
 Global / onChangedBuildSource := ReloadOnSourceChanges
 
@@ -31,33 +32,33 @@ ThisBuild / developers := List(
   tlGitHubDev("noelwelsh", "Noel Welsh")
 )
 
-// true by default, set to false to publish to s01.oss.sonatype.org
-ThisBuild / tlSonatypeUseLegacyHost := true
+ThisBuild / sonatypeCredentialHost := xerial.sbt.Sonatype.sonatypeLegacy
 
-lazy val scala3 = "3.3.3"
+lazy val scala3 = "3.3.4"
 
 ThisBuild / crossScalaVersions := List(scala3)
+ThisBuild / githubWorkflowJavaVersions := List(JavaSpec.temurin("11"))
 ThisBuild / scalaVersion := crossScalaVersions.value.head
-ThisBuild / useSuperShell := false
+ThisBuild / useSuperShell := true
 ThisBuild / semanticdbEnabled := true
 ThisBuild / semanticdbVersion := scalafixSemanticdb.revision
 ThisBuild / tlSitePublishBranch := Some("main")
 
 // Run this (build) to do everything involved in building the project
 commands += Command.command("build") { state =>
-  "dependencyUpdates" ::
-    "clean" ::
+  "clean" ::
     "compile" ::
     "test" ::
-    "docs / tlSite" ::
-    "headerCreateAll" ::
     "scalafixAll" ::
     "scalafmtAll" ::
+    "scalafmtSbt" ::
+    "headerCreateAll" ::
     "githubWorkflowGenerate" ::
+    "dependencyUpdates" ::
+    "reload plugins; dependencyUpdates; reload return" ::
+    "docs / tlSite" ::
     state
 }
-
-lazy val css = taskKey[Unit]("Build the CSS")
 
 lazy val commonSettings = Seq(
   libraryDependencies ++= Seq(
@@ -98,49 +99,56 @@ lazy val docs =
   project
     .in(file("docs"))
     .settings(
+      tlSiteApiUrl := Some(
+        sbt.url(
+          "https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/"
+        )
+      ),
       laikaConfig := laikaConfig.value.withConfigValue(
-        LinkConfig(apiLinks =
-          Seq(
+        LinkConfig.empty
+          .addApiLinks(
             ApiLinks(baseUri =
               "https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/"
             )
           )
-        )
       ),
       mdocIn := file("docs/src/pages"),
       mdocVariables := {
-        mdocVariables.value ++ Map(
-        )
-      },
-      css := {
-        val src = file("docs/src/css")
-        val dest1 = mdocOut.value
-        val dest2 = (laikaSite / target).value
-        val cmd1 =
-          s"npx tailwindcss -i ${src.toString}/creative-scala.css -o ${dest1.toString}/creative-scala.css"
-        val cmd2 =
-          s"npx tailwindcss -i ${src.toString}/creative-scala.css -o ${dest2.toString}/creative-scala.css"
-        cmd1 !
-
-        cmd2 !
+        mdocVariables.value ++ Map()
       },
       Laika / sourceDirectories ++=
         Seq(
-          file("docs/src/templates")
           // (examples.js / Compile / fastOptJS / artifactPath).value
           //   .getParentFile() / s"${(examples.js / moduleName).value}-fastopt"
         ),
-      laikaTheme := Theme.empty,
+      laikaTheme := CreativeScalaTheme.empty
+        .withHome(
+          TextLink.internal(laika.ast.Path.Root / "README.md", "Krop")
+        )
+        .withCommunity(
+          TextLink.external("https://discord.gg/rRhcFbJxVG", "Community")
+        )
+        .withApi(
+          TextLink.external(
+            "https://javadoc.io/doc/org.creativescala/krop-docs_3/latest",
+            "API"
+          )
+        )
+        .withSource(
+          TextLink.external(
+            "https://github.com/creativescala/krop",
+            "Source"
+          )
+        )
+        .build,
       laikaExtensions ++= Seq(
-        laika.markdown.github.GitHubFlavor,
-        laika.parse.code.SyntaxHighlighting,
-        CreativeScalaDirectives
+        laika.format.Markdown.GitHubFlavor,
+        laika.config.SyntaxHighlighting
       ),
       tlSite := Def
         .sequential(
           // (examples.js / Compile / fastLinkJS),
           mdoc.toTask(""),
-          css,
           laikaSite
         )
         .value

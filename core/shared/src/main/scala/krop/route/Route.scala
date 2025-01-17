@@ -25,8 +25,8 @@ import krop.Application
 import krop.KropRuntime
 import krop.raise.Raise
 import org.http4s.HttpRoutes
-import org.http4s.Request as Http4sRequest
-import org.http4s.Response as Http4sResponse
+import org.http4s.{Request => Http4sRequest}
+import org.http4s.{Response => Http4sResponse}
 
 /** Type alias for a [[package.Route]] that has extracts no [[package.Entity]]
   * from the request.

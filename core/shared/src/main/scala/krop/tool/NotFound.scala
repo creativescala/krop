@@ -20,7 +20,7 @@ import cats.data.EitherNec
 import cats.data.Kleisli
 import cats.data.NonEmptyChain
 import cats.effect.IO
-import cats.syntax.all.*
+import cats.syntax.all._
 import krop.Application
 import krop.KropRuntime
 import krop.Mode
@@ -28,8 +28,8 @@ import krop.raise.Raise
 import krop.route.ParseFailure
 import krop.route.Route
 import krop.route.Routes
-import org.http4s.*
-import org.http4s.dsl.io.*
+import org.http4s._
+import org.http4s.dsl.io._
 import org.http4s.headers.`Content-Type`
 
 /** This is a tool that displays useful information in development mode if no

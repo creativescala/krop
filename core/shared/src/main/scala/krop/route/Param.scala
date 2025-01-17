@@ -16,7 +16,7 @@
 
 package krop.route
 
-import cats.syntax.all.*
+import cats.syntax.all._
 
 import java.util.regex.Pattern
 import scala.collection.immutable.ArraySeq

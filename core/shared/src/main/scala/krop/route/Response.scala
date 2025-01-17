@@ -17,16 +17,16 @@
 package krop.route
 
 import cats.effect.IO
-import fs2.io.file.Path as Fs2Path
+import fs2.io.file.{Path => Fs2Path}
 import krop.KropRuntime
 import org.http4s.Header
 import org.http4s.Header.ToRaw
 import org.http4s.Headers
 import org.http4s.Status
-import org.http4s.dsl.io.*
-import org.http4s.Request as Http4sRequest
-import org.http4s.Response as Http4sResponse
-import org.http4s.StaticFile as Http4sStaticFile
+import org.http4s.dsl.io._
+import org.http4s.{Request => Http4sRequest}
+import org.http4s.{Response => Http4sResponse}
+import org.http4s.{StaticFile => Http4sStaticFile}
 
 /** A [[krop.route.Response]] produces a [[org.http4s.Response]] given a value
   * of type A and a [[org.http4s.Request]].

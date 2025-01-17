@@ -16,9 +16,9 @@
 
 package examples
 
-import krop.all.{*, given}
-import krop.tool.Htmx.*
-import scalatags.Text.all.*
+import krop.all.{_, given}
+import krop.tool.Htmx._
+import scalatags.Text.all._
 
 val reverseRoute =
   Route(
