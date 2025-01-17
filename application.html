@@ -1,62 +1,124 @@
 <!doctype html>
 <html lang="">
-
-<head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="generator" content="Laika 0.19.0" />
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="generator" content="Laika 1.0.0" />
     <title>Application</title>
-    
-    
+     
     <meta name="description" content="docs" />
     
-    <link href="https://fonts.googleapis.com/css?family=Source+Code+Pro:400|Source+Sans+Pro:300,400,600"
-        rel="stylesheet" type="text/css">
-    <link href="https://fonts.googleapis.com/css?family=Crimson+Pro:400" rel="stylesheet" type="text/css">
-    <link rel="stylesheet" type="text/css" href="creative-scala.css" />
-    
-    <script> /* for avoiding page load transitions */</script>
-</head>
+    <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?version=4.8.0&features=es6"></script>
+    <script
+      id="MathJax-script"
+      async
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
+    ></script>
+    <link
+      href="https://fonts.googleapis.com/css?family=Source+Code+Pro:400|Source+Sans+Pro:300,400,600"
+      rel="stylesheet"
+      type="text/css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css?family=Crimson+Pro:400"
+      rel="stylesheet"
+      type="text/css"
+    />
+    <link rel="stylesheet" type="text/css" href="css/creative-scala.css" /> <script src="js/solution.js"></script>
+    <script>
+      /* for avoiding page load transitions */
+    </script>
+  </head>
 
-<body>
-    <nav id="topbar"><p><a href="principles.html">←</a></p>
-<p><a href="../">Krop</a></p>
-<p><a href="server.html">→</a></p></nav>
-    <nav id="sidebar">
-        <ul class="nav-list">
-          <li class="level1 nav-leaf"><a href="index.html">Krop</a></li>
-          <li class="level1 nav-leaf"><a href="quick-start.html">Quick Start</a></li>
-          <li class="level1 nav-leaf"><a href="principles.html">Principles</a></li>
-          <li class="level1 active nav-leaf"><a href="#">Application</a></li>
-          <li class="level1 nav-leaf"><a href="server.html">Server</a></li>
-          <li class="level1 nav-node"><a href="routes/">Routing</a></li>
-          <li class="level2 nav-leaf"><a href="routes/request.html">Request</a></li>
-          <li class="level2 nav-leaf"><a href="routes/paths.html">Paths</a></li>
-          <li class="level2 nav-leaf"><a href="routes/response.html">Response</a></li>
-        </ul>
-    </nav>
+  <body>
+    <header>
+      <div id="topbar">
+        <nav id="topbar">
+          <button
+            class="text-sm text-pink-800 font-sans font-semibold hover:text-pink-600 focus:text-pink-600"
+            popovertarget="topbar-nav"
+          >
+            Contents
+          </button>
+          <div id="topbar-nav" popover>
+            <div id="topbar-nav-container">
+              <div
+                class="p-4 mx-auto rounded-md bg-white border border-slate-900 relative"
+              >
+                <button
+                  class="absolute top-4 right-4 text-slate-900 hover:text-pink-800 focus:text-pink-800"
+                  popovertarget="topbar-nav"
+                  popovertargetaction="hide"
+                >
+                  ✕
+                </button>
+                <ul class="nav-list">
+                  <li class="level1 nav-node"><a href="index.html">Krop</a></li>
+                  <li class="level2 nav-leaf"><a href="quick-start.html">Quick Start</a></li>
+                  <li class="level2 nav-leaf"><a href="principles.html">Principles</a></li>
+                  <li class="level2 active nav-leaf"><a href="#">Application</a></li>
+                  <li class="level2 nav-leaf"><a href="server.html">Server</a></li>
+                  <li class="level2 nav-node"><a href="routes/">Routing</a></li>
+                  <li class="level3 nav-leaf"><a href="routes/request.html">Request</a></li>
+                  <li class="level3 nav-leaf"><a href="routes/paths.html">Paths</a></li>
+                  <li class="level3 nav-leaf"><a href="routes/response.html">Response</a></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </nav>
+        <nav id="home"><a class="text-link" href="index.html">Krop</a></nav>
+        <nav id="external"><a class="text-link" href="https://discord.gg/rRhcFbJxVG">Community</a> <a class="text-link" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest">API</a> <a class="text-link" href="https://github.com/creativescala/krop">Source</a></nav>
+      </div>
+    </header>
 
-    <div id="content">
-        <main class="content">
-            <h1 id="application" class="title">Application</h1>
-            <p>An <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/Application.html">Application</a> in what a Krop <a href="server.html">server</a> runs, and thus building an <code>Application</code> is the end goal of working with Krop.</p>
-            <p>An <code>Application</code> consists of any number of <a href="routes/">Routes</a> followed by a catch-all that handles any requests not matched by a route. The usual catch-all is <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/tool/Application/notFound.html">notFound</a>.</p>
-            
-            <h2 id="development-and-production-mode" class="section">Development and Production Mode</h2>
-            <p>Krop can run in one of two modes: development and production. In development
-            mode it shows output that is useful for debugging and otherwise inspecting
-            the running state. In production this output is hidden.</p>
-            <p>The mode is set by the <code>krop.mode</code> JVM system property. If it has the value of
-            &quot;development&quot; (without the quotes; any capitalization is fine) then the mode
-            is development. Otherwise it is production.</p>
-            <p>The mode is determined when Krop starts, and is available as the value of <code>krop.Mode</code>.</p>
-            <p class="nextPage"><a href="server.html">Server→</a></p>
-        </main>
-        <footer>Creative Scala is copyright Noel Welsh</footer>
-    </div>
+    <main>
+      <nav id="sitebar">
+        <div class="fixed h-screen overflow-y-auto">
+          <ul class="nav-list">
+            <li class="level1 nav-node"><a href="index.html">Krop</a></li>
+            <li class="level2 nav-leaf"><a href="quick-start.html">Quick Start</a></li>
+            <li class="level2 nav-leaf"><a href="principles.html">Principles</a></li>
+            <li class="level2 active nav-leaf"><a href="#">Application</a></li>
+            <li class="level2 nav-leaf"><a href="server.html">Server</a></li>
+            <li class="level2 nav-node"><a href="routes/">Routing</a></li>
+            <li class="level3 nav-leaf"><a href="routes/request.html">Request</a></li>
+            <li class="level3 nav-leaf"><a href="routes/paths.html">Paths</a></li>
+            <li class="level3 nav-leaf"><a href="routes/response.html">Response</a></li>
+          </ul>
+        </div>
+      </nav>
+      <div id="contentbar">
+        <div class="max-w-prose mx-auto">
+          <div id="content"><h1 id="application" class="title">Application</h1>
+<p>An <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/Application.html">Application</a> in what a Krop <a href="server.html">server</a> runs, and thus building an <code>Application</code> is the end goal of working with Krop.</p>
+<p>An <code>Application</code> consists of any number of <a href="routes/">Routes</a> followed by a catch-all that handles any requests not matched by a route. The usual catch-all is <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/tool/Application/notFound.html">notFound</a>.</p>
 
-    </div>
-</body>
-
+<h2 id="development-and-production-mode" class="section">Development and Production Mode</h2>
+<p>Krop can run in one of two modes: development and production. In development
+mode it shows output that is useful for debugging and otherwise inspecting
+the running state. In production this output is hidden.</p>
+<p>The mode is set by the <code>krop.mode</code> JVM system property. If it has the value of
+&quot;development&quot; (without the quotes; any capitalization is fine) then the mode
+is development. Otherwise it is production.</p>
+<p>The mode is determined when Krop starts, and is available as the value of <code>krop.Mode</code>.</p></div>
+          <div class="flex flex-row justify-between">
+            <a class="pagenav" href="principles.html">←Principles</a> <a class="pagenav" href="server.html">Server→</a>
+          </div>
+        </div>
+        <footer>
+          Krop is copyright Noel Welsh. Built with 💖
+        </footer>
+      </div>
+      <nav id="pagebar">
+        <div class="fixed h-screen overflow-y-auto">
+          <p>On This Page</p>
+          <ul class="nav-list">
+            <li class="level1 nav-leaf"><a href="#development-and-production-mode">Development and Production Mode</a></li>
+          </ul>
+        </div>
+      </nav>
+    </main>
+  </body>
 </html>

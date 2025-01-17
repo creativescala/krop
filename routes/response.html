@@ -1,78 +1,142 @@
 <!doctype html>
 <html lang="">
-
-<head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="generator" content="Laika 0.19.0" />
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="generator" content="Laika 1.0.0" />
     <title>Response</title>
-    
-    
+     
     <meta name="description" content="docs" />
     
-    <link href="https://fonts.googleapis.com/css?family=Source+Code+Pro:400|Source+Sans+Pro:300,400,600"
-        rel="stylesheet" type="text/css">
-    <link href="https://fonts.googleapis.com/css?family=Crimson+Pro:400" rel="stylesheet" type="text/css">
-    <link rel="stylesheet" type="text/css" href="../creative-scala.css" />
-    
-    <script> /* for avoiding page load transitions */</script>
-</head>
+    <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?version=4.8.0&features=es6"></script>
+    <script
+      id="MathJax-script"
+      async
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
+    ></script>
+    <link
+      href="https://fonts.googleapis.com/css?family=Source+Code+Pro:400|Source+Sans+Pro:300,400,600"
+      rel="stylesheet"
+      type="text/css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css?family=Crimson+Pro:400"
+      rel="stylesheet"
+      type="text/css"
+    />
+    <link rel="stylesheet" type="text/css" href="../css/creative-scala.css" /> <script src="../js/solution.js"></script>
+    <script>
+      /* for avoiding page load transitions */
+    </script>
+  </head>
 
-<body>
-    <nav id="topbar"><p><a href="paths.html">←</a></p>
-<p><a href="../../">Krop</a></p>
-<p></p></nav>
-    <nav id="sidebar">
-        <ul class="nav-list">
-          <li class="level1 nav-leaf"><a href="../">Krop</a></li>
-          <li class="level1 nav-leaf"><a href="../quick-start.html">Quick Start</a></li>
-          <li class="level1 nav-leaf"><a href="../principles.html">Principles</a></li>
-          <li class="level1 nav-leaf"><a href="../application.html">Application</a></li>
-          <li class="level1 nav-leaf"><a href="../server.html">Server</a></li>
-          <li class="level1 nav-node"><a href="index.html">Routing</a></li>
-          <li class="level2 nav-leaf"><a href="request.html">Request</a></li>
-          <li class="level2 nav-leaf"><a href="paths.html">Paths</a></li>
-          <li class="level2 active nav-leaf"><a href="#">Response</a></li>
-        </ul>
-    </nav>
+  <body>
+    <header>
+      <div id="topbar">
+        <nav id="topbar">
+          <button
+            class="text-sm text-pink-800 font-sans font-semibold hover:text-pink-600 focus:text-pink-600"
+            popovertarget="topbar-nav"
+          >
+            Contents
+          </button>
+          <div id="topbar-nav" popover>
+            <div id="topbar-nav-container">
+              <div
+                class="p-4 mx-auto rounded-md bg-white border border-slate-900 relative"
+              >
+                <button
+                  class="absolute top-4 right-4 text-slate-900 hover:text-pink-800 focus:text-pink-800"
+                  popovertarget="topbar-nav"
+                  popovertargetaction="hide"
+                >
+                  ✕
+                </button>
+                <ul class="nav-list">
+                  <li class="level1 nav-node"><a href="../">Krop</a></li>
+                  <li class="level2 nav-leaf"><a href="../quick-start.html">Quick Start</a></li>
+                  <li class="level2 nav-leaf"><a href="../principles.html">Principles</a></li>
+                  <li class="level2 nav-leaf"><a href="../application.html">Application</a></li>
+                  <li class="level2 nav-leaf"><a href="../server.html">Server</a></li>
+                  <li class="level2 nav-node"><a href="index.html">Routing</a></li>
+                  <li class="level3 nav-leaf"><a href="request.html">Request</a></li>
+                  <li class="level3 nav-leaf"><a href="paths.html">Paths</a></li>
+                  <li class="level3 active nav-leaf"><a href="#">Response</a></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </nav>
+        <nav id="home"><a class="text-link" href="../">Krop</a></nav>
+        <nav id="external"><a class="text-link" href="https://discord.gg/rRhcFbJxVG">Community</a> <a class="text-link" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest">API</a> <a class="text-link" href="https://github.com/creativescala/krop">Source</a></nav>
+      </div>
+    </header>
 
-    <div id="content">
-        <main class="content">
-            <h1 id="response" class="title">Response</h1>
-            <p>A <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Response.html">Response</a> describes how to create a HTTP response from a Scala value. 
-            For example, the following <code>Response</code> will produce an HTTP OK response with a <code>text/plain</code> entity.</p>
-            <pre><code class="nohighlight"><span class="keyword">val</span><span> </span><span class="identifier">ok</span><span>: </span><span class="type-name">Response</span><span>[</span><span class="type-name">String</span><span>] = </span><span class="type-name">Response</span><span>.</span><span class="identifier">ok</span><span>(</span><span class="type-name">Entity</span><span>.</span><span class="identifier">text</span><span>)</span></code></pre>
-            <p>The entity will be constructed from a <code>String</code> that is passed to the <code>respond</code> method on the <code>Response</code>.
-            You usually won&#39;t do this yourself; it is handled by the <code>Route</code> the <code>Response</code> is part of.</p>
-            
-            <h2 id="entities" class="section">Entities</h2>
-            <p>Entities (response bodies) are handled in the same way as <a href="request.html">requests</a>: by specifying an <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Entity.html">Entity</a>. In this case the <code>Entity</code> is responsible for encoding Scala values as data in the HTTP response.</p>
-            <p>Use <code>Entity.unit</code> to indicate that your response has no entity. For example:</p>
-            <pre><code class="nohighlight"><span class="keyword">val</span><span> </span><span class="identifier">noBody</span><span>: </span><span class="type-name">Response</span><span>[</span><span class="type-name">Unit</span><span>] = </span><span class="type-name">Response</span><span>.</span><span class="identifier">ok</span><span>(</span><span class="type-name">Entity</span><span>.</span><span class="identifier">unit</span><span>)</span></code></pre>
-            
-            <h2 id="headers" class="section">Headers</h2>
-            <p>Headers can be added using the <code>withHeader</code> method. This method accepts one of more values in any of the following forms:</p>
-            <ul>
-              <li>A value of type <code>A</code> which has a <code>Header[A]</code> in scope</li>
-              <li>A <code>(name, value)</code> pair of <code>String</code>, which is treated as a <code>Recurring</code>
-              header</li>
-              <li>A <code>Header.Raw</code></li>
-              <li>A <code>Foldable</code> (<code>List</code>, <code>Option</code>, etc) of the above.</li>
-            </ul>
-            <p>In the example below we add a header using the <code>(name, value)</code> form, and a value with a <code>Header[A]</code> in scope.</p>
-            <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">http4s</span><span>.</span><span class="identifier">headers</span><span>.</span><span class="type-name">Allow</span><span>
+    <main>
+      <nav id="sitebar">
+        <div class="fixed h-screen overflow-y-auto">
+          <ul class="nav-list">
+            <li class="level1 nav-node"><a href="../">Krop</a></li>
+            <li class="level2 nav-leaf"><a href="../quick-start.html">Quick Start</a></li>
+            <li class="level2 nav-leaf"><a href="../principles.html">Principles</a></li>
+            <li class="level2 nav-leaf"><a href="../application.html">Application</a></li>
+            <li class="level2 nav-leaf"><a href="../server.html">Server</a></li>
+            <li class="level2 nav-node"><a href="index.html">Routing</a></li>
+            <li class="level3 nav-leaf"><a href="request.html">Request</a></li>
+            <li class="level3 nav-leaf"><a href="paths.html">Paths</a></li>
+            <li class="level3 active nav-leaf"><a href="#">Response</a></li>
+          </ul>
+        </div>
+      </nav>
+      <div id="contentbar">
+        <div class="max-w-prose mx-auto">
+          <div id="content"><h1 id="response" class="title">Response</h1>
+<p>A <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Response.html">Response</a> describes how to create a HTTP response from a Scala value. 
+For example, the following <code>Response</code> will produce an HTTP OK response with a <code>text/plain</code> entity.</p>
+<pre><code class="nohighlight"><span class="keyword">val</span><span> </span><span class="identifier">ok</span><span>: </span><span class="type-name">Response</span><span>[</span><span class="type-name">String</span><span>] = </span><span class="type-name">Response</span><span>.</span><span class="identifier">ok</span><span>(</span><span class="type-name">Entity</span><span>.</span><span class="identifier">text</span><span>)</span></code></pre>
+<p>The entity will be constructed from a <code>String</code> that is passed to the <code>respond</code> method on the <code>Response</code>.
+You usually won&#39;t do this yourself; it is handled by the <code>Route</code> the <code>Response</code> is part of.</p>
+
+<h2 id="entities" class="section">Entities</h2>
+<p>Entities (response bodies) are handled in the same way as <a href="request.html">requests</a>: by specifying an <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Entity.html">Entity</a>. In this case the <code>Entity</code> is responsible for encoding Scala values as data in the HTTP response.</p>
+<p>Use <code>Entity.unit</code> to indicate that your response has no entity. For example:</p>
+<pre><code class="nohighlight"><span class="keyword">val</span><span> </span><span class="identifier">noBody</span><span>: </span><span class="type-name">Response</span><span>[</span><span class="type-name">Unit</span><span>] = </span><span class="type-name">Response</span><span>.</span><span class="identifier">ok</span><span>(</span><span class="type-name">Entity</span><span>.</span><span class="identifier">unit</span><span>)</span></code></pre>
+
+<h2 id="headers" class="section">Headers</h2>
+<p>Headers can be added using the <code>withHeader</code> method. This method accepts one of more values in any of the following forms:</p>
+<ul>
+  <li>A value of type <code>A</code> which has a <code>Header[A]</code> in scope</li>
+  <li>A <code>(name, value)</code> pair of <code>String</code>, which is treated as a <code>Recurring</code>
+  header</li>
+  <li>A <code>Header.Raw</code></li>
+  <li>A <code>Foldable</code> (<code>List</code>, <code>Option</code>, etc) of the above.</li>
+</ul>
+<p>In the example below we add a header using the <code>(name, value)</code> form, and a value with a <code>Header[A]</code> in scope.</p>
+<pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">http4s</span><span>.</span><span class="identifier">headers</span><span>.</span><span class="type-name">Allow</span><span>
 
 </span><span class="keyword">val</span><span> </span><span class="identifier">headers</span><span> = </span><span class="type-name">Response</span><span>.</span><span class="identifier">ok</span><span>(</span><span class="type-name">Entity</span><span>.</span><span class="identifier">html</span><span>).</span><span class="identifier">withHeader</span><span>(</span><span class="string-literal">&quot;X-Awesomeness&quot;</span><span> -&gt; </span><span class="string-literal">&quot;10.0&quot;</span><span>, </span><span class="type-name">Allow</span><span>(</span><span class="type-name">Method</span><span>.</span><span class="type-name">GET</span><span>))</span></code></pre>
-            
-            <h2 id="error-handling" class="section">Error Handling</h2>
-            <p>In many cases you&#39;ll need to generate an error response despite a valid request. For example, you would generate a 404 Not Found if the client has sent a well-formed request but the requested resource doesn&#39;t exist. This situation can be handled using the <code>orNotFound</code> method, which converts a <code>Response[A]</code> to a <code>Response[Option[A]]</code>. When passed a <code>None</code> the <code>Response</code> responds with a 404. For more complex cases you can use <code>orElse</code>, which allows you to handle an <code>Either[A, B]</code> and introduce custom error handling.</p>
-            
-        </main>
-        <footer>Creative Scala is copyright Noel Welsh</footer>
-    </div>
 
-    </div>
-</body>
-
+<h2 id="error-handling" class="section">Error Handling</h2>
+<p>In many cases you&#39;ll need to generate an error response despite a valid request. For example, you would generate a 404 Not Found if the client has sent a well-formed request but the requested resource doesn&#39;t exist. This situation can be handled using the <code>orNotFound</code> method, which converts a <code>Response[A]</code> to a <code>Response[Option[A]]</code>. When passed a <code>None</code> the <code>Response</code> responds with a 404. For more complex cases you can use <code>orElse</code>, which allows you to handle an <code>Either[A, B]</code> and introduce custom error handling.</p></div>
+          <div class="flex flex-row justify-between">
+            <a class="pagenav" href="paths.html">←Paths</a> 
+          </div>
+        </div>
+        <footer>
+          Krop is copyright Noel Welsh. Built with 💖
+        </footer>
+      </div>
+      <nav id="pagebar">
+        <div class="fixed h-screen overflow-y-auto">
+          <p>On This Page</p>
+          <ul class="nav-list">
+            <li class="level1 nav-leaf"><a href="#entities">Entities</a></li>
+            <li class="level1 nav-leaf"><a href="#headers">Headers</a></li>
+            <li class="level1 nav-leaf"><a href="#error-handling">Error Handling</a></li>
+          </ul>
+        </div>
+      </nav>
+    </main>
+  </body>
 </html>
