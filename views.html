@@ -5,7 +5,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="generator" content="Laika 1.0.0" />
-    <title>Application</title>
+    <title>Views</title>
      
     <meta name="description" content="docs" />
     
@@ -57,9 +57,9 @@
                   <li class="level1 nav-node"><a href="index.html">Krop</a></li>
                   <li class="level2 nav-leaf"><a href="quick-start.html">Quick Start</a></li>
                   <li class="level2 nav-leaf"><a href="architecture.html">Architecture</a></li>
-                  <li class="level2 active nav-leaf"><a href="#">Application</a></li>
+                  <li class="level2 nav-leaf"><a href="application.html">Application</a></li>
                   <li class="level2 nav-leaf"><a href="server.html">Server</a></li>
-                  <li class="level2 nav-leaf"><a href="views.html">Views</a></li>
+                  <li class="level2 active nav-leaf"><a href="#">Views</a></li>
                   <li class="level2 nav-node"><a href="routes/">Routing</a></li>
                   <li class="level3 nav-leaf"><a href="routes/request.html">Request</a></li>
                   <li class="level3 nav-leaf"><a href="routes/paths.html">Paths</a></li>
@@ -82,9 +82,9 @@
             <li class="level1 nav-node"><a href="index.html">Krop</a></li>
             <li class="level2 nav-leaf"><a href="quick-start.html">Quick Start</a></li>
             <li class="level2 nav-leaf"><a href="architecture.html">Architecture</a></li>
-            <li class="level2 active nav-leaf"><a href="#">Application</a></li>
+            <li class="level2 nav-leaf"><a href="application.html">Application</a></li>
             <li class="level2 nav-leaf"><a href="server.html">Server</a></li>
-            <li class="level2 nav-leaf"><a href="views.html">Views</a></li>
+            <li class="level2 active nav-leaf"><a href="#">Views</a></li>
             <li class="level2 nav-node"><a href="routes/">Routing</a></li>
             <li class="level3 nav-leaf"><a href="routes/request.html">Request</a></li>
             <li class="level3 nav-leaf"><a href="routes/paths.html">Paths</a></li>
@@ -95,20 +95,18 @@
       </nav>
       <div id="contentbar">
         <div class="max-w-prose mx-auto">
-          <div id="content"><h1 id="application" class="title">Application</h1>
-<p>An <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/Application.html">Application</a> in what a Krop <a href="server.html">server</a> runs, and thus building an <code>Application</code> is the end goal of working with Krop.</p>
-<p>An <code>Application</code> consists of any number of <a href="routes/">Routes</a> followed by a catch-all that handles any requests not matched by a route. The usual catch-all is <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/tool/Application/notFound.html">notFound</a>.</p>
+          <div id="content"><h1 id="views" class="title">Views</h1>
+<p>Views are responsible for generating the user interface of your application. 
+A user interface could be HTML displayed in a web browser, JSON returned from an API endpoint, or code that runs client-side.
+As there are several different kinds of user interfaces there are several different systems for creating views.</p>
 
-<h2 id="development-and-production-mode" class="section">Development and Production Mode</h2>
-<p>Krop can run in one of two modes: development and production. In development
-mode it shows output that is useful for debugging and otherwise inspecting
-the running state. In production this output is hidden.</p>
-<p>The mode is set by the <code>krop.mode</code> JVM system property. If it has the value of
-&quot;development&quot; (without the quotes; any capitalization is fine) then the mode
-is development. Otherwise it is production.</p>
-<p>The mode is determined when Krop starts, and is available as the value of <code>krop.Mode</code>.</p></div>
+<h2 id="static-files" class="section">Static Files</h2>
+
+<h2 id="templates" class="section">Templates</h2>
+<p>Krop uses <a href="https://www.playframework.com/documentation/3.0.x/ScalaTemplates">Twirl</a> for templates, which are views that are mostly text with a few pieces of programmatic content. Templates are ideal for generating HTML.</p>
+<p>By default templates are found in <code>backend/src/main/twirl/</code>.</p></div>
           <div class="flex flex-row justify-between">
-            <a class="pagenav" href="architecture.html">←Architecture</a> <a class="pagenav" href="server.html">Server→</a>
+            <a class="pagenav" href="server.html">←Server</a> <a class="pagenav" href="routes/">Routing→</a>
           </div>
         </div>
         <footer>
@@ -119,7 +117,8 @@ is development. Otherwise it is production.</p>
         <div class="fixed h-screen overflow-y-auto">
           <p>On This Page</p>
           <ul class="nav-list">
-            <li class="level1 nav-leaf"><a href="#development-and-production-mode">Development and Production Mode</a></li>
+            <li class="level1 nav-leaf"><a href="#static-files">Static Files</a></li>
+            <li class="level1 nav-leaf"><a href="#templates">Templates</a></li>
           </ul>
         </div>
       </nav>
