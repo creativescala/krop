@@ -92,18 +92,38 @@
       <div id="contentbar">
         <div class="max-w-prose mx-auto">
           <div id="content"><h1 id="principles" class="title">Principles</h1>
-<p>The goal of Krop is to make building web services and applications easy. There are many existing web service toolkits, so this section lays out the principles that guide the development of Krop and shows how it differs from other toolkits.</p>
+<p>The goal of Krop is to make building web services and applications easy. There are many existing web toolkits, so this section lays out the principles that guide the development of Krop and shows how it differs from other toolkits.</p>
 
 <h2 id="simple-things-are-easy" class="section">Simple Things Are Easy</h2>
-<p>Above all, Krop aims to make it really really easy to create web services. It should be trivial to create a simple website that consists of a few pages and some interactive parts. It should be equally easy to create a web service that responds to a few end points.</p>
-<p>In the event you need features not provided by Krop, you can <code>unwrap</code> types to obtain their http4s equivalent and work with them directly.</p>
+<p>Above all, Krop aims to make it really really easy to create web applications. It should be trivial to create a simple website that consists of a few pages and some interactive parts. It should be equally easy to create a web service that responds to a few end points.</p>
+<p>There are several implications of this focus on productivity:</p>
+<ul>
+  <li>
+    <p>Code is easy to write. When designing APIs we make it easy to follow the types of code, and follow the IDE autocomplete. For example, where the API requires a <code>Request</code> the developer can just start typing <code>Request.</code>. They don&#39;t need to know that they&#39;re actually working with a builder type to construct the final <code>Request</code>.</p>
+  </li>
+  <li>
+    <p>Krop is featureful. If a user wants to do a common task it should be in Krop. We don&#39;t want them to have to chase down a dozen dependencies just to get some basic stuff. This doesn&#39;t mean we write everything ourselves though; that is too big a job. If an existing library does the job we bring it into Krop. That why, for example, Krop builds on top of http4s. There is no value is creating yet another HTTP model and web server.</p>
+  </li>
+  <li>
+    <p>Avoid boilerplate. We use a variety of tactics, including sensible defaults, code generation, and Scala 3&#39;s compile-time metaprogramming, so the user can avoid writing boilerplate.</p>
+  </li>
+  <li>
+    <p>Imports are minimized. Users don&#39;t need to know the project structure inside and out to get stuff done. We use Scala 3&#39;s <code>export</code> feature to coaelesce imports into a few chosen areas.</p>
+  </li>
+</ul>
+
+<h2 id="be-functional" class="section">Be Functional</h2>
+<p>We follow a functional paradigm, meaning we emphasize composition and reasoning. This means the user can trace the path of a request to a response without any hidden state. We don&#39;t, for example, inject routes into some hidden global state. If a user wants a route they add it to their application. Similarly we use compile-time, not run-time metaprogramming.</p>
 
 <h2 id="an-amazing-developer-experience" class="section">An Amazing Developer Experience</h2>
-<p>Krop wants to address the whole lifecycle of creating web applications. This means not only making it easy to write code, but providing</p>
+<p>Krop wants to address the whole lifecycle of creating web applications. This means not only making it easy to write code, but also:</p>
 <ul>
-  <li>excellent documentation for accomplishing common tasks, such as serving files, connecting to a database, and so on;</li>
-  <li>support for the development process, such as showing why routes didn&#39;t match a given request; and</li>
-  <li>tried and tested architectures for efficient development of scalable systems.</li>
+  <li>
+    <p>supporting the runtime experience. The types don&#39;t tell us everything, so make it easy to debug as well. For example, this is why in development mode we show why routes didn&#39;t match a given request.</p>
+  </li>
+  <li>
+    <p>writing documentation. Like the rest of the project our documentation is a continual work-in-progress but we do our best to explain to our users how Krop works.</p>
+  </li>
 </ul></div>
           <div class="flex flex-row justify-between">
             <a class="pagenav" href="quick-start.html">←Quick Start</a> <a class="pagenav" href="application.html">Application→</a>
@@ -118,6 +138,7 @@
           <p>On This Page</p>
           <ul class="nav-list">
             <li class="level1 nav-leaf"><a href="#simple-things-are-easy">Simple Things Are Easy</a></li>
+            <li class="level1 nav-leaf"><a href="#be-functional">Be Functional</a></li>
             <li class="level1 nav-leaf"><a href="#an-amazing-developer-experience">An Amazing Developer Experience</a></li>
           </ul>
         </div>
