@@ -9,8 +9,6 @@ object Dependencies {
   val catsEffectVersion = "3.5.1"
   val fs2Version = "3.6.1"
   val http4sVersion = "1.0.0-M41"
-  val endpoints4sVersion = "1.10.0"
-  val endpoints4sOpenApiVersion = "4.4.0"
   val scalaJsDomVersion = "2.4.0"
   val scalaTagsVersion = "0.13.1"
   val log4catsVersion = "2.7.0"
