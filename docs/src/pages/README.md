@@ -1,10 +1,13 @@
 # Krop
 
-Krop is an experiment in making http4s easy to use. Hopefully these ideas will find their way back into http4s in due course. If not, this library will provide an easy-to-use alternative to the complexity of http4s, while retaining is good features.
+Krop is a Scala 3 full-stack web framework. It can be used equally well to build lightning fast APIs and rich user experiences. It's designed, above all, to be productive. For more, see [our principles](principles.md).
+
 
 ## Getting Started
 
-To use Krop, add the following to your `build.sbt`
+The fastest way to start with Krop is using the template project, which is described in the [Quick Start](quick-start.md).
+
+If you want to add Krop to an existing project, add the following to your `build.sbt`
 
 ```scala
 libraryDependencies += "org.creativescala" %% "krop-core" % "@VERSION@"
