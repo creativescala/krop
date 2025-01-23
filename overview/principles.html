@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="generator" content="Laika 1.0.0" />
+    <title>Principles</title>
+     
+    <meta name="description" content="docs" />
+    
+    <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?version=4.8.0&features=es6"></script>
+    <script
+      id="MathJax-script"
+      async
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
+    ></script>
+    <link
+      href="https://fonts.googleapis.com/css?family=Source+Code+Pro:400|Source+Sans+Pro:300,400,600"
+      rel="stylesheet"
+      type="text/css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css?family=Crimson+Pro:400"
+      rel="stylesheet"
+      type="text/css"
+    />
+    <link rel="stylesheet" type="text/css" href="../css/creative-scala.css" /> <script src="../js/solution.js"></script>
+    <script>
+      /* for avoiding page load transitions */
+    </script>
+  </head>
+
+  <body>
+    <header>
+      <div id="topbar">
+        <nav id="topbar">
+          <button
+            class="text-sm text-pink-800 font-sans font-semibold hover:text-pink-600 focus:text-pink-600"
+            popovertarget="topbar-nav"
+          >
+            Contents
+          </button>
+          <div id="topbar-nav" popover>
+            <div id="topbar-nav-container">
+              <div
+                class="p-4 mx-auto rounded-md bg-white border border-slate-900 relative"
+              >
+                <button
+                  class="absolute top-4 right-4 text-slate-900 hover:text-pink-800 focus:text-pink-800"
+                  popovertarget="topbar-nav"
+                  popovertargetaction="hide"
+                >
+                  ✕
+                </button>
+                <ul class="nav-list">
+                  <li class="level1 nav-node"><a href="../">Krop</a></li>
+                  <li class="level2 nav-leaf"><a href="../quick-start.html">Quick Start</a></li>
+                  <li class="level2 nav-node"><a href="index.html">Overview</a></li>
+                  <li class="level3 nav-leaf"><a href="architecture.html">Architecture</a></li>
+                  <li class="level3 active nav-leaf"><a href="#">Principles</a></li>
+                  <li class="level2 nav-leaf"><a href="../application.html">Application</a></li>
+                  <li class="level2 nav-leaf"><a href="../server.html">Server</a></li>
+                  <li class="level2 nav-leaf"><a href="../views.html">Views</a></li>
+                  <li class="level2 nav-node"><a href="../routes/">Routing</a></li>
+                  <li class="level3 nav-leaf"><a href="../routes/request.html">Request</a></li>
+                  <li class="level3 nav-leaf"><a href="../routes/paths.html">Paths</a></li>
+                  <li class="level3 nav-leaf"><a href="../routes/response.html">Response</a></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </nav>
+        <nav id="home"><a class="text-link" href="../">Krop</a></nav>
+        <nav id="external"><a class="text-link" href="https://discord.gg/rRhcFbJxVG">Community</a> <a class="text-link" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest">API</a> <a class="text-link" href="https://github.com/creativescala/krop">Source</a></nav>
+      </div>
+    </header>
+
+    <main>
+      <nav id="sitebar">
+        <div class="fixed h-screen overflow-y-auto">
+          <ul class="nav-list">
+            <li class="level1 nav-node"><a href="../">Krop</a></li>
+            <li class="level2 nav-leaf"><a href="../quick-start.html">Quick Start</a></li>
+            <li class="level2 nav-node"><a href="index.html">Overview</a></li>
+            <li class="level3 nav-leaf"><a href="architecture.html">Architecture</a></li>
+            <li class="level3 active nav-leaf"><a href="#">Principles</a></li>
+            <li class="level2 nav-leaf"><a href="../application.html">Application</a></li>
+            <li class="level2 nav-leaf"><a href="../server.html">Server</a></li>
+            <li class="level2 nav-leaf"><a href="../views.html">Views</a></li>
+            <li class="level2 nav-node"><a href="../routes/">Routing</a></li>
+            <li class="level3 nav-leaf"><a href="../routes/request.html">Request</a></li>
+            <li class="level3 nav-leaf"><a href="../routes/paths.html">Paths</a></li>
+            <li class="level3 nav-leaf"><a href="../routes/response.html">Response</a></li>
+          </ul>
+        </div>
+      </nav>
+      <div id="contentbar">
+        <div class="max-w-prose mx-auto">
+          <div id="content"><h1 id="principles" class="title">Principles</h1>
+<p>The goal of Krop is to make building web services and applications easy. There are many existing web toolkits, so this section lays out the principles that guide the development of Krop and shows how it differs from other toolkits.</p>
+
+<h2 id="simple-things-are-easy" class="section">Simple Things Are Easy</h2>
+<p>Above all, Krop aims to make it really really easy to create web applications. It should be trivial to create a simple website that consists of a few pages and some interactive parts. It should be equally easy to create a web service that responds to a few end points.</p>
+<p>There are several implications of this focus on productivity:</p>
+<ul>
+  <li>
+    <p>Code is easy to write. When designing APIs we make it easy to follow the types of code, and follow the IDE autocomplete. For example, where the API requires a <code>Request</code> the developer can just start typing <code>Request.</code>. They don&#39;t need to know that they&#39;re actually working with a builder type to construct the final <code>Request</code>.</p>
+  </li>
+  <li>
+    <p>Krop is featureful. If a user wants to do a common task it should be in Krop. We don&#39;t want them to have to chase down a dozen dependencies just to get some basic stuff. This doesn&#39;t mean we write everything ourselves though; that is too big a job. If an existing library does the job we bring it into Krop. That why, for example, Krop builds on top of http4s. There is no value is creating yet another HTTP model and web server.</p>
+  </li>
+  <li>
+    <p>Establish conventions. It&#39;s a waste of time for the user to have to common up with their own directory structure and other conventions. We establish these so others don&#39;t have to think about them and get on with what they really want to do, which is create their product.</p>
+  </li>
+  <li>
+    <p>Avoid boilerplate. We use a variety of tactics, including sensible defaults, code generation, and Scala 3&#39;s compile-time metaprogramming, so the user can avoid writing boilerplate.</p>
+  </li>
+  <li>
+    <p>Imports are minimized. Users don&#39;t need to know the project structure inside and out to get stuff done. We use Scala 3&#39;s <code>export</code> feature to coaelesce imports into a few chosen areas.</p>
+  </li>
+</ul>
+
+<h2 id="be-functional" class="section">Be Functional</h2>
+<p>We follow a functional paradigm, meaning we emphasize composition and reasoning. This means the user can trace the path of a request to a response without any hidden state. We don&#39;t, for example, inject routes into some hidden global state. If a user wants a route they add it to their application. Similarly we use compile-time, not run-time metaprogramming.</p>
+
+<h2 id="an-amazing-developer-experience" class="section">An Amazing Developer Experience</h2>
+<p>Krop wants to address the whole lifecycle of creating web applications. Some ways in which we do this include:</p>
+<ul>
+  <li>
+    <p>Support the run time experience. The types don&#39;t tell us everything, so make it easy to debug as well. For example, this is why in development mode we show why routes didn&#39;t match a given request.</p>
+  </li>
+  <li>
+    <p>Write documentation. Explain to our users how Krop works.</p>
+  </li>
+</ul></div>
+          <div class="flex flex-row justify-between">
+            <a class="pagenav" href="architecture.html">←Architecture</a> <a class="pagenav" href="../application.html">Application→</a>
+          </div>
+        </div>
+        <footer>
+          Krop is copyright Noel Welsh. Built with 💖
+        </footer>
+      </div>
+      <nav id="pagebar">
+        <div class="fixed h-screen overflow-y-auto">
+          <p>On This Page</p>
+          <ul class="nav-list">
+            <li class="level1 nav-leaf"><a href="#simple-things-are-easy">Simple Things Are Easy</a></li>
+            <li class="level1 nav-leaf"><a href="#be-functional">Be Functional</a></li>
+            <li class="level1 nav-leaf"><a href="#an-amazing-developer-experience">An Amazing Developer Experience</a></li>
+          </ul>
+        </div>
+      </nav>
+    </main>
+  </body>
+</html>
