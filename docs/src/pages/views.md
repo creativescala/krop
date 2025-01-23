@@ -11,7 +11,7 @@ As there are several different kinds of user interfaces there are several differ
 
 Krop uses [Twirl][twirl] for templates, which are views that are mostly text with a few pieces of programmatic content. Templates are ideal for generating HTML.
 
-By default templates are found in `backend/src/main/twirl/`.
+By default templates are found in `backend/<package>/src/views/`.
 
 
 [twirl]: https://www.playframework.com/documentation/3.0.x/ScalaTemplates
