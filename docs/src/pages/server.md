@@ -2,7 +2,7 @@
 
 ```scala mdoc:invisible
 import cats.effect.IO
-import krop.all.{*, given}
+import krop.all.*
 ```
 
 ## Creating a Server

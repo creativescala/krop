@@ -51,8 +51,8 @@ object Mode {
   val mode: Mode = {
     val property = System.getProperty(modeProperty)
     val m =
-      if (property == null) Mode.Production
-      else if (property.toLowerCase() == "development") Mode.Development
+      if property == null then Mode.Production
+      else if property.toLowerCase() == "development" then Mode.Development
       else Mode.Production
 
     m

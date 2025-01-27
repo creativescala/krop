@@ -21,7 +21,7 @@ import krop.raise.Raise
 import krop.route.Param.All
 import krop.route.Param.One
 import org.http4s.Uri
-import org.http4s.Uri.{Path => UriPath}
+import org.http4s.Uri.Path as UriPath
 
 import scala.annotation.tailrec
 import scala.collection.mutable

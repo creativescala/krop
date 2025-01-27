@@ -18,7 +18,7 @@ package krop.route
 
 import munit.FunSuite
 import org.http4s.Uri
-import org.http4s.implicits._
+import org.http4s.implicits.*
 
 class PathParseSuite extends FunSuite {
   val nonCapturingPath = Path / "user" / "create"

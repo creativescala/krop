@@ -167,13 +167,13 @@ object Raise {
       def mapToIO[E, A, B](
           value: ToNull[E, A]
       )(f: A => IO[B]): IO[ToNull[E, B]] =
-        if (value == null) then IO.pure(null)
+        if value == null then IO.pure(null)
         else f(value.asInstanceOf[A])
 
       def flatMapToIO[E, A, B](
           value: ToNull[E, A]
       )(f: A => IO[ToNull[E, B]]): IO[ToNull[E, B]] =
-        if (value == null) then IO.pure(null)
+        if value == null then IO.pure(null)
         else f(value.asInstanceOf[A])
     }
 }

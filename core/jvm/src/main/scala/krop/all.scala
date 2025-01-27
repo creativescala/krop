@@ -21,8 +21,6 @@ object all {
   export krop.Server
   export krop.ServerBuilder
 
-  given runtime: KropRuntime = JvmRuntime
-
   export krop.route.Route
   export krop.route.Routes
   export krop.route.Request

@@ -20,7 +20,7 @@ import cats.data.Chain
 import cats.data.Kleisli
 import cats.data.OptionT
 import cats.effect.IO
-import cats.syntax.all._
+import cats.syntax.all.*
 import krop.Application
 import krop.KropRuntime
 import krop.tool.NotFound
@@ -51,7 +51,7 @@ final class Routes(val routes: Chain[Route[?, ?, ?, ?, ?]]) {
   /** Convert these [[package.Routes]] into an [[krop.Application]] by
     * responding to all unmatched requests with a NotFound (404) response.
     */
-  def orElseNotFound(using runtime: KropRuntime): Application =
+  def orElseNotFound: Application =
     this.orElse(NotFound.notFound)
 
   /** Convert to the representation used by http4s */

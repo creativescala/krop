@@ -17,14 +17,14 @@
 package krop.route
 
 import cats.effect.IO
-import cats.syntax.all._
+import cats.syntax.all.*
 import krop.Types.TupleConcat
 import krop.raise.Raise
 import org.http4s.EntityDecoder
 import org.http4s.Header
 import org.http4s.Headers
 import org.http4s.Method
-import org.http4s.{Request => Http4sRequest}
+import org.http4s.Request as Http4sRequest
 
 /** A [[krop.route.Request]] describes a pattern within a [[org.http4s.Request]]
   * that, if matched, will be routed to a handler. For example, it can look for

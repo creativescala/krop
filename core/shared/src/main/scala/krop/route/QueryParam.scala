@@ -16,7 +16,7 @@
 
 package krop.route
 
-import cats.syntax.all._
+import cats.syntax.all.*
 import krop.route.Param.One
 
 /** A [[package.QueryParam]] extracts values from a URI's query parameters. It

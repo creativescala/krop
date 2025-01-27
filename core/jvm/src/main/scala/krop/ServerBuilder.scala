@@ -19,7 +19,7 @@ package krop
 import cats.effect.IO
 import com.comcast.ip4s.Host
 import com.comcast.ip4s.Port
-import org.http4s.ember.server._
+import org.http4s.ember.server.*
 import org.typelevel.log4cats.LoggerFactory
 import org.typelevel.log4cats.slf4j.Slf4jFactory
 
@@ -63,7 +63,8 @@ final case class ServerBuilder(unwrap: IO[EmberServerBuilder[IO]]) {
   def withApplication(app: Application): ServerBuilder =
     ServerBuilder(
       for {
-        app <- app.toHttpApp(using JvmRuntime)
+        runtime <- JvmRuntime.apply
+        app <- app.toHttpApp(using runtime)
         builder <- unwrap
       } yield builder.withHttpApp(app)
     )
