@@ -55,117 +55,116 @@ object NotFound {
   /** The development version of this tool, which returns useful information in
     * the case of an unmatched request.
     */
-  def development(using runtime: KropRuntime): Application = {
-    val supervisor =
-      (route: Routes) => {
-        val kropRoutes = route.orElse(KropAssets.kropAssets.toRoutes)
+  def development(routes: Routes, runtime: KropRuntime): IO[HttpApp[IO]] = {
+    val kropRoutes = routes.orElse(KropAssets.kropAssets.toRoutes)
 
-        def description(
-            routes: NonEmptyChain[(Route[?, ?, ?, ?, ?], ParseFailure)]
-        ) =
-          routes
-            .map { case (route, reason) => routeTemplate(route, reason) }
-            .toList
-            .mkString("\n")
+    def description(
+        routes: NonEmptyChain[(Route[?, ?, ?, ?, ?], ParseFailure)]
+    ) =
+      routes
+        .map { case (route, reason) => routeTemplate(route, reason) }
+        .toList
+        .mkString("\n")
 
-        def html(
-            req: Request[IO],
-            routes: NonEmptyChain[(Route[?, ?, ?, ?, ?], ParseFailure)]
-        ) =
-          s"""
-          |<!doctype html>
-          |<html lang=en>
-          |<head>
-          |  <meta charset=utf-8>
-          |  <link href="/krop/assets/pico.min.css" rel="stylesheet"/>
-          |  <title>Krop: Not Found</title>
-          |</head>
-          |<body>
-          |  <main class="container">
-          |    <hgroup>
-          |      <h1>404 Not Found</h1>
-          |      <h4>This page is created by <code>krop.tool.NotFound</code> and will not be shown in production mode</h4>
-          |    </hgroup>
-          |    <p>The request</p>
-          |    <pre><code>${requestToString(req)}</code></pre>
-          |    <p>did not match any routes :-{</p>
-          |
-          |    <h2>Routes</h2>
-          |    <p>The available routes are:</p>
-          |    <ul>
-          |    ${description(routes)}
-          |    </ul>
-          |  </main>
-          |</body>
-          |</html>
-          """.stripMargin
+    def html(
+        req: Request[IO],
+        routes: NonEmptyChain[(Route[?, ?, ?, ?, ?], ParseFailure)]
+    ) =
+      s"""
+       |<!doctype html>
+       |<html lang=en>
+       |<head>
+       |  <meta charset=utf-8>
+       |  <link href="/krop/assets/pico.min.css" rel="stylesheet"/>
+       |  <title>Krop: Not Found</title>
+       |</head>
+       |<body>
+       |  <main class="container">
+       |    <hgroup>
+       |      <h1>404 Not Found</h1>
+       |      <h4>This page is created by <code>krop.tool.NotFound</code> and will not be shown in production mode</h4>
+       |    </hgroup>
+       |    <p>The request</p>
+       |    <pre><code>${requestToString(req)}</code></pre>
+       |    <p>did not match any routes :-{</p>
+       |
+       |    <h2>Routes</h2>
+       |    <p>The available routes are:</p>
+       |    <ul>
+       |    ${description(routes)}
+       |    </ul>
+       |  </main>
+       |</body>
+       |</html>
+       """.stripMargin
 
-        def response(
-            req: Request[IO],
-            errors: NonEmptyChain[(Route[?, ?, ?, ?, ?], ParseFailure)]
-        ) =
-          org.http4s.dsl.io
-            .NotFound(html(req, errors), `Content-Type`(MediaType.text.html))
+    def response(
+        req: Request[IO],
+        errors: NonEmptyChain[(Route[?, ?, ?, ?, ?], ParseFailure)]
+    ) =
+      org.http4s.dsl.io
+        .NotFound(html(req, errors), `Content-Type`(MediaType.text.html))
 
-        val app: IO[HttpApp[IO]] = {
-          type Annotated = (Route[?, ?, ?, ?, ?], ParseFailure)
-          given Raise.Handler[Either] = Raise.toEither
+    val app: IO[HttpApp[IO]] = {
+      type Annotated = (Route[?, ?, ?, ?, ?], ParseFailure)
+      given Raise.Handler[Either] = Raise.toEither
+      given KropRuntime = runtime
 
-          IO.pure(
-            Kleisli { req =>
-              val rs = kropRoutes.routes.toList
-              // We have at least one route, the Krop routes we added ourselves
-              val firstRoute = rs.head
-              val results: IO[EitherNec[Annotated, Response[IO]]] =
-                firstRoute
-                  .run(req)
-                  .flatMap(either =>
-                    rs.tail.foldLeftM(
-                      either.leftMap(e => firstRoute -> e).toEitherNec
-                    ) { (result, route) =>
-                      result match {
-                        case Left(errors) =>
-                          // If we have failed we accumulate all the failures to
-                          // display to the developer
-                          route
-                            .run(req)
-                            .map(_.leftMap(e => errors :+ (route -> e)))
-                        case Right(value) =>
-                          // If we have succeeded we keep the first success as our result
-                          IO.pure(Right(value))
-                      }
-                    }
-                  )
-
-              results.flatMap(either =>
-                either match {
-                  case Left(errors)    => response(req, errors)
-                  case Right(response) => IO.pure(response)
+      IO.pure(
+        Kleisli { req =>
+          val rs = kropRoutes.routes.toList
+          // We have at least one route, the Krop routes we added ourselves
+          val firstRoute = rs.head
+          val results: IO[EitherNec[Annotated, Response[IO]]] =
+            firstRoute
+              .run(req)
+              .flatMap(either =>
+                rs.tail.foldLeftM(
+                  either.leftMap(e => firstRoute -> e).toEitherNec
+                ) { (result, route) =>
+                  result match {
+                    case Left(errors) =>
+                      // If we have failed we accumulate all the failures to
+                      // display to the developer
+                      route
+                        .run(req)
+                        .map(_.leftMap(e => errors :+ (route -> e)))
+                    case Right(value) =>
+                      // If we have succeeded we keep the first success as our result
+                      IO.pure(Right(value))
+                  }
                 }
               )
+
+          results.flatMap(either =>
+            either match {
+              case Left(errors)    => response(req, errors)
+              case Right(response) => IO.pure(response)
             }
           )
         }
+      )
+    }
 
-        app
-      }
-
-    Application(supervisor)
+    app
   }
 
   /** The production version of this tool, which returns NotFound to every
     * request.
     */
-  def production(using runtime: KropRuntime): Application =
-    Application(routes =>
-      routes.toHttpRoutes.map(r =>
+  def production(routes: Routes, runtime: KropRuntime): IO[HttpApp[IO]] =
+    routes
+      .toHttpRoutes(using runtime)
+      .map(r =>
         Kleisli((req: Request[IO]) =>
           r.run(req).getOrElseF(IO.pure(Response.notFound.covary[IO]))
         )
       )
-    )
 
   /** The notFound Application tool. */
-  def notFound(using runtime: KropRuntime): Application =
-    if Mode.mode.isProduction then production else development
+  def notFound: Application =
+    Application((routes, runtime) =>
+      if Mode.mode.isProduction then production(routes, runtime)
+      else development(routes, runtime)
+    )
 }

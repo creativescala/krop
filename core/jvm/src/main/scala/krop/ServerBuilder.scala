@@ -63,7 +63,7 @@ final case class ServerBuilder(unwrap: IO[EmberServerBuilder[IO]]) {
   def withApplication(app: Application): ServerBuilder =
     ServerBuilder(
       for {
-        app <- app.toHttpApp
+        app <- app.toHttpApp(using JvmRuntime)
         builder <- unwrap
       } yield builder.withHttpApp(app)
     )

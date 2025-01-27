@@ -34,35 +34,33 @@ import org.http4s.Response
   */
 final case class Application(
     routes: Routes,
-    supervisor: Routes => IO[HttpApp[IO]]
+    supervisor: (Routes, KropRuntime) => IO[HttpApp[IO]]
 ) {
-  def toHttpApp: IO[HttpApp[IO]] =
-    supervisor(routes)
+  def toHttpApp(using runtime: KropRuntime): IO[HttpApp[IO]] =
+    supervisor(routes, runtime)
 }
 object Application {
 
-  /** Construction an [[Application]] with no route and the given supervisor. */
-  def apply(supervisor: Routes => IO[HttpApp[IO]]): Application =
+  /** Construct an [[Application]] with no route and the given supervisor. */
+  def apply(supervisor: (Routes, KropRuntime) => IO[HttpApp[IO]]): Application =
     Application(Routes.empty, supervisor)
 
   /** Lift an [[org.http4s.HttpApp]] into an [[krop.Application]]. */
-  def liftApp(app: HttpApp[IO])(using runtime: KropRuntime): Application =
+  def liftApp(app: HttpApp[IO]): Application =
     Application(
       Routes.empty,
-      (routes) =>
-        routes.toHttpRoutes.map(r =>
-          Kleisli(req => r.run(req).getOrElseF(app.run(req)))
-        )
+      (routes, runtime) =>
+        routes
+          .toHttpRoutes(using runtime)
+          .map(r => Kleisli(req => r.run(req).getOrElseF(app.run(req))))
     )
 
-  def lift(f: Request[IO] => IO[Response[IO]])(using
-      runtime: KropRuntime
-  ): Application =
+  def lift(f: Request[IO] => IO[Response[IO]]): Application =
     Application.liftApp(HttpApp(f))
 
   /** The Application that returns 404 Not Found to all requests. See
     * [[krop.tool.NotFound]] for details on the implementation.
     */
-  def notFound(using runtime: KropRuntime): Application =
+  val notFound: Application =
     krop.tool.NotFound.notFound
 }
