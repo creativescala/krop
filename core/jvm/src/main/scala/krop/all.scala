@@ -21,16 +21,17 @@ object all {
   export krop.Server
   export krop.ServerBuilder
 
+  export krop.route.Entity
+  export krop.route.Handler
+  export krop.route.Handlers
   export krop.route.Route
-  export krop.route.Routes
   export krop.route.Request
+  export krop.route.Response
   export krop.route.Query
   export krop.route.QueryParam
-  export krop.route.Response
   export krop.route.Path
   export krop.route.Param
   export krop.route.Segment
-  export krop.route.Entity
 
   export krop.tool.DefaultAssets
 

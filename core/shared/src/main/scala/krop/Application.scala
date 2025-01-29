@@ -18,41 +18,44 @@ package krop
 
 import cats.data.Kleisli
 import cats.effect.IO
-import krop.route.Routes
+import krop.route.Handlers
 import org.http4s.HttpApp
 import org.http4s.Request
 import org.http4s.Response
 
 /** An [[krop.Application]] produces a response for every HTTP request. Compare
-  * to [[krop.Route.Route]], which may not produce a response for some requests.
+  * to [[krop.router.Handler]], which may not produce a response for some
+  * requests.
   *
-  * @param routes
-  *   The route this Application will test against any incoming request
+  * @param handlers
+  *   The handlers this Application will test against any incoming request
   * @param supervisor
   *   Responsible for constructing a HttpApp that matches all possible requests,
   *   handling requests that the route doesn't match.
   */
 final case class Application(
-    routes: Routes,
-    supervisor: (Routes, KropRuntime) => IO[HttpApp[IO]]
+    handlers: Handlers,
+    supervisor: (Handlers, KropRuntime) => HttpApp[IO]
 ) {
-  def toHttpApp(using runtime: KropRuntime): IO[HttpApp[IO]] =
-    supervisor(routes, runtime)
+  def toHttpApp(using runtime: KropRuntime): HttpApp[IO] =
+    supervisor(handlers, runtime)
 }
 object Application {
 
   /** Construct an [[Application]] with no route and the given supervisor. */
-  def apply(supervisor: (Routes, KropRuntime) => IO[HttpApp[IO]]): Application =
-    Application(Routes.empty, supervisor)
+  def apply(
+      supervisor: (Handlers, KropRuntime) => HttpApp[IO]
+  ): Application =
+    Application(Handlers.empty, supervisor)
 
   /** Lift an [[org.http4s.HttpApp]] into an [[krop.Application]]. */
   def liftApp(app: HttpApp[IO]): Application =
     Application(
-      Routes.empty,
-      (routes, runtime) =>
-        routes
-          .toHttpRoutes(using runtime)
-          .map(r => Kleisli(req => r.run(req).getOrElseF(app.run(req))))
+      Handlers.empty,
+      (handlers, runtime) => {
+        val r = handlers.toHttpRoutes(using runtime)
+        Kleisli(req => r.run(req).getOrElseF(app.run(req)))
+      }
     )
 
   def lift(f: Request[IO] => IO[Response[IO]]): Application =

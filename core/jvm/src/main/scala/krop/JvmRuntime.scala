@@ -27,7 +27,3 @@ final class JvmRuntime(val webSocketBuilder: WebSocketBuilder[IO])
   given loggerFactory: LoggerFactory[IO] = Slf4jFactory.create[IO]
   given logger: Logger[IO] = loggerFactory.getLoggerFromName("krop-core")
 }
-object JvmRuntime {
-  def apply: IO[JvmRuntime] =
-    WebSocketBuilder[IO].map(builder => new JvmRuntime(builder))
-}

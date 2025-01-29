@@ -61,13 +61,12 @@ final case class ServerBuilder(unwrap: IO[EmberServerBuilder[IO]]) {
 
   /** Set the application that the server will run. */
   def withApplication(app: Application): ServerBuilder =
-    ServerBuilder(
-      for {
-        runtime <- JvmRuntime.apply
-        app <- app.toHttpApp(using runtime)
-        builder <- unwrap
-      } yield builder.withHttpApp(app)
-    )
+    ServerBuilder(unwrap.map { builder =>
+      builder.withHttpWebSocketApp { wsBuilder =>
+        val runtime = JvmRuntime(wsBuilder)
+        app.toHttpApp(using runtime)
+      }
+    })
 }
 object ServerBuilder {
   implicit val loggerFactory: LoggerFactory[IO] = Slf4jFactory.create[IO]

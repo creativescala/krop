@@ -26,42 +26,43 @@ import krop.KropRuntime
 import krop.tool.NotFound
 import org.http4s.HttpRoutes
 
-/** [[package.Routes]] are a collection of zero or more [[package.Route]]. */
-final class Routes(val routes: Chain[Route[?, ?, ?, ?, ?]]) {
+/** [[package.Handlers]] are a collection of zero or more [[package.Handler]].
+  */
+final class Handlers(val handlers: Chain[Handler[?, ?]]) {
 
-  /** Create a [[package.Routes]] that tries first these routes, and if they
+  /** Create a [[package.Handlers]] that tries first these handlers, and if they
     * fail to match, the route in the given parameter.
     */
-  def orElse(that: Route[?, ?, ?, ?, ?]): Routes =
-    Routes(this.routes :+ that)
+  def orElse(that: Handler[?, ?]): Handlers =
+    Handlers(this.handlers :+ that)
 
-  /** Create a [[package.Routes]] that tries first these routes, and if they
-    * fail to match, the routes in the given parameter.
+  /** Create a [[package.Handlers]] that tries first these handlers, and if they
+    * fail to match, the handlers in the given parameter.
     */
-  def orElse(that: Routes): Routes =
-    Routes(this.routes ++ that.routes)
+  def orElse(that: Handlers): Handlers =
+    Handlers(this.handlers ++ that.handlers)
 
-  /** Convert these [[package.Routes]] into an [[krop.Application]] that first
-    * tries these Routes and, if they fail to match, passes the request to the
+  /** Convert these [[package.Handlers]] into an [[krop.Application]] that first
+    * tries these Handlers and, if they fail to match, passes the request to the
     * Application.
     */
   def orElse(app: Application): Application =
-    app.copy(routes = this.orElse(app.routes))
+    app.copy(handlers = this.orElse(app.handlers))
 
-  /** Convert these [[package.Routes]] into an [[krop.Application]] by
+  /** Convert these [[package.Handlers]] into an [[krop.Application]] by
     * responding to all unmatched requests with a NotFound (404) response.
     */
   def orElseNotFound: Application =
     this.orElse(NotFound.notFound)
 
   /** Convert to the representation used by http4s */
-  def toHttpRoutes(using runtime: KropRuntime): IO[HttpRoutes[IO]] =
-    this.routes.foldLeftM(HttpRoutes.empty[IO])((accum, route) =>
-      route.toHttpRoutes.map(r => accum <+> r)
+  def toHttpRoutes(using runtime: KropRuntime): HttpRoutes[IO] =
+    this.handlers.foldLeft(HttpRoutes.empty[IO])((accum, handler) =>
+      accum <+> handler.toHttpRoutes(using runtime)
     )
 }
-object Routes {
+object Handlers {
 
-  /** The empty [[package.Routes]], which don't match any request. */
-  val empty: Routes = new Routes(Chain.empty[Route[?, ?, ?, ?, ?]])
+  /** The empty [[package.Handlers]], which don't match any request. */
+  val empty: Handlers = new Handlers(Chain.empty[Handler[?, ?]])
 }

@@ -52,11 +52,12 @@ object TurboStream extends IOApp {
       Route(
         Request.get(Path.root / "asset" / Param.mkString("/")),
         Response.staticResource("/asset/")
-      ).passthrough
+      )
 
     val index =
       html(
         head(
+          meta(charset := "utf-8"),
           script(
             `type` := "module",
             src := "/asset/turbo-8.0.12.js"
@@ -89,35 +90,21 @@ object TurboStream extends IOApp {
 
     def streamController()
         : IO[(Stream[IO, WebSocketFrame], Pipe[IO, WebSocketFrame, Unit])] = {
-      import scala.concurrent.duration.*
       val send: Stream[IO, WebSocketFrame] =
         Stream
-          .awakeEvery[IO](1.second)
-          .map(_ =>
+          .repeatEval(queue.take)
+          .map(message =>
             WebSocketFrame.Text(
               tool.TurboStream
                 .stream(
                   tool.TurboStream.action.append,
                   target := "messages",
-                  tool.TurboStream.template(p("haha"))
+                  tool.TurboStream.template(p(message.content))
                 )
-                .toString
+                .toString,
+              last = false
             )
           )
-        // Stream
-        //   .repeatEval(queue.take)
-        //   .map(message =>
-        //     WebSocketFrame.Text(
-        //       tool.TurboStream
-        //         .stream(
-        //           tool.TurboStream.action.append,
-        //           target := "messages",
-        //           tool.TurboStream.template(p(message.content))
-        //         )
-        //         .toString,
-        //       last = false
-        //     )
-        //   )
 
       val receive: Pipe[IO, WebSocketFrame, Unit] =
         stream =>
@@ -125,7 +112,7 @@ object TurboStream extends IOApp {
             IO.print("Stream received frame: ") >> IO.println(frame)
           )
 
-      IO.println("WEBSOCKET").as((send, receive))
+      IO.pure((send, receive))
     }
 
     val routes =
@@ -133,7 +120,7 @@ object TurboStream extends IOApp {
         .handle(indexController)
         .orElse(messageRoute.handleIO(messageController))
         .orElse(streamRoute.handleIO(streamController))
-        .orElse(assetRoute)
+        .orElse(assetRoute.passthrough)
 
     routes.orElseNotFound
   }

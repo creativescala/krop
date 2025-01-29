@@ -27,7 +27,7 @@ object Htmx {
         Path / "reverse" :? Query("word", Param.string)
       ),
       Response.ok(Entity.scalatags)
-    ).handle((str: String) => p(str.reverse))
+    )
 
   val index =
     html(
@@ -47,13 +47,21 @@ object Htmx {
       )
     )
 
-  val indexRoute =
+  val indexHandler =
     Route(Request.get(Path.root), Response.ok(Entity.scalatags)).handle(() =>
       index
     )
+
+  val reverseHandler =
+    reverseRoute.handle { string =>
+      println(s"Reversing $string")
+      p(string.reverse)
+    }
 }
 
 @main def runHtmx() =
   ServerBuilder.default
-    .withApplication(Htmx.indexRoute.orElse(Htmx.reverseRoute).orElseNotFound)
+    .withApplication(
+      Htmx.indexHandler.orElse(Htmx.reverseHandler).orElseNotFound
+    )
     .run()
