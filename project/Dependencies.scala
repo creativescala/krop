@@ -8,7 +8,7 @@ object Dependencies {
   val catsVersion = "2.10.0"
   val catsEffectVersion = "3.5.1"
   val fs2Version = "3.6.1"
-  val http4sVersion = "1.0.0-M41"
+  val http4sVersion = "1.0.0-M44"
   val scalaJsDomVersion = "2.4.0"
   val scalaTagsVersion = "0.13.1"
   val log4catsVersion = "2.7.0"
