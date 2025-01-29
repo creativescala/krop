@@ -1,6 +1,6 @@
 # Krop
 
-Krop is a Scala 3 web framework. It's can handle any web application, from APIs to rich user experiences, but it excels at projects where productivity and feature richness are a priority. For more, see [our principles](overview/principles.md).
+Krop is a Scala 3 web framework. It can handle any web application, from APIs to rich user experiences, but it excels at projects where productivity and feature richness are a priority. For more, see [our principles](overview/principles.md).
 
 
 ## Getting Started
