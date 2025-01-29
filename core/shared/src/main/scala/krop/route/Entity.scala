@@ -25,12 +25,12 @@ import org.http4s.EntityDecoder
 import org.http4s.EntityEncoder
 import org.http4s.Media
 import org.http4s.MediaRange
+import org.http4s.UrlForm
 import org.http4s.circe.CirceEntityDecoder
 import org.http4s.circe.CirceEntityEncoder
 import org.http4s.headers.`Content-Type`
 import org.http4s.syntax.all.*
 import scalatags.Text.TypedTag
-import org.http4s.UrlForm
 
 /** Type alias for an Entity where the decoded and encoded type are the same. */
 type InvariantEntity[A] = Entity[A, A]
