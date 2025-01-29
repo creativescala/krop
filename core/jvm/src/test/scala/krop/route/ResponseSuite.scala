@@ -16,12 +16,14 @@
 
 package krop.route
 
+import cats.effect.IO
 import krop.JvmRuntime
 import munit.CatsEffectSuite
 import org.http4s.Method
 import org.http4s.Request as Http4sRequest
 import org.http4s.Uri
 import org.http4s.implicits.*
+import org.http4s.server.websocket.WebSocketBuilder
 
 class ResponseSuite extends CatsEffectSuite {
   val staticResourceResponse =
@@ -32,7 +34,8 @@ class ResponseSuite extends CatsEffectSuite {
       Http4sRequest(method = Method.GET, uri = uri"http://example.org/")
 
     for {
-      runtime <- JvmRuntime.apply
+      builder <- WebSocketBuilder[IO]
+      runtime = JvmRuntime(builder)
       response <- staticResourceResponse
         .respond(request, "pico.min.css")(using runtime)
         .map(_.status.isSuccess)
@@ -45,7 +48,8 @@ class ResponseSuite extends CatsEffectSuite {
       Http4sRequest(method = Method.GET, uri = uri"http://example.org/")
 
     for {
-      runtime <- JvmRuntime.apply
+      builder <- WebSocketBuilder[IO]
+      runtime = JvmRuntime(builder)
       response <- staticResourceResponse
         .respond(request, "bogus.css")(using runtime)
         .map(!_.status.isSuccess)
@@ -58,7 +62,8 @@ class ResponseSuite extends CatsEffectSuite {
       Http4sRequest(method = Method.GET, uri = uri"http://example.org/")
 
     for {
-      runtime <- JvmRuntime.apply
+      builder <- WebSocketBuilder[IO]
+      runtime = JvmRuntime(builder)
       response <- Response
         .staticFile("project/plugins.sbt")
         .respond(request, ())(using runtime)

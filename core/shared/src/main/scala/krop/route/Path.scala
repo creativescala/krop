@@ -249,7 +249,7 @@ final class Path[P <: Tuple, Q <: Tuple] private (
     }
     val result = q match {
       case EmptyTuple => p
-      case other      => p :* other
+      case other      => p ++ other
     }
 
     result.asInstanceOf[Types.TupleConcat[P, Q]]

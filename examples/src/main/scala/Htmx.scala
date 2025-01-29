@@ -53,10 +53,7 @@ object Htmx {
     )
 
   val reverseHandler =
-    reverseRoute.handle { string =>
-      println(s"Reversing $string")
-      p(string.reverse)
-    }
+    reverseRoute.handle(string => p(string.reverse))
 }
 
 @main def runHtmx() =

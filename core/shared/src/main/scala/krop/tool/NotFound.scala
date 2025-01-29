@@ -131,14 +131,20 @@ object NotFound {
         errors: NonEmptyChain[(Handler[?, ?], ParseFailure)]
     ) =
       org.http4s.dsl.io
-        .NotFound(notFoundHtml(req, errors), `Content-Type`(MediaType.text.html))
+        .NotFound(
+          notFoundHtml(req, errors),
+          `Content-Type`(MediaType.text.html)
+        )
 
     def internalError(
         req: Request[IO],
         exn: Throwable
     ) =
       org.http4s.dsl.io
-        .InternalServerError(internalErrorHtml(req, exn), `Content-Type`(MediaType.text.html))
+        .InternalServerError(
+          internalErrorHtml(req, exn),
+          `Content-Type`(MediaType.text.html)
+        )
 
     val app: HttpApp[IO] = {
       type Annotated = (Handler[?, ?], ParseFailure)
@@ -170,12 +176,14 @@ object NotFound {
               }
             )
 
-        results.flatMap(either =>
-          either match {
-            case Left(errors)    => notFound(req, errors)
-            case Right(response) => IO.pure(response)
-          }
-        ).recoverWith(exn => internalError(req, exn))
+        results
+          .flatMap(either =>
+            either match {
+              case Left(errors)    => notFound(req, errors)
+              case Right(response) => IO.pure(response)
+            }
+          )
+          .recoverWith(exn => internalError(req, exn))
       }
     }
 

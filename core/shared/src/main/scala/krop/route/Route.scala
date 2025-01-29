@@ -159,7 +159,10 @@ final class HandlerPureBuilder[I <: Tuple, F, R](
     route: Route[?, ?, I, ?, R],
     ta: TupleApply.Aux[I, F, R]
 ) {
-  def apply(f: F): Handler[I, R] = Handler(route, i => IO.pure(ta.tuple(f)(i)))
+  def apply(f: F): Handler[I, R] = {
+    val handle = ta.tuple(f)
+    Handler(route, i => IO.pure(handle(i)))
+  }
 }
 
 /** This class exists to make type inference work better when constructing a
@@ -170,4 +173,5 @@ final class HandlerIOBuilder[I <: Tuple, F, R](
     ta: TupleApply.Aux[I, F, IO[R]]
 ) {
   def apply(f: F): Handler[I, R] = Handler(route, ta.tuple(f))
+
 }

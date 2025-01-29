@@ -45,4 +45,16 @@ class TupleApplySuite extends FunSuite {
     route.handle((int, string) => s"${int.toString}: ${string}")
     route.handleIO((int, string) => IO.pure(s"${int.toString}: ${string}"))
   }
+
+  test("Conversion works for EmptyTuple") {
+    val f = TupleApply.emptyTupleFunction0Apply[String].tuple(() => "Yeah!")
+
+    assertEquals(f.apply(EmptyTuple), "Yeah!")
+  }
+
+  test("Conversion works for Tuple1") {
+    val f = TupleApply.tuple1Apply[Int, String].tuple(int => int.toString)
+
+    assertEquals(f.apply(Tuple1(42)), "42")
+  }
 }
