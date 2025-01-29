@@ -67,7 +67,7 @@ object NotFound {
         .toList
         .mkString("\n")
 
-    def html(
+    def notFoundHtml(
         req: Request[IO],
         handlers: NonEmptyChain[(Handler[?, ?], ParseFailure)]
     ) =
@@ -99,12 +99,46 @@ object NotFound {
        |</html>
        """.stripMargin
 
-    def response(
+    def internalErrorHtml(req: Request[IO], exn: Throwable) =
+      s"""
+       |<!doctype html>
+       |<html lang=en>
+       |<head>
+       |  <meta charset=utf-8>
+       |  <link href="/krop/assets/pico.min.css" rel="stylesheet"/>
+       |  <title>Krop: Internal Error</title>
+       |</head>
+       |<body>
+       |  <main class="container">
+       |    <hgroup>
+       |      <h1>500 Internal Error</h1>
+       |      <h4>This page is created by <code>krop.tool.NotFound</code> and will not be shown in production mode</h4>
+       |    </hgroup>
+       |    <p>The request</p>
+       |    <pre><code>${requestToString(req)}</code></pre>
+       |    <p>caused an exception in the matching route.</p>
+       |
+       |    <h2>Details</h2>
+       |    <p>${exn.getMessage()}</p>
+       |    <pre>${exn.getStackTrace().mkString("\n")}</pre>
+       |  </main>
+       |</body>
+       |</html>
+       """.stripMargin
+
+    def notFound(
         req: Request[IO],
         errors: NonEmptyChain[(Handler[?, ?], ParseFailure)]
     ) =
       org.http4s.dsl.io
-        .NotFound(html(req, errors), `Content-Type`(MediaType.text.html))
+        .NotFound(notFoundHtml(req, errors), `Content-Type`(MediaType.text.html))
+
+    def internalError(
+        req: Request[IO],
+        exn: Throwable
+    ) =
+      org.http4s.dsl.io
+        .InternalServerError(internalErrorHtml(req, exn), `Content-Type`(MediaType.text.html))
 
     val app: HttpApp[IO] = {
       type Annotated = (Handler[?, ?], ParseFailure)
@@ -138,10 +172,10 @@ object NotFound {
 
         results.flatMap(either =>
           either match {
-            case Left(errors)    => response(req, errors)
+            case Left(errors)    => notFound(req, errors)
             case Right(response) => IO.pure(response)
           }
-        )
+        ).recoverWith(exn => internalError(req, exn))
       }
     }
 
