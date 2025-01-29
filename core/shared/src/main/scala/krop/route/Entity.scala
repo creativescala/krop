@@ -30,6 +30,7 @@ import org.http4s.circe.CirceEntityEncoder
 import org.http4s.headers.`Content-Type`
 import org.http4s.syntax.all.*
 import scalatags.Text.TypedTag
+import org.http4s.UrlForm
 
 /** Type alias for an Entity where the decoded and encoded type are the same. */
 type InvariantEntity[A] = Entity[A, A]
@@ -98,6 +99,12 @@ object Entity {
     Entity(
       EntityDecoder.text[IO],
       EntityEncoder.stringEncoder()
+    )
+
+  val urlForm: InvariantEntity[UrlForm] =
+    Entity(
+      UrlForm.entityDecoder[IO],
+      UrlForm.entityEncoder
     )
 
   val html: InvariantEntity[String] =
