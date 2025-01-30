@@ -17,11 +17,13 @@
 package krop
 
 import cats.effect.IO
+import org.http4s.server.websocket.WebSocketBuilder
 import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.LoggerFactory
 
-/** Provides platform specific services and utilities */
+/** The runtime provides platform and server specific services and utilities */
 trait KropRuntime {
   given loggerFactory: LoggerFactory[IO]
   given logger: Logger[IO]
+  def webSocketBuilder: WebSocketBuilder[IO]
 }

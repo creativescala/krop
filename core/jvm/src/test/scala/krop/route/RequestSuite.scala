@@ -19,9 +19,9 @@ package krop.route
 import krop.raise.Raise
 import munit.CatsEffectSuite
 import org.http4s.Method
+import org.http4s.Request as Http4sRequest
 import org.http4s.Uri
-import org.http4s.implicits._
-import org.http4s.{Request => Http4sRequest}
+import org.http4s.implicits.*
 
 class RequestSuite extends CatsEffectSuite {
   val simpleRequest = Request.get(Path.root)

@@ -37,7 +37,7 @@ object TupleApply {
 
   given tuple1Apply[A, C]: TupleApply[Tuple1[A], C] with {
     type Fun = A => C
-    def tuple(f: A => C): Tuple1[A] => C = (a) => f(a(0))
+    def tuple(f: A => C): Tuple1[A] => C = a => f(a(0))
   }
 
   given tuple2Apply[A, B, C]: TupleApply[

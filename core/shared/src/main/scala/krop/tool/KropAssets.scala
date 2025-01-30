@@ -16,21 +16,17 @@
 
 package krop.tool
 
+import krop.route.Handler1
 import krop.route.Param
 import krop.route.Path
-import krop.route.Path1Route
 import krop.route.Request
 import krop.route.Response
 import krop.route.Route
 
 object KropAssets {
-  val kropAssets: Path1Route[String, String] = {
-    val route =
-      Route(
-        Request.get(Path / "krop" / "assets" / Param.mkString("/")),
-        Response.staticResource("/krop/assets/")
-      ).passthrough
-
-    route
-  }
+  val kropAssets: Handler1[String, String] =
+    Route(
+      Request.get(Path / "krop" / "assets" / Param.mkString("/")),
+      Response.staticResource("/krop/assets/")
+    ).passthrough
 }

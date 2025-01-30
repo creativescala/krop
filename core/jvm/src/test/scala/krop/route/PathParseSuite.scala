@@ -18,13 +18,16 @@ package krop.route
 
 import munit.FunSuite
 import org.http4s.Uri
-import org.http4s.implicits._
+import org.http4s.implicits.*
 
 class PathParseSuite extends FunSuite {
   val nonCapturingPath = Path / "user" / "create"
   val nonCapturingAllPath = Path / "assets" / "html" / Segment.all
   val capturingAllPath = Path / "assets" / "html" / Param.seq
   val simplePath = Path / "user" / Param.int.withName("<userId>") / "view"
+  val simpleQueryPath = Path / "user" / Param.int :? Query("mode", Param.string)
+  val multipleQueryPath =
+    Path / "users" :? Query("page", Param.int).and("count", Param.int)
 
   test("Path description is as expected") {
     assertEquals(simplePath.describe, "/user/<userId>/view")
@@ -40,6 +43,24 @@ class PathParseSuite extends FunSuite {
     val okUri = uri"http://example.org/user/1234/view"
 
     assertEquals(simplePath.parseToOption(okUri), Some(1234 *: EmptyTuple))
+  }
+
+  test("Path parses expected element and query parameters from http4s path") {
+    val okUri = uri"http://example.org/user/1234?mode=all"
+
+    assertEquals(
+      simpleQueryPath.parseToOption(okUri),
+      Some(1234 *: "all" *: EmptyTuple)
+    )
+  }
+
+  test("Path parses all query parameters from http4s path") {
+    val okUri = uri"http://example.org/users?page=3&count=50"
+
+    assertEquals(
+      multipleQueryPath.parseToOption(okUri),
+      Some((3, 50))
+    )
   }
 
   test("Path fails when cannot parse element from URI path") {

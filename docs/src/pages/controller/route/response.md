@@ -41,7 +41,8 @@ In the example below we add a header using the `(name, value)` form, and a value
 ```scala mdoc:silent
 import org.http4s.headers.Allow
 
-val headers = Response.ok(Entity.html).withHeader("X-Awesomeness" -> "10.0", Allow(Method.GET))
+val headers = 
+  Response.ok(Entity.html).withHeader("X-Awesomeness" -> "10.0", Allow(Method.GET))
 ```
 
 

@@ -16,15 +16,16 @@
 
 package krop.route
 
+import cats.effect.IO
+import krop.JvmRuntime
 import munit.CatsEffectSuite
 import org.http4s.Method
+import org.http4s.Request as Http4sRequest
 import org.http4s.Uri
-import org.http4s.implicits._
-import org.http4s.{Request => Http4sRequest}
+import org.http4s.implicits.*
+import org.http4s.server.websocket.WebSocketBuilder
 
 class ResponseSuite extends CatsEffectSuite {
-  given krop.KropRuntime = krop.JvmRuntime
-
   val staticResourceResponse =
     Response.staticResource("/krop/assets/")
 
@@ -32,30 +33,42 @@ class ResponseSuite extends CatsEffectSuite {
     val request =
       Http4sRequest(method = Method.GET, uri = uri"http://example.org/")
 
-    staticResourceResponse
-      .respond(request, "pico.min.css")
-      .map(_.status.isSuccess)
-      .assert
+    for {
+      builder <- WebSocketBuilder[IO]
+      runtime = JvmRuntime(builder)
+      response <- staticResourceResponse
+        .respond(request, "pico.min.css")(using runtime)
+        .map(_.status.isSuccess)
+        .assert
+    } yield response
   }
 
   test("static resource response fails when resource does not exist") {
     val request =
       Http4sRequest(method = Method.GET, uri = uri"http://example.org/")
 
-    staticResourceResponse
-      .respond(request, "bogus.css")
-      .map(!_.status.isSuccess)
-      .assert
+    for {
+      builder <- WebSocketBuilder[IO]
+      runtime = JvmRuntime(builder)
+      response <- staticResourceResponse
+        .respond(request, "bogus.css")(using runtime)
+        .map(!_.status.isSuccess)
+        .assert
+    } yield response
   }
 
   test("static file response succeeds when file exists") {
     val request =
       Http4sRequest(method = Method.GET, uri = uri"http://example.org/")
 
-    Response
-      .staticFile("project/plugins.sbt")
-      .respond(request, ())
-      .map(_.status.isSuccess)
-      .assert
+    for {
+      builder <- WebSocketBuilder[IO]
+      runtime = JvmRuntime(builder)
+      response <- Response
+        .staticFile("project/plugins.sbt")
+        .respond(request, ())(using runtime)
+        .map(_.status.isSuccess)
+        .assert
+    } yield response
   }
 }

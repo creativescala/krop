@@ -19,7 +19,7 @@ package krop
 import cats.effect.IO
 import cats.effect.Resource
 import cats.effect.unsafe.implicits.global
-import org.http4s.server.{Server => Http4sServer}
+import org.http4s.server.Server as Http4sServer
 
 /** A HTTP server that will serve requests when run. */
 final case class Server(unwrap: Resource[IO, Http4sServer]) {

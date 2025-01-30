@@ -16,17 +16,7 @@
 
 package krop.route
 
-import cats.Monad
-import cats.data.Chain
-import cats.data.Kleisli
-import cats.data.OptionT
 import cats.effect.IO
-import krop.Application
-import krop.KropRuntime
-import krop.raise.Raise
-import org.http4s.HttpRoutes
-import org.http4s.{Request => Http4sRequest}
-import org.http4s.{Response => Http4sResponse}
 
 /** Type alias for a [[package.Route]] that has extracts no [[package.Entity]]
   * from the request.
@@ -61,27 +51,8 @@ type Path1Route[P, R] = PathRoute[Tuple1[P], EmptyTuple, R]
   */
 final class Route[P <: Tuple, Q <: Tuple, I <: Tuple, O <: Tuple, R](
     val request: Request[P, Q, I, O],
-    val response: Response[R],
-    val handler: I => IO[R]
+    val response: Response[R]
 ) {
-
-  /** Try this Route. If it fails to match, pass control to the given
-    * [[krop.Application]].
-    */
-  def orElse(that: Application): Application =
-    this.toRoutes.orElse(that)
-
-  /** Try this Route. If it fails to match, pass control to the given
-    * [[package.Route]].
-    */
-  def orElse(that: Route[?, ?, ?, ?, ?]): Routes =
-    this.orElse(that.toRoutes)
-
-  /** Try this Route. If it fails to match, pass control to the
-    * [[package.Routes]].
-    */
-  def orElse(that: Routes): Routes =
-    Routes(this +: that.routes)
 
   /** Overload of `pathTo` for the case where the path has no parameters.
     */
@@ -148,7 +119,7 @@ final class Route[P <: Tuple, Q <: Tuple, I <: Tuple, O <: Tuple, R](
   /** Overload of `pathAndQueryTo` for the case where the path and query have a
     * single parameter.
     */
-  def pathTo[B, C](pathParam: B, queryParam: C)(using
+  def pathAndQueryTo[B, C](pathParam: B, queryParam: C)(using
       evP: Tuple1[B] =:= P,
       evQ: Tuple1[C] =:= Q
   ): String =
@@ -166,67 +137,41 @@ final class Route[P <: Tuple, Q <: Tuple, I <: Tuple, O <: Tuple, R](
   def pathAndQueryTo(pathParams: P, queryParams: Q): String =
     request.pathAndQueryTo(pathParams, queryParams)
 
-  def toRoutes: Routes =
-    Routes(Chain(this))
+  /** Handler incoming requests with the given function. */
+  def handle(using ta: TupleApply[I, R]): HandlerPureBuilder[I, ta.Fun, R] =
+    HandlerPureBuilder(this, ta)
 
-  def run[F[_, _]: Raise.Handler](
-      req: Http4sRequest[IO]
-  )(using
-      Monad[F[ParseFailure, *]],
-      KropRuntime
-  ): IO[F[ParseFailure, Http4sResponse[IO]]] =
-    request
-      .parse(req)
-      .flatMap(extracted =>
-        Raise
-          .mapToIO(extracted)(in =>
-            handler(in).flatMap(out => response.respond(req, out))
-          )
-      )
+  /** Handler incoming requests with the given function. */
+  def handleIO(using ta: TupleApply[I, IO[R]]): HandlerIOBuilder[I, ta.Fun, R] =
+    HandlerIOBuilder(this, ta)
 
-  def toHttpRoutes(using runtime: KropRuntime): IO[HttpRoutes[IO]] =
-    IO.pure(
-      Kleisli(req =>
-        OptionT {
-          given Raise.Handler[Raise.ToOption] = Raise.toOption
-          this.run(req)
-        }
-      )
-    )
+  /** Pass the result of parsing the request directly the response with no
+    * modification.
+    */
+  def passthrough(using pb: PassthroughBuilder[I, R]): Handler[I, R] =
+    Handler(this, pb.build)
 }
-object Route {
-  def apply[P <: Tuple, Q <: Tuple, I <: Tuple, O <: Tuple, R](
-      request: Request[P, Q, I, O],
-      response: Response[R]
-  )(using
-      ta: TupleApply[I, R],
-      taIO: TupleApply[I, IO[R]]
-  ): RouteBuilder[P, Q, I, O, ta.Fun, taIO.Fun, R] =
-    RouteBuilder(request, response, ta, taIO)
 
-  final class RouteBuilder[
-      P <: Tuple,
-      Q <: Tuple,
-      I <: Tuple,
-      O <: Tuple,
-      F,
-      FIO,
-      R
-  ](
-      request: Request[P, Q, I, O],
-      response: Response[R],
-      ta: TupleApply.Aux[I, F, R],
-      taIO: TupleApply.Aux[I, FIO, IO[R]]
-  ) {
-    def handle(f: F): Route[P, Q, I, O, R] =
-      new Route(request, response, i => IO.pure(ta.tuple(f)(i)))
-
-    def handleIO[A](f: FIO): Route[P, Q, I, O, R] =
-      new Route(request, response, taIO.tuple(f))
-
-    def passthrough(using
-        pb: PassthroughBuilder[I, R]
-    ): Route[P, Q, I, O, R] =
-      new Route(request, response, pb.build)
+/** This class exists to make type inference work better when constructing a
+  * Handler from a Route.
+  */
+final class HandlerPureBuilder[I <: Tuple, F, R](
+    route: Route[?, ?, I, ?, R],
+    ta: TupleApply.Aux[I, F, R]
+) {
+  def apply(f: F): Handler[I, R] = {
+    val handle = ta.tuple(f)
+    Handler(route, i => IO.pure(handle(i)))
   }
+}
+
+/** This class exists to make type inference work better when constructing a
+  * Handler from a Route.
+  */
+final class HandlerIOBuilder[I <: Tuple, F, R](
+    route: Route[?, ?, I, ?, R],
+    ta: TupleApply.Aux[I, F, IO[R]]
+) {
+  def apply(f: F): Handler[I, R] = Handler(route, ta.tuple(f))
+
 }

@@ -17,11 +17,13 @@
 package krop
 
 import cats.effect.IO
+import org.http4s.server.websocket.WebSocketBuilder
 import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.LoggerFactory
 import org.typelevel.log4cats.slf4j.Slf4jFactory
 
-object JvmRuntime extends KropRuntime {
+final class JvmRuntime(val webSocketBuilder: WebSocketBuilder[IO])
+    extends KropRuntime {
   given loggerFactory: LoggerFactory[IO] = Slf4jFactory.create[IO]
   given logger: Logger[IO] = loggerFactory.getLoggerFromName("krop-core")
 }

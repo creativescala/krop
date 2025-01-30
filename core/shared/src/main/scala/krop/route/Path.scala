@@ -21,7 +21,7 @@ import krop.raise.Raise
 import krop.route.Param.All
 import krop.route.Param.One
 import org.http4s.Uri
-import org.http4s.Uri.{Path => UriPath}
+import org.http4s.Uri.Path as UriPath
 
 import scala.annotation.tailrec
 import scala.collection.mutable
@@ -249,7 +249,7 @@ final class Path[P <: Tuple, Q <: Tuple] private (
     }
     val result = q match {
       case EmptyTuple => p
-      case other      => p :* other
+      case other      => p ++ other
     }
 
     result.asInstanceOf[Types.TupleConcat[P, Q]]
