@@ -26,6 +26,8 @@ class PathParseSuite extends FunSuite {
   val capturingAllPath = Path / "assets" / "html" / Param.seq
   val simplePath = Path / "user" / Param.int.withName("<userId>") / "view"
   val simpleQueryPath = Path / "user" / Param.int :? Query("mode", Param.string)
+  val multipleQueryPath =
+    Path / "users" :? Query("page", Param.int).and("count", Param.int)
 
   test("Path description is as expected") {
     assertEquals(simplePath.describe, "/user/<userId>/view")
@@ -49,6 +51,15 @@ class PathParseSuite extends FunSuite {
     assertEquals(
       simpleQueryPath.parseToOption(okUri),
       Some(1234 *: "all" *: EmptyTuple)
+    )
+  }
+
+  test("Path parses all query parameters from http4s path") {
+    val okUri = uri"http://example.org/users?page=3&count=50"
+
+    assertEquals(
+      multipleQueryPath.parseToOption(okUri),
+      Some((3, 50))
     )
   }
 
