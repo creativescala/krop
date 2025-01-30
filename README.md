@@ -1,6 +1,6 @@
 # Krop
 
-A compositional web service library that is easy to use. Let a thousand websites bloom.
+A compositional web application library that is easy to use. Let a thousand websites bloom.
 
 [Read more](https://creativescala.org/krop).
 
