@@ -7,6 +7,7 @@ object Dependencies {
   // Library Versions
   val catsVersion = "2.10.0"
   val catsEffectVersion = "3.5.1"
+  val doobieVersion = "1.0.0-RC6"
   val fs2Version = "3.6.1"
   val http4sVersion = "1.0.0-M44"
   val scalaJsDomVersion = "2.4.0"
@@ -21,6 +22,9 @@ object Dependencies {
   val catsEffect =
     Def.setting("org.typelevel" %%% "cats-effect" % catsEffectVersion)
   val catsCore = Def.setting("org.typelevel" %%% "cats-core" % catsVersion)
+
+  val doobieCore = Def.setting("org.tpolecat" %% "doobie-core" % doobieVersion)
+  val doobieH2 = Def.setting("org.tpolecat" %% "doobie-h2" % doobieVersion)
 
   val fs2Core = Def.setting("co.fs2" %%% "fs2-core" % fs2Version)
 

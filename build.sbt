@@ -82,6 +82,7 @@ lazy val kropJs =
 lazy val rootJvm =
   krop.jvm.aggregate(
     core.jvm,
+    h2,
     examples,
     unidocs
   )
@@ -94,6 +95,17 @@ lazy val core = crossProject(JSPlatform, JVMPlatform)
     moduleName := "krop-core"
   )
   .jvmSettings(libraryDependencies += Dependencies.log4catsSlf4j.value)
+
+lazy val h2 = project
+  .in(file("h2"))
+  .settings(
+    commonSettings,
+    moduleName := "krop-h2",
+    libraryDependencies ++= Seq(
+      Dependencies.doobieCore.value,
+      Dependencies.doobieH2.value
+    )
+  )
 
 lazy val docs =
   project
