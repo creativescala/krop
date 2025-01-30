@@ -10,8 +10,9 @@ Routing handles the HTTP specific details of incoming requests and outgoing resp
 2. convert Scala values to an HTTP response; and
 3. reversing a route to create a link to the route or a client that calls the route.
 
-A @:api(krop.route.Route) deals with a single request and response,
-and a @:api(krop.route.Routes) is a collection of @:api(krop.route.Route).
+A @:api(krop.route.Route) describes how to convert an incoming request into Scala values, and how to turn Scala values in an outgoing response.
+A @:api(krop.route.Handler) is a `Route` that also includes the code to convert the values parsed from the request into the values that are used to create the response. In other words, a `Handler` includes business logic.
+A @:api(krop.route.Handlers) is a collection of `Handler`.
 
 
 ## The Route Type
@@ -36,46 +37,37 @@ This will become clearer in the examples below.
 
 ## Constructing A Route
 
-A @:api(krop.route.Route) is constructed from three components:
+A @:api(krop.route.Route) is constructed from two components:
 
 1. a @:api(krop.route.Request), which describes a HTTP request;
 2. a @:api(krop.route.Response), which describes a HTTP response; and
-3. a handler, which processes the values extracted from the request and produces the value needed by the response.
 
-The idiomatic way to construct a `Route` is by calling the `Route.apply` method, passing a @:api(krop.route.Request) and @:api(krop.route.Response), and then adding a handler to the resulting object.
+The idiomatic way to construct a `Route` is by calling the `Route.apply` method, passing a @:api(krop.route.Request) and @:api(krop.route.Response). 
 Here is a small example.
 
 ```scala mdoc:silent
-val route = Route(Request.get(Path / "user" / Param.int), Response.ok(Entity.text))
-  .handle(userId => s"You asked for the user ${userId.toString}")
+val route = 
+  Route(
+    Request.get(Path / "user" / Param.int), 
+    Response.ok(Entity.text)
+  )
 ```
 
-This route will match, for example, a GET request to the path `/user/1234` and respond with the string `"You asked for the user 1234"`.
+This route tells us two things:
 
-[Request](request.md) and [Response](response.md) have separate pages, so here we'll just discuss the handler. There are three ways to create a handler: using `handle`, `handleIO`, or `passthrough`. Assume the request produces a value of type `A` and the response needs a value of type `B`. Then these three methods have the following meaning:
+1. It will match an incoming GET request to a path like `/user/1234` and extract the number as an `Int`.
+2. It convert a `String` to an OK response. The response will include that `String` as the response's entity, and it will have a content type `text/plain`.
 
-- `handle` requires a function `A => B`;
-- `handleIO` requires a function `A => IO[B]`; and
-- `passthrough`, which can only be called when `A` is the same type as `B`, means that the output of the request is connected directly to the input of the response. This is useful, for example, when the response is loading a static file from the file system and the request produces the name of the file to load.
+To actually use this route we need to add a handler. In this case a handler would be either a function with type `Int => String` or with type `Int => IO[String]`. Here's a very simple example using an `Int => String` handler.
 
-
-### Type Transformations for Handlers
-
-If you dig into the types produced by `Request` you will notice a lot of tuple types are used. Here's an example, showing a `Request` producing a `Tuple2`.
-
-```scala mdoc
-val request = Request.get(Path / Param.int / Param.string)
+```scala
+route.handle(userId => s"You asked for user $userId")
 ```
 
-This `Tuple2` arises because we extract two elements from the HTTP request's path: one `Int` and one `String`.
-However, when you come to use a handler with such a request, you can use a normal function with two arguments *not* a function that accepts a single `Tuple2`.
+Notice that adding a handler produces a value with a different type, a @:api(krop.route.Handler).
 
-```scala mdoc:silent
-Route(request, Response.ok(Entity.text))
-  .handle((int, string) => s"${int.toString}: ${string}")
-```
+For more details see the separate pages for [Request](request.md), [Response](response.md) and [Handler](../handler.md).
 
-The conversion between tuples and functions is done by given instances of @:api(krop.route.TupleApply), which allows a function `(A, B, ..., N) => Z` to be applied to a tuple `(A, B, ..., N)`
 
 
 ## Reverse Routing
@@ -95,7 +87,6 @@ We first create a @:api(krop.route.Route).
 
 ```scala mdoc:silent
 val viewUser = Route(Request.get(Path / "user" / Param.int), Response.ok(Entity.text))
-  .handle(userId => s"You asked for the user ${userId.toString}")
 ```
 
 Now we can call `pathTo` to construct a path to that route, which we could embed in an HTML form or a hyperlink.
@@ -110,7 +101,6 @@ Here's an example with no parameters.
 
 ```scala mdoc:silent
 val users = Route(Request.get(Path / "users"), Response.ok(Entity.text))
-  .handle(() => "Here are the users.")
 ```
 
 Now we can call `pathTo` without any parameters.
@@ -124,7 +114,6 @@ The route below has two parameters.
 
 ```scala mdoc:silent
 val twoParams = Route(Request.get(Path / "user" / Param.int / Param.string), Response.ok(Entity.text))
-  .handle((userId, name) => s"User with id ${userId} and name ${name}.")
 ```
 
 Notice when we call `pathTo` we pass a `Tuple2`.
@@ -147,7 +136,7 @@ val searchUsers = Route(
       .and("stop", Param.int)
   ),
   Response.ok(Entity.text)
-).handle((term, start, stop) => s"Searching for users named $term, from page $start to $stop")
+)
 ```
 
 ```scala mdoc

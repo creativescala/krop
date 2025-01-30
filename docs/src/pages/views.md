@@ -1,4 +1,4 @@
-# Views
+# View
 
 Views are responsible for generating the user interface of your application. 
 A user interface could be HTML displayed in a web browser, JSON returned from an API endpoint, or code that runs client-side.
