@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="generator" content="Laika 1.0.0" />
+    <title>Paths</title>
+     
+    <meta name="description" content="docs" />
+    
+    <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?version=4.8.0&features=es6"></script>
+    <script
+      id="MathJax-script"
+      async
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
+    ></script>
+    <link
+      href="https://fonts.googleapis.com/css?family=Source+Code+Pro:400|Source+Sans+Pro:300,400,600"
+      rel="stylesheet"
+      type="text/css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css?family=Crimson+Pro:400"
+      rel="stylesheet"
+      type="text/css"
+    />
+    <link rel="stylesheet" type="text/css" href="../../css/creative-scala.css" /> <script src="../../js/solution.js"></script>
+    <script>
+      /* for avoiding page load transitions */
+    </script>
+  </head>
+
+  <body>
+    <header>
+      <div id="topbar">
+        <nav id="topbar">
+          <button
+            class="text-sm text-pink-800 font-sans font-semibold hover:text-pink-600 focus:text-pink-600"
+            popovertarget="topbar-nav"
+          >
+            Contents
+          </button>
+          <div id="topbar-nav" popover>
+            <div id="topbar-nav-container">
+              <div
+                class="p-4 mx-auto rounded-md bg-white border border-slate-900 relative"
+              >
+                <button
+                  class="absolute top-4 right-4 text-slate-900 hover:text-pink-800 focus:text-pink-800"
+                  popovertarget="topbar-nav"
+                  popovertargetaction="hide"
+                >
+                  ✕
+                </button>
+                <ul class="nav-list">
+                  <li class="level1 nav-node"><a href="../../">Krop</a></li>
+                  <li class="level2 nav-leaf"><a href="../../quick-start.html">Quick Start</a></li>
+                  <li class="level2 nav-node"><a href="../../overview/">Overview</a></li>
+                  <li class="level3 nav-leaf"><a href="../../overview/architecture.html">Architecture</a></li>
+                  <li class="level3 nav-leaf"><a href="../../overview/principles.html">Principles</a></li>
+                  <li class="level2 nav-leaf"><a href="../../application.html">Application</a></li>
+                  <li class="level2 nav-leaf"><a href="../../server.html">Server</a></li>
+                  <li class="level2 nav-leaf"><a href="../../views.html">View</a></li>
+                  <li class="level2 nav-node"><a href="../">Controller</a></li>
+                  <li class="level3 nav-node"><a href="index.html">Routing</a></li>
+                  <li class="level4 nav-leaf"><a href="request.html">Request</a></li>
+                  <li class="level4 active nav-leaf"><a href="#">Paths</a></li>
+                  <li class="level4 nav-leaf"><a href="response.html">Response</a></li>
+                  <li class="level3 nav-leaf"><a href="../handler.html">Handlers</a></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </nav>
+        <nav id="home"><a class="text-link" href="../../">Krop</a></nav>
+        <nav id="external"><a class="text-link" href="https://discord.gg/rRhcFbJxVG">Community</a> <a class="text-link" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest">API</a> <a class="text-link" href="https://github.com/creativescala/krop">Source</a></nav>
+      </div>
+    </header>
+
+    <main>
+      <nav id="sitebar">
+        <div class="fixed h-screen overflow-y-auto">
+          <ul class="nav-list">
+            <li class="level1 nav-node"><a href="../../">Krop</a></li>
+            <li class="level2 nav-leaf"><a href="../../quick-start.html">Quick Start</a></li>
+            <li class="level2 nav-node"><a href="../../overview/">Overview</a></li>
+            <li class="level3 nav-leaf"><a href="../../overview/architecture.html">Architecture</a></li>
+            <li class="level3 nav-leaf"><a href="../../overview/principles.html">Principles</a></li>
+            <li class="level2 nav-leaf"><a href="../../application.html">Application</a></li>
+            <li class="level2 nav-leaf"><a href="../../server.html">Server</a></li>
+            <li class="level2 nav-leaf"><a href="../../views.html">View</a></li>
+            <li class="level2 nav-node"><a href="../">Controller</a></li>
+            <li class="level3 nav-node"><a href="index.html">Routing</a></li>
+            <li class="level4 nav-leaf"><a href="request.html">Request</a></li>
+            <li class="level4 active nav-leaf"><a href="#">Paths</a></li>
+            <li class="level4 nav-leaf"><a href="response.html">Response</a></li>
+            <li class="level3 nav-leaf"><a href="../handler.html">Handlers</a></li>
+          </ul>
+        </div>
+      </nav>
+      <div id="contentbar">
+        <div class="max-w-prose mx-auto">
+          <div id="content"><h1 id="paths" class="title">Paths</h1>
+<p>A <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Path.html">Path</a> represents a pattern to match against the path component of the request&#39;s URI. <code>Paths</code> are created by calling the <code>/</code> method on a <code>Path</code> to add segments to the pattern. For example</p>
+<pre><code class="nohighlight"><span class="type-name">Path</span><span> / </span><span class="string-literal">&quot;user&quot;</span><span> / </span><span class="string-literal">&quot;create&quot;</span></code></pre>
+<p>matches the path <code>/user/create</code>.</p>
+<p>To create a path without any segments you can use <code>Path.root</code>.</p>
+
+<h2 id="capturing-path-segments" class="section">Capturing Path Segments</h2>
+<p>Use a <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Param.html">Param</a> to capture part of the path for later use by the handler.
+For example</p>
+<pre><code class="nohighlight"><span class="type-name">Path</span><span> / </span><span class="string-literal">&quot;user&quot;</span><span> / </span><span class="type-name">Param</span><span>.</span><span class="identifier">int</span><span> / </span><span class="string-literal">&quot;view&quot;</span></code></pre>
+<p>matches <code>/user/&lt;id&gt;/view</code>, where <code>&lt;id&gt;</code> is an <code>Int</code>, and makes the <code>Int</code>
+value available to the request handler.</p>
+
+<h2 id="matching-all-segments" class="section">Matching All Segments</h2>
+<p>A <code>Path</code> will fail to match if the URI&#39;s path has more segments than the
+<code>Path</code> matches. So <code>Path / &quot;user&quot; / &quot;create&quot;</code> will not match
+<code>/user/create/1234</code>. Use <code>Segment.all</code> to match and ignore all the segments
+to the end of the URI&#39;s path. For example</p>
+<pre><code class="nohighlight"><span class="type-name">Path</span><span> / </span><span class="string-literal">&quot;assets&quot;</span><span> / </span><span class="type-name">Segment</span><span>.</span><span class="identifier">all</span></code></pre>
+<p>will match <code>/assets/</code>, <code>/assets/example.css</code>, and <code>/assets/css/example.css</code>.</p>
+<p>To capture all segments to the end of the URI&#39;s path, use an instance of
+<code>Param.All</code> such as <code>Param.seq</code>. So</p>
+<pre><code class="nohighlight"><span class="type-name">Path</span><span> / </span><span class="string-literal">&quot;assets&quot;</span><span> / </span><span class="type-name">Param</span><span>.</span><span class="identifier">seq</span></code></pre>
+<p>will capture the remainder of the URI&#39;s path as a <code>Seq[String]</code>.</p>
+<p>A <code>Path</code> that matches all segments is called a closed path. Attempting to add an
+element to a closed path will result in an exception.</p>
+<pre><code class="nohighlight"><span class="type-name">Path</span><span> / </span><span class="type-name">Segment</span><span>.</span><span class="identifier">all</span><span> / </span><span class="string-literal">&quot;crash&quot;</span><span>
+</span><span class="comment">// java.lang.IllegalStateException: Cannot add a segment or parameter to a closed path.
+// 
+//   A path is closed when it has a segment or parameter that matches all remaining elements.
+//   A closed path cannot have additional segments of parameters added to it.
+// 	at krop.route.Path.assertOpen(Path.scala:120)
+// 	at krop.route.Path.$div(Path.scala:89)
+// 	at repl.MdocSession$MdocApp.$init$$$anonfun$1(paths.md:41)</span></code></pre>
+
+<h2 id="capturing-query-parameters" class="section">Capturing Query Parameters</h2>
+<p>A <code>Path</code> can also match and capture query parameters. For instance, the following path captures the query parameter <code>id</code> as an <code>Int</code>.</p>
+<pre><code class="nohighlight"><span class="type-name">Path</span><span> / </span><span class="string-literal">&quot;user&quot;</span><span> :? </span><span class="type-name">Query</span><span>(</span><span class="string-literal">&quot;id&quot;</span><span>, </span><span class="type-name">Param</span><span>.</span><span class="identifier">int</span><span>)</span></code></pre>
+<p>Multiple parameters can be captured. This example captures an <code>Int</code> and <code>String</code>.</p>
+<pre><code class="nohighlight"><span class="type-name">Path</span><span> / </span><span class="string-literal">&quot;user&quot;</span><span> :? </span><span class="type-name">Query</span><span>(</span><span class="string-literal">&quot;id&quot;</span><span>, </span><span class="type-name">Param</span><span>.</span><span class="identifier">int</span><span>).</span><span class="identifier">and</span><span>(</span><span class="string-literal">&quot;name&quot;</span><span>, </span><span class="type-name">Param</span><span>.</span><span class="identifier">string</span><span>)</span></code></pre>
+<p>There can be multiple parameters with the same name. How this is handled depends on the underlying <code>Param</code>. A <code>Param</code> that captures only a single element, such as <code>Param.int</code> or <code>Param.string</code>, will only capture the first of multiple parameters. A <code>Param</code> that captures multiple elements, such as <code>Param.seq</code> will capture all the parameters with the given name. For example, this will capture all parameters called <code>name</code>, producing a <code>Seq[String]</code>.</p>
+<pre><code class="nohighlight"><span class="type-name">Path</span><span> / </span><span class="string-literal">&quot;user&quot;</span><span> :? </span><span class="type-name">Query</span><span>(</span><span class="string-literal">&quot;name&quot;</span><span>, </span><span class="type-name">Param</span><span>.</span><span class="identifier">seq</span><span>)</span></code></pre>
+<p>A parameter can be optional. To indicate this we need to work directly with <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/QueryParam.html">QueryParam</a>, which has so far been hidden by convenience methods in the examples above.</p>
+<p>Constructing a <code>QueryParam</code> requires a name and a <code>Param</code>, which is the same as we&#39;ve seen above.</p>
+<pre><code class="nohighlight"><span class="keyword">val</span><span> </span><span class="identifier">param</span><span> = </span><span class="type-name">QueryParam</span><span>(</span><span class="string-literal">&quot;id&quot;</span><span>, </span><span class="type-name">Param</span><span>.</span><span class="identifier">int</span><span>)</span></code></pre>
+<p>We can also call the <code>optional</code> constructor on the <code>QueryParam</code> companion object to create an optional query parameter. Optional parameters don&#39;t cause a route to fail to match if the parameter is missing. Instead <code>None</code> is returned.</p>
+<pre><code class="nohighlight"><span class="keyword">val</span><span> </span><span class="identifier">optional</span><span> = </span><span class="type-name">QueryParam</span><span>.</span><span class="identifier">optional</span><span>(</span><span class="string-literal">&quot;id&quot;</span><span>, </span><span class="type-name">Param</span><span>.</span><span class="identifier">int</span><span>)</span></code></pre>
+<p>To collect all the query parameters as a <code>Map[String, List[String]]</code> use <code>QueryParam.all</code>.</p>
+<pre><code class="nohighlight"><span class="keyword">val</span><span> </span><span class="identifier">all</span><span> = </span><span class="type-name">QueryParam</span><span>.</span><span class="identifier">all</span></code></pre>
+
+<h3 id="query-parameter-semantics" class="section">Query Parameter Semantics</h3>
+<p>Query parameter semantics can be quite complex. There are four cases to consider:</p>
+<ol class="arabic">
+  <li>A parameter exists under the given name and the associated value can be parsed.</li>
+  <li>A parameter exists under the given name and the associated value cannot be parsed.</li>
+  <li>A parameter exists under the given name but there is no associated value.</li>
+  <li>No parameter exists under the given name.</li>
+</ol>
+<p>The first case is the straightforward one where query parameter parsing always succeeds.</p>
+<pre><code class="nohighlight"><span class="keyword">val</span><span> </span><span class="identifier">required</span><span> = </span><span class="type-name">QueryParam</span><span>(</span><span class="string-literal">&quot;id&quot;</span><span>, </span><span class="type-name">Param</span><span>.</span><span class="identifier">int</span><span>)
+</span><span class="keyword">val</span><span> </span><span class="identifier">optional</span><span> = </span><span class="type-name">QueryParam</span><span>.</span><span class="identifier">optional</span><span>(</span><span class="string-literal">&quot;id&quot;</span><span>, </span><span class="type-name">Param</span><span>.</span><span class="identifier">int</span><span>)</span></code></pre>
+<pre><code class="nohighlight"><span class="identifier">required</span><span>.</span><span class="identifier">parse</span><span>(</span><span class="type-name">Map</span><span>(</span><span class="string-literal">&quot;id&quot;</span><span> -&gt; </span><span class="type-name">List</span><span>(</span><span class="string-literal">&quot;1&quot;</span><span>)))
+</span><span class="comment">// res8: Either[QueryParseFailure, Int] = Right(value = 1)
+</span><span class="identifier">optional</span><span>.</span><span class="identifier">parse</span><span>(</span><span class="type-name">Map</span><span>(</span><span class="string-literal">&quot;id&quot;</span><span> -&gt; </span><span class="type-name">List</span><span>(</span><span class="string-literal">&quot;1&quot;</span><span>)))
+</span><span class="comment">// res9: Either[QueryParseFailure, Option[Int]] = Right(
+//   value = Some(value = 1)
+// )</span></code></pre>
+<p>In the second case both required and optional query parameters fail.</p>
+<pre><code class="nohighlight"><span class="identifier">required</span><span>.</span><span class="identifier">parse</span><span>(</span><span class="type-name">Map</span><span>(</span><span class="string-literal">&quot;id&quot;</span><span> -&gt; </span><span class="type-name">List</span><span>(</span><span class="string-literal">&quot;abc&quot;</span><span>)))
+</span><span class="comment">// res10: Either[QueryParseFailure, Int] = Left(
+//   value = ValueParsingFailed(
+//     name = &quot;id&quot;,
+//     value = &quot;abc&quot;,
+//     param = One(
+//       name = &quot;&lt;Int&gt;&quot;,
+//       parse = krop.route.Param$$$Lambda$13043/0x0000000103660840@657b1acf,
+//       unparse = krop.route.Param$$$Lambda$13044/0x0000000103661040@2fa2ad1d
+//     )
+//   )
+// )
+</span><span class="identifier">optional</span><span>.</span><span class="identifier">parse</span><span>(</span><span class="type-name">Map</span><span>(</span><span class="string-literal">&quot;id&quot;</span><span> -&gt; </span><span class="type-name">List</span><span>(</span><span class="string-literal">&quot;abc&quot;</span><span>)))
+</span><span class="comment">// res11: Either[QueryParseFailure, Option[Int]] = Left(
+//   value = ValueParsingFailed(
+//     name = &quot;id&quot;,
+//     value = &quot;abc&quot;,
+//     param = One(
+//       name = &quot;&lt;Int&gt;&quot;,
+//       parse = krop.route.Param$$$Lambda$13043/0x0000000103660840@657b1acf,
+//       unparse = krop.route.Param$$$Lambda$13044/0x0000000103661040@2fa2ad1d
+//     )
+//   )
+// )</span></code></pre>
+<p>A required parameter will fail in the third case, but an optional parameter will succeed with <code>None</code>.</p>
+<pre><code class="nohighlight"><span class="identifier">required</span><span>.</span><span class="identifier">parse</span><span>(</span><span class="type-name">Map</span><span>(</span><span class="string-literal">&quot;id&quot;</span><span> -&gt; </span><span class="type-name">List</span><span>()))
+</span><span class="comment">// res12: Either[QueryParseFailure, Int] = Left(
+//   value = NoValuesForName(name = &quot;id&quot;)
+// )
+</span><span class="identifier">optional</span><span>.</span><span class="identifier">parse</span><span>(</span><span class="type-name">Map</span><span>(</span><span class="string-literal">&quot;id&quot;</span><span> -&gt; </span><span class="type-name">List</span><span>()))
+</span><span class="comment">// res13: Either[QueryParseFailure, Option[Int]] = Right(value = None)</span></code></pre>
+<p>Similarly, a required parameter will fail in the fourth case but an optional parameter will succeed with <code>None</code>.</p>
+<pre><code class="nohighlight"><span class="identifier">required</span><span>.</span><span class="identifier">parse</span><span>(</span><span class="type-name">Map</span><span>())
+</span><span class="comment">// res14: Either[QueryParseFailure, Int] = Left(
+//   value = NoParameterWithName(name = &quot;id&quot;)
+// )
+</span><span class="identifier">optional</span><span>.</span><span class="identifier">parse</span><span>(</span><span class="type-name">Map</span><span>())
+</span><span class="comment">// res15: Either[QueryParseFailure, Option[Int]] = Right(value = None)</span></code></pre>
+
+<h2 id="params" class="section">Params</h2>
+<p>There are a small number of predefined <code>Param</code> instances on the
+<a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Param$.html">Param</a> companion object. Constructing your own instances can
+be done in several ways.</p>
+<p>The <code>imap</code> method transforms a <code>Param[A]</code> into a <code>Param[B]</code> by providing
+functions <code>A =&gt; B</code> and <code>B =&gt; A</code>. This example constructs a <code>Param[Int]</code> from the
+built-in <code>Param[String]</code>.</p>
+<pre><code class="nohighlight"><span class="keyword">val</span><span> </span><span class="identifier">intParam</span><span> = </span><span class="type-name">Param</span><span>.</span><span class="identifier">string</span><span>.</span><span class="identifier">imap</span><span>(</span><span class="identifier">_</span><span>.</span><span class="identifier">toInt</span><span>)(</span><span class="identifier">_</span><span>.</span><span class="identifier">toString</span><span>)</span></code></pre>
+<pre><code class="nohighlight"><span class="identifier">intParam</span><span>.</span><span class="identifier">parse</span><span>(</span><span class="string-literal">&quot;100&quot;</span><span>)
+</span><span class="comment">// res16: Either[ParamParseFailure, Int] = Right(value = 100)</span></code></pre>
+<p>A <code>Param.One[A]</code> can be lifted to a <code>Param.All[Seq[A]]</code> that uses the given
+<code>Param.One</code> for every element in the <code>Seq</code>.</p>
+<pre><code class="nohighlight"><span class="keyword">val</span><span> </span><span class="identifier">intParams</span><span> = </span><span class="type-name">Param</span><span>.</span><span class="identifier">lift</span><span>(</span><span class="identifier">intParam</span><span>)</span></code></pre>
+<pre><code class="nohighlight"><span class="identifier">intParams</span><span>.</span><span class="identifier">unparse</span><span>(</span><span class="type-name">Seq</span><span>(</span><span class="number-literal">1</span><span>, </span><span class="number-literal">2</span><span>, </span><span class="number-literal">3</span><span>))
+</span><span class="comment">// res17: Seq[String] = List(&quot;1&quot;, &quot;2&quot;, &quot;3&quot;)</span></code></pre>
+<p>The <code>mkString</code> method can be used for a <code>Param.All</code> that constructs a <code>String</code>
+containing elements separated by a separator. For example, to accumulate a
+sub-path we could use the following.</p>
+<pre><code class="nohighlight"><span class="keyword">val</span><span> </span><span class="identifier">subPath</span><span> = </span><span class="type-name">Param</span><span>.</span><span class="identifier">mkString</span><span>(</span><span class="string-literal">&quot;/&quot;</span><span>)</span></code></pre>
+<pre><code class="nohighlight"><span class="identifier">subPath</span><span>.</span><span class="identifier">parse</span><span>(</span><span class="type-name">Vector</span><span>(</span><span class="string-literal">&quot;assets&quot;</span><span>, </span><span class="string-literal">&quot;css&quot;</span><span>))
+</span><span class="comment">// res18: Either[ParamParseFailure, String] = Right(value = &quot;assets/css&quot;)
+</span><span class="identifier">subPath</span><span>.</span><span class="identifier">unparse</span><span>(</span><span class="string-literal">&quot;assets/css&quot;</span><span>)
+</span><span class="comment">// res19: Seq[String] = ArraySeq(&quot;assets&quot;, &quot;css&quot;)</span></code></pre>
+<p>Finally, you can directly call the constructors for <code>Param.One</code> and <code>Param.All</code>.</p>
+
+<h3 id="param-names" class="section">Param Names</h3>
+<p><code>Params</code> have a <code>String</code> name. This is, by convention, some indication of the type written within angle brackets. For example <code>&quot;&lt;String&gt;&quot;</code> for a <code>Param[String]</code>.</p>
+<pre><code class="nohighlight"><span class="type-name">Param</span><span>.</span><span class="identifier">string</span><span>.</span><span class="identifier">name</span><span>
+</span><span class="comment">// res20: String = &quot;&lt;String&gt;&quot;</span></code></pre>
+<p>The name is mosty used in development mode, to output useful debugging information. You can change the name of a <code>Param</code> using the <code>withName</code> method. It&#39;s good practice to set the name whenever you create a new <code>Param</code>. For example, if deriving a new <code>Param</code> from an existing one you should consider changing the name.</p>
+<pre><code class="nohighlight"><span class="comment">// Bad, as the name doesn&#39;t reflect the underlying type.
+</span><span class="identifier">intParam</span><span>.</span><span class="identifier">name</span><span>
+</span><span class="comment">// res21: String = &quot;&lt;String&gt;&quot;
+</span><span>
+</span><span class="comment">// Better, as the name has been changed appropriately.
+</span><span class="identifier">intParam</span><span>.</span><span class="identifier">withName</span><span>(</span><span class="string-literal">&quot;&lt;Int&gt;&quot;</span><span>).</span><span class="identifier">name</span><span>
+</span><span class="comment">// res22: String = &quot;&lt;Int&gt;&quot;</span></code></pre></div>
+          <div class="flex flex-row justify-between">
+            <a class="pagenav" href="request.html">←Request</a> <a class="pagenav" href="response.html">Response→</a>
+          </div>
+        </div>
+        <footer>
+          Copyright &copy; Noel Welsh. Built with
+          <span class="hover:text-pink-900">💖</span>
+        </footer>
+      </div>
+      <nav id="pagebar">
+        <div class="fixed h-screen overflow-y-auto">
+          <p>On This Page</p>
+          <ul class="nav-list">
+            <li class="level1 nav-leaf"><a href="#capturing-path-segments">Capturing Path Segments</a></li>
+            <li class="level1 nav-leaf"><a href="#matching-all-segments">Matching All Segments</a></li>
+            <li class="level1 nav-node"><a href="#capturing-query-parameters">Capturing Query Parameters</a></li>
+            <li class="level2 nav-leaf"><a href="#query-parameter-semantics">Query Parameter Semantics</a></li>
+            <li class="level1 nav-node"><a href="#params">Params</a></li>
+            <li class="level2 nav-leaf"><a href="#param-names">Param Names</a></li>
+          </ul>
+        </div>
+      </nav>
+    </main>
+  </body>
+</html>

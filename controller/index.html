@@ -5,7 +5,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="generator" content="Laika 1.0.0" />
-    <title>Overview</title>
+    <title>Controller</title>
      
     <meta name="description" content="docs" />
     
@@ -56,18 +56,18 @@
                 <ul class="nav-list">
                   <li class="level1 nav-node"><a href="../">Krop</a></li>
                   <li class="level2 nav-leaf"><a href="../quick-start.html">Quick Start</a></li>
-                  <li class="level2 active nav-node"><a href="#">Overview</a></li>
-                  <li class="level3 nav-leaf"><a href="architecture.html">Architecture</a></li>
-                  <li class="level3 nav-leaf"><a href="principles.html">Principles</a></li>
+                  <li class="level2 nav-node"><a href="../overview/">Overview</a></li>
+                  <li class="level3 nav-leaf"><a href="../overview/architecture.html">Architecture</a></li>
+                  <li class="level3 nav-leaf"><a href="../overview/principles.html">Principles</a></li>
                   <li class="level2 nav-leaf"><a href="../application.html">Application</a></li>
                   <li class="level2 nav-leaf"><a href="../server.html">Server</a></li>
                   <li class="level2 nav-leaf"><a href="../views.html">View</a></li>
-                  <li class="level2 nav-node"><a href="../controller/">Controller</a></li>
-                  <li class="level3 nav-node"><a href="../controller/route/">Routing</a></li>
-                  <li class="level4 nav-leaf"><a href="../controller/route/request.html">Request</a></li>
-                  <li class="level4 nav-leaf"><a href="../controller/route/paths.html">Paths</a></li>
-                  <li class="level4 nav-leaf"><a href="../controller/route/response.html">Response</a></li>
-                  <li class="level3 nav-leaf"><a href="../controller/handler.html">Handlers</a></li>
+                  <li class="level2 active nav-node"><a href="#">Controller</a></li>
+                  <li class="level3 nav-node"><a href="route/">Routing</a></li>
+                  <li class="level4 nav-leaf"><a href="route/request.html">Request</a></li>
+                  <li class="level4 nav-leaf"><a href="route/paths.html">Paths</a></li>
+                  <li class="level4 nav-leaf"><a href="route/response.html">Response</a></li>
+                  <li class="level3 nav-leaf"><a href="handler.html">Handlers</a></li>
                 </ul>
               </div>
             </div>
@@ -84,28 +84,32 @@
           <ul class="nav-list">
             <li class="level1 nav-node"><a href="../">Krop</a></li>
             <li class="level2 nav-leaf"><a href="../quick-start.html">Quick Start</a></li>
-            <li class="level2 active nav-node"><a href="#">Overview</a></li>
-            <li class="level3 nav-leaf"><a href="architecture.html">Architecture</a></li>
-            <li class="level3 nav-leaf"><a href="principles.html">Principles</a></li>
+            <li class="level2 nav-node"><a href="../overview/">Overview</a></li>
+            <li class="level3 nav-leaf"><a href="../overview/architecture.html">Architecture</a></li>
+            <li class="level3 nav-leaf"><a href="../overview/principles.html">Principles</a></li>
             <li class="level2 nav-leaf"><a href="../application.html">Application</a></li>
             <li class="level2 nav-leaf"><a href="../server.html">Server</a></li>
             <li class="level2 nav-leaf"><a href="../views.html">View</a></li>
-            <li class="level2 nav-node"><a href="../controller/">Controller</a></li>
-            <li class="level3 nav-node"><a href="../controller/route/">Routing</a></li>
-            <li class="level4 nav-leaf"><a href="../controller/route/request.html">Request</a></li>
-            <li class="level4 nav-leaf"><a href="../controller/route/paths.html">Paths</a></li>
-            <li class="level4 nav-leaf"><a href="../controller/route/response.html">Response</a></li>
-            <li class="level3 nav-leaf"><a href="../controller/handler.html">Handlers</a></li>
+            <li class="level2 active nav-node"><a href="#">Controller</a></li>
+            <li class="level3 nav-node"><a href="route/">Routing</a></li>
+            <li class="level4 nav-leaf"><a href="route/request.html">Request</a></li>
+            <li class="level4 nav-leaf"><a href="route/paths.html">Paths</a></li>
+            <li class="level4 nav-leaf"><a href="route/response.html">Response</a></li>
+            <li class="level3 nav-leaf"><a href="handler.html">Handlers</a></li>
           </ul>
         </div>
       </nav>
       <div id="contentbar">
         <div class="max-w-prose mx-auto">
-          <div id="content"><h1 id="overview" class="title">Overview</h1>
-<p>Krop is a full-stack web framework. This means it includes features for building user interfaces, which can be driven by a server or run entirely on the client. It also adept at handling applications that serve APIs from a server, or run entirely on a client.</p>
-<p>Right now Krop is in a very early stage of development, so you might find some pieces are currently missing. We&#39;re working on that, as this is an open source project you&#39;re welcome to join in.</p></div>
+          <div id="content"><h1 id="controller" class="title">Controller</h1>
+<p>Controllers are responsible for extracting information from a request, making appropriate calls into the model, and constructing a view to return as the response. Of all the parts in a Krop application, controllers are the most concerned with the details of the HTTP protocol.</p>
+<p>Controllers consist of two parts:</p>
+<ul>
+  <li><a href="route/">Routes</a>, which deal with parsing HTTP requests and assembling HTTP responses; and</li>
+  <li><a href="handler.html">Handlers</a>, which work with the values parsed from an HTTP request to produce the values required to assemble the response.</li>
+</ul></div>
           <div class="flex flex-row justify-between">
-            <a class="pagenav" href="../quick-start.html">←Quick Start</a> <a class="pagenav" href="architecture.html">Architecture→</a>
+            <a class="pagenav" href="../views.html">←View</a> <a class="pagenav" href="route/">Routing→</a>
           </div>
         </div>
         <footer>

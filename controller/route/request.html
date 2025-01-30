@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="generator" content="Laika 1.0.0" />
+    <title>Request</title>
+     
+    <meta name="description" content="docs" />
+    
+    <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?version=4.8.0&features=es6"></script>
+    <script
+      id="MathJax-script"
+      async
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
+    ></script>
+    <link
+      href="https://fonts.googleapis.com/css?family=Source+Code+Pro:400|Source+Sans+Pro:300,400,600"
+      rel="stylesheet"
+      type="text/css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css?family=Crimson+Pro:400"
+      rel="stylesheet"
+      type="text/css"
+    />
+    <link rel="stylesheet" type="text/css" href="../../css/creative-scala.css" /> <script src="../../js/solution.js"></script>
+    <script>
+      /* for avoiding page load transitions */
+    </script>
+  </head>
+
+  <body>
+    <header>
+      <div id="topbar">
+        <nav id="topbar">
+          <button
+            class="text-sm text-pink-800 font-sans font-semibold hover:text-pink-600 focus:text-pink-600"
+            popovertarget="topbar-nav"
+          >
+            Contents
+          </button>
+          <div id="topbar-nav" popover>
+            <div id="topbar-nav-container">
+              <div
+                class="p-4 mx-auto rounded-md bg-white border border-slate-900 relative"
+              >
+                <button
+                  class="absolute top-4 right-4 text-slate-900 hover:text-pink-800 focus:text-pink-800"
+                  popovertarget="topbar-nav"
+                  popovertargetaction="hide"
+                >
+                  ✕
+                </button>
+                <ul class="nav-list">
+                  <li class="level1 nav-node"><a href="../../">Krop</a></li>
+                  <li class="level2 nav-leaf"><a href="../../quick-start.html">Quick Start</a></li>
+                  <li class="level2 nav-node"><a href="../../overview/">Overview</a></li>
+                  <li class="level3 nav-leaf"><a href="../../overview/architecture.html">Architecture</a></li>
+                  <li class="level3 nav-leaf"><a href="../../overview/principles.html">Principles</a></li>
+                  <li class="level2 nav-leaf"><a href="../../application.html">Application</a></li>
+                  <li class="level2 nav-leaf"><a href="../../server.html">Server</a></li>
+                  <li class="level2 nav-leaf"><a href="../../views.html">View</a></li>
+                  <li class="level2 nav-node"><a href="../">Controller</a></li>
+                  <li class="level3 nav-node"><a href="index.html">Routing</a></li>
+                  <li class="level4 active nav-leaf"><a href="#">Request</a></li>
+                  <li class="level4 nav-leaf"><a href="paths.html">Paths</a></li>
+                  <li class="level4 nav-leaf"><a href="response.html">Response</a></li>
+                  <li class="level3 nav-leaf"><a href="../handler.html">Handlers</a></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </nav>
+        <nav id="home"><a class="text-link" href="../../">Krop</a></nav>
+        <nav id="external"><a class="text-link" href="https://discord.gg/rRhcFbJxVG">Community</a> <a class="text-link" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest">API</a> <a class="text-link" href="https://github.com/creativescala/krop">Source</a></nav>
+      </div>
+    </header>
+
+    <main>
+      <nav id="sitebar">
+        <div class="fixed h-screen overflow-y-auto">
+          <ul class="nav-list">
+            <li class="level1 nav-node"><a href="../../">Krop</a></li>
+            <li class="level2 nav-leaf"><a href="../../quick-start.html">Quick Start</a></li>
+            <li class="level2 nav-node"><a href="../../overview/">Overview</a></li>
+            <li class="level3 nav-leaf"><a href="../../overview/architecture.html">Architecture</a></li>
+            <li class="level3 nav-leaf"><a href="../../overview/principles.html">Principles</a></li>
+            <li class="level2 nav-leaf"><a href="../../application.html">Application</a></li>
+            <li class="level2 nav-leaf"><a href="../../server.html">Server</a></li>
+            <li class="level2 nav-leaf"><a href="../../views.html">View</a></li>
+            <li class="level2 nav-node"><a href="../">Controller</a></li>
+            <li class="level3 nav-node"><a href="index.html">Routing</a></li>
+            <li class="level4 active nav-leaf"><a href="#">Request</a></li>
+            <li class="level4 nav-leaf"><a href="paths.html">Paths</a></li>
+            <li class="level4 nav-leaf"><a href="response.html">Response</a></li>
+            <li class="level3 nav-leaf"><a href="../handler.html">Handlers</a></li>
+          </ul>
+        </div>
+      </nav>
+      <div id="contentbar">
+        <div class="max-w-prose mx-auto">
+          <div id="content"><h1 id="request" class="title">Request</h1>
+<p>A <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Request.html">Request</a> describes a pattern within an HTTP request that a <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Route.html">Route</a> attempts to match. It can also create an HTTP request that the <code>Request</code> will match. This so-called <em>reverse routing</em> allows creating clients that will call an endpoint.</p>
+<p>A <code>Request</code> always matches an HTTP method and a <a href="paths.html">Path</a>. It may match other components of a request as well. It may also extract elements from the path, query parameters, and other parts of the request. These are passed to the <code>Route</code> handler.</p>
+
+<h2 id="the-request-type" class="section">The Request Type</h2>
+<p>You can usually avoid writing <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Request.html">Request</a> types explicitly, but in case you have to write them down a <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Request.html">Request</a> is defined as</p>
+<pre><code class="nohighlight"><span class="type-name">Request</span><span>[</span><span class="type-name">P</span><span> &lt;: </span><span class="type-name">Tuple</span><span>, </span><span class="type-name">Q</span><span> &lt;: </span><span class="type-name">Tuple</span><span>, </span><span class="type-name">I</span><span> &lt;: </span><span class="type-name">Tuple</span><span>, </span><span class="type-name">O</span><span> &lt;: </span><span class="type-name">Tuple</span><span>]</span></code></pre>
+<p>where</p>
+<ul>
+  <li><code>P</code> is the type of any path parameters extracted from the <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Path.html">Path</a>; </li>
+  <li><code>Q</code> is the type of any query parameters extracted from the <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Path.html">Path</a>; </li>
+  <li><code>I</code> is the type of all the values extracted from the <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Request.html">Request</a>; and</li>
+  <li><code>O</code> is all type of all the values need to construct a HTTP request matched by this <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Request.html">Request</a>.</li>
+</ul>
+
+<h2 id="creating-requests" class="section">Creating Requests</h2>
+<p><code>Requests</code> are created by calling the method on the <code>Request</code> object that corresponds to the HTTP method of interest. For example, <code>Request.get</code> for a GET request, <code>Request.post</code> for a POST request, and so on. Thesse methods all accept a <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Path.html">Path</a>, as described in the <a href="paths.html">next section</a>, which is the only required part of a <code>Request</code> in addition to the HTTP method.</p>
+<p>Here is an example that matches a GET request to the path <code>/user/&lt;int&gt;</code>, where <code>&lt;int&gt;</code> is an integer.</p>
+<pre><code class="nohighlight"><span class="type-name">Request</span><span>.</span><span class="identifier">get</span><span>(</span><span class="type-name">Path</span><span> / </span><span class="string-literal">&quot;user&quot;</span><span> / </span><span class="type-name">Param</span><span>.</span><span class="identifier">int</span><span>)</span></code></pre>
+<p>Working with paths is quite complex, so this has <a href="paths.html">it&#39;s own documentation</a>.</p>
+<p>You can optionally match and extract values from the headers and entity of a HTTP request. If you want to extract match or extract values from the headers, you must call these methods before you call methods that deal with the entity. This design makes it a bit easier to deal with the types inside <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Request.html">Request</a>.</p>
+
+<h3 id="headers" class="section">Headers</h3>
+<p>You can extract the value of any particular header in the HTTP request, and make that value available to the request handler. Alternatively you can ensure that the header exists and has a particular value, but not make that value availabe to the handler.</p>
+<p>There are two variants of the <code>extractHeader</code> method, which will get the value of a header and make it available to the handler. In the first variant you specify just the type of the header, which is usually found in the <code>org.https4s.headers</code> package.</p>
+<p>Here is an example the extracts the value associated with the <code>Content-Type</code> header.</p>
+<pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">http4s</span><span>.</span><span class="identifier">headers</span><span>.*
+
+</span><span class="type-name">Request</span><span>.</span><span class="identifier">get</span><span>(</span><span class="type-name">Path</span><span> / </span><span class="string-literal">&quot;user&quot;</span><span> / </span><span class="type-name">Param</span><span>.</span><span class="identifier">int</span><span>)
+  .</span><span class="identifier">extractHeader</span><span>[</span><span class="identifier">`Content-Type`</span><span>]</span></code></pre>
+<p>If we want to extract more than one header we call <code>andExtractHeader</code> for each additional header after the first.</p>
+<pre><code class="nohighlight"><span class="type-name">Request</span><span>.</span><span class="identifier">get</span><span>(</span><span class="type-name">Path</span><span> / </span><span class="string-literal">&quot;user&quot;</span><span> / </span><span class="type-name">Param</span><span>.</span><span class="identifier">int</span><span>)
+  .</span><span class="identifier">extractHeader</span><span>[</span><span class="identifier">`Content-Type`</span><span>]
+  .</span><span class="identifier">andExtractHeader</span><span>[</span><span class="type-name">Referer</span><span>]</span></code></pre>
+<p>This variant of <code>extractHeader</code> requires us to specify a value for the header when we do reverse routing. We can avoid this by providing a header when we call <code>extractHeader</code>.</p>
+<p>In this example we construct a JSON <code>Content-Type</code> header and pass that value to <code>extractHeader</code>. Now <code>jsonContentType</code> will be used when constructing an HTTP request matching this request.</p>
+<pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">http4s</span><span>.</span><span class="type-name">MediaType</span><span>
+
+</span><span class="keyword">val</span><span> </span><span class="identifier">jsonContentType</span><span> = </span><span class="identifier">`Content-Type`</span><span>(</span><span class="type-name">MediaType</span><span>.</span><span class="identifier">application</span><span>.</span><span class="identifier">json</span><span>)
+
+</span><span class="type-name">Request</span><span>.</span><span class="identifier">get</span><span>(</span><span class="type-name">Path</span><span> / </span><span class="string-literal">&quot;user&quot;</span><span> / </span><span class="type-name">Param</span><span>.</span><span class="identifier">int</span><span>)
+  .</span><span class="identifier">extractHeader</span><span>(</span><span class="identifier">jsonContentType</span><span>)</span></code></pre>
+<p>We often want to ensure that a header matches a particular value, but don&#39;t want to otherwise do anything with the value. In other words, we don&#39;t want to the header&#39;s value passed to the handler once we have verified it exists. For these cases we can use <code>ensureHeader</code>.</p>
+<pre><code class="nohighlight"><span class="type-name">Request</span><span>.</span><span class="identifier">get</span><span>(</span><span class="type-name">Path</span><span> / </span><span class="string-literal">&quot;user&quot;</span><span> / </span><span class="type-name">Param</span><span>.</span><span class="identifier">int</span><span>)
+  .</span><span class="identifier">ensureHeader</span><span>(</span><span class="identifier">jsonContentType</span><span>)</span></code></pre>
+<p>As with <code>extractHeader</code>, we use <code>andEnsureHeader</code> to ensure two or more headers.</p>
+<p>Finally, not that although we&#39;ve used Content-Type headers in the examples you don&#39;t normally have to deal with them. If you specify a <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Entity.html">Entity</a> that will check the headers are correct. We&#39;ve used them in this examples as they are probably the headers that are most familiar to most web developers.</p>
+
+<h3 id="entities" class="section">Entities</h3>
+<p>Calling the <code>withEntity</code> method on a <code>Request</code> allows you to specify an <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Entity.html">Entity</a>, which is responsible for extracting data from an HTTP request. The <code>Entity</code> is responsible for checking the HTTP Content-Type header, and, if it matches, decoding the HTTP entity into a Scala value.</p>
+<p>Here&#39;s an example of a <code>Request</code> that extracts HTML content as a <code>String</code> value.</p>
+<pre><code class="nohighlight"><span class="type-name">Request</span><span>.</span><span class="identifier">get</span><span>(</span><span class="type-name">Path</span><span>.</span><span class="identifier">root</span><span>).</span><span class="identifier">withEntity</span><span>(</span><span class="type-name">Entity</span><span>.</span><span class="identifier">html</span><span>)</span></code></pre>
+<p>There are several predefined <code>Entity</code> values on the companion object, but you can easily create your own if needed.</p></div>
+          <div class="flex flex-row justify-between">
+            <a class="pagenav" href="index.html">←Routing</a> <a class="pagenav" href="paths.html">Paths→</a>
+          </div>
+        </div>
+        <footer>
+          Copyright &copy; Noel Welsh. Built with
+          <span class="hover:text-pink-900">💖</span>
+        </footer>
+      </div>
+      <nav id="pagebar">
+        <div class="fixed h-screen overflow-y-auto">
+          <p>On This Page</p>
+          <ul class="nav-list">
+            <li class="level1 nav-leaf"><a href="#the-request-type">The Request Type</a></li>
+            <li class="level1 nav-node"><a href="#creating-requests">Creating Requests</a></li>
+            <li class="level2 nav-leaf"><a href="#headers">Headers</a></li>
+            <li class="level2 nav-leaf"><a href="#entities">Entities</a></li>
+          </ul>
+        </div>
+      </nav>
+    </main>
+  </body>
+</html>

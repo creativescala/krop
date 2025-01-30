@@ -61,11 +61,13 @@
                   <li class="level3 active nav-leaf"><a href="#">Principles</a></li>
                   <li class="level2 nav-leaf"><a href="../application.html">Application</a></li>
                   <li class="level2 nav-leaf"><a href="../server.html">Server</a></li>
-                  <li class="level2 nav-leaf"><a href="../views.html">Views</a></li>
-                  <li class="level2 nav-node"><a href="../routes/">Routing</a></li>
-                  <li class="level3 nav-leaf"><a href="../routes/request.html">Request</a></li>
-                  <li class="level3 nav-leaf"><a href="../routes/paths.html">Paths</a></li>
-                  <li class="level3 nav-leaf"><a href="../routes/response.html">Response</a></li>
+                  <li class="level2 nav-leaf"><a href="../views.html">View</a></li>
+                  <li class="level2 nav-node"><a href="../controller/">Controller</a></li>
+                  <li class="level3 nav-node"><a href="../controller/route/">Routing</a></li>
+                  <li class="level4 nav-leaf"><a href="../controller/route/request.html">Request</a></li>
+                  <li class="level4 nav-leaf"><a href="../controller/route/paths.html">Paths</a></li>
+                  <li class="level4 nav-leaf"><a href="../controller/route/response.html">Response</a></li>
+                  <li class="level3 nav-leaf"><a href="../controller/handler.html">Handlers</a></li>
                 </ul>
               </div>
             </div>
@@ -87,31 +89,35 @@
             <li class="level3 active nav-leaf"><a href="#">Principles</a></li>
             <li class="level2 nav-leaf"><a href="../application.html">Application</a></li>
             <li class="level2 nav-leaf"><a href="../server.html">Server</a></li>
-            <li class="level2 nav-leaf"><a href="../views.html">Views</a></li>
-            <li class="level2 nav-node"><a href="../routes/">Routing</a></li>
-            <li class="level3 nav-leaf"><a href="../routes/request.html">Request</a></li>
-            <li class="level3 nav-leaf"><a href="../routes/paths.html">Paths</a></li>
-            <li class="level3 nav-leaf"><a href="../routes/response.html">Response</a></li>
+            <li class="level2 nav-leaf"><a href="../views.html">View</a></li>
+            <li class="level2 nav-node"><a href="../controller/">Controller</a></li>
+            <li class="level3 nav-node"><a href="../controller/route/">Routing</a></li>
+            <li class="level4 nav-leaf"><a href="../controller/route/request.html">Request</a></li>
+            <li class="level4 nav-leaf"><a href="../controller/route/paths.html">Paths</a></li>
+            <li class="level4 nav-leaf"><a href="../controller/route/response.html">Response</a></li>
+            <li class="level3 nav-leaf"><a href="../controller/handler.html">Handlers</a></li>
           </ul>
         </div>
       </nav>
       <div id="contentbar">
         <div class="max-w-prose mx-auto">
           <div id="content"><h1 id="principles" class="title">Principles</h1>
-<p>The goal of Krop is to make building web services and applications easy. There are many existing web toolkits, so this section lays out the principles that guide the development of Krop and shows how it differs from other toolkits.</p>
+<p>Krop&#39;s goal is to make it delightful to build delightful web applications. This section unpacks those goals, describing in more detail what we&#39;re trying to do with Krop and how we&#39;re going to do it.</p>
 
-<h2 id="simple-things-are-easy" class="section">Simple Things Are Easy</h2>
-<p>Above all, Krop aims to make it really really easy to create web applications. It should be trivial to create a simple website that consists of a few pages and some interactive parts. It should be equally easy to create a web service that responds to a few end points.</p>
-<p>There are several implications of this focus on productivity:</p>
+<h2 id="being-delightful" class="section">Being Delightful</h2>
+<p>Making it delightful to build is another way of saying we care a lot about developer happiness and productivity. We want simple things (and we think a lot of the the web is simple) to be really simple. In fact we want working with Krop to fade into the background so that you can concentrate on what makes your application distinctive, not the HTTP plumbing. Here are some ways we&#39;re trying to achieve this.</p>
 <ul>
   <li>
-    <p>Code is easy to write. When designing APIs we make it easy to follow the types of code, and follow the IDE autocomplete. For example, where the API requires a <code>Request</code> the developer can just start typing <code>Request.</code>. They don&#39;t need to know that they&#39;re actually working with a builder type to construct the final <code>Request</code>.</p>
+    <p>Scale down. Scala is proven in high scale situations. Every big project starts out small, so we want to make it really easy to get started. Building something should only be a few lines of code.</p>
+  </li>
+  <li>
+    <p>Code is easy to write. When designing APIs we make it easy to follow the types of code, and follow the IDE autocomplete. For example, where the API requires a <code>Request</code> the developer can just start typing <code>Request</code> and follow methods on the companion object. They don&#39;t need to know that they&#39;re actually working with a builder type to construct the final <code>Request</code>.</p>
   </li>
   <li>
     <p>Krop is featureful. If a user wants to do a common task it should be in Krop. We don&#39;t want them to have to chase down a dozen dependencies just to get some basic stuff. This doesn&#39;t mean we write everything ourselves though; that is too big a job. If an existing library does the job we bring it into Krop. That why, for example, Krop builds on top of http4s. There is no value is creating yet another HTTP model and web server.</p>
   </li>
   <li>
-    <p>Establish conventions. It&#39;s a waste of time for the user to have to common up with their own directory structure and other conventions. We establish these so others don&#39;t have to think about them and get on with what they really want to do, which is create their product.</p>
+    <p>Establish conventions. It&#39;s a waste of time for the user to have to come up with their own directory structure and other conventions. We establish these so others don&#39;t have to think about them.</p>
   </li>
   <li>
     <p>Avoid boilerplate. We use a variety of tactics, including sensible defaults, code generation, and Scala 3&#39;s compile-time metaprogramming, so the user can avoid writing boilerplate.</p>
@@ -119,36 +125,37 @@
   <li>
     <p>Imports are minimized. Users don&#39;t need to know the project structure inside and out to get stuff done. We use Scala 3&#39;s <code>export</code> feature to coaelesce imports into a few chosen areas.</p>
   </li>
-</ul>
-
-<h2 id="be-functional" class="section">Be Functional</h2>
-<p>We follow a functional paradigm, meaning we emphasize composition and reasoning. This means the user can trace the path of a request to a response without any hidden state. We don&#39;t, for example, inject routes into some hidden global state. If a user wants a route they add it to their application. Similarly we use compile-time, not run-time metaprogramming.</p>
-
-<h2 id="an-amazing-developer-experience" class="section">An Amazing Developer Experience</h2>
-<p>Krop wants to address the whole lifecycle of creating web applications. Some ways in which we do this include:</p>
-<ul>
   <li>
     <p>Support the run time experience. The types don&#39;t tell us everything, so make it easy to debug as well. For example, this is why in development mode we show why routes didn&#39;t match a given request.</p>
   </li>
   <li>
     <p>Write documentation. Explain to our users how Krop works.</p>
   </li>
-</ul></div>
+</ul>
+
+<h2 id="delightful-applications" class="section">Delightful Applications</h2>
+<p>We want to make it possible to build applications that feel amazing. Scala has a long history of building web APIs, and Krop fully supports this, but we also want to make it easy to create rich user interfaces. We have two approaches: server-centric and client-centric.</p>
+<p>Server-centric applications are ones where the server provides the majority of the interaction, with a small bit of Javascript where necessary. This is the approach taken by <a href="https://hexdocs.pm/phoenix_live_view/Phoenix.LiveView.html">Phoenix LiveView</a> and <a href="https://hotwired.dev/">Hotwired</a>. Krop will fully support this approach.</p>
+<p>Client-centric applications build the interactivity on the client. Part of Scala&#39;s secret sauce is our compiler: we can produce Javascript and WASM in addition to JVM bytecode and native code. We intend to leverage this to make it possible to create web applications running in the browser or on mobile with just Scala code. Longer-term we want to support local-firm applications. </p>
+
+<h2 id="be-functional" class="section">Be Functional</h2>
+<p>We follow a functional paradigm, meaning we emphasize composition and reasoning. This means the user can trace the path of a request to a response without any hidden state. We don&#39;t, for example, inject routes into some hidden global state. If a user wants a route they add it to their application. Similarly we use compile-time, not run-time metaprogramming.</p></div>
           <div class="flex flex-row justify-between">
             <a class="pagenav" href="architecture.html">←Architecture</a> <a class="pagenav" href="../application.html">Application→</a>
           </div>
         </div>
         <footer>
-          Krop is copyright Noel Welsh. Built with 💖
+          Copyright &copy; Noel Welsh. Built with
+          <span class="hover:text-pink-900">💖</span>
         </footer>
       </div>
       <nav id="pagebar">
         <div class="fixed h-screen overflow-y-auto">
           <p>On This Page</p>
           <ul class="nav-list">
-            <li class="level1 nav-leaf"><a href="#simple-things-are-easy">Simple Things Are Easy</a></li>
+            <li class="level1 nav-leaf"><a href="#being-delightful">Being Delightful</a></li>
+            <li class="level1 nav-leaf"><a href="#delightful-applications">Delightful Applications</a></li>
             <li class="level1 nav-leaf"><a href="#be-functional">Be Functional</a></li>
-            <li class="level1 nav-leaf"><a href="#an-amazing-developer-experience">An Amazing Developer Experience</a></li>
           </ul>
         </div>
       </nav>

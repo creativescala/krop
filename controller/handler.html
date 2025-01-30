@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="generator" content="Laika 1.0.0" />
+    <title>Handlers</title>
+     
+    <meta name="description" content="docs" />
+    
+    <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?version=4.8.0&features=es6"></script>
+    <script
+      id="MathJax-script"
+      async
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
+    ></script>
+    <link
+      href="https://fonts.googleapis.com/css?family=Source+Code+Pro:400|Source+Sans+Pro:300,400,600"
+      rel="stylesheet"
+      type="text/css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css?family=Crimson+Pro:400"
+      rel="stylesheet"
+      type="text/css"
+    />
+    <link rel="stylesheet" type="text/css" href="../css/creative-scala.css" /> <script src="../js/solution.js"></script>
+    <script>
+      /* for avoiding page load transitions */
+    </script>
+  </head>
+
+  <body>
+    <header>
+      <div id="topbar">
+        <nav id="topbar">
+          <button
+            class="text-sm text-pink-800 font-sans font-semibold hover:text-pink-600 focus:text-pink-600"
+            popovertarget="topbar-nav"
+          >
+            Contents
+          </button>
+          <div id="topbar-nav" popover>
+            <div id="topbar-nav-container">
+              <div
+                class="p-4 mx-auto rounded-md bg-white border border-slate-900 relative"
+              >
+                <button
+                  class="absolute top-4 right-4 text-slate-900 hover:text-pink-800 focus:text-pink-800"
+                  popovertarget="topbar-nav"
+                  popovertargetaction="hide"
+                >
+                  ✕
+                </button>
+                <ul class="nav-list">
+                  <li class="level1 nav-node"><a href="../">Krop</a></li>
+                  <li class="level2 nav-leaf"><a href="../quick-start.html">Quick Start</a></li>
+                  <li class="level2 nav-node"><a href="../overview/">Overview</a></li>
+                  <li class="level3 nav-leaf"><a href="../overview/architecture.html">Architecture</a></li>
+                  <li class="level3 nav-leaf"><a href="../overview/principles.html">Principles</a></li>
+                  <li class="level2 nav-leaf"><a href="../application.html">Application</a></li>
+                  <li class="level2 nav-leaf"><a href="../server.html">Server</a></li>
+                  <li class="level2 nav-leaf"><a href="../views.html">View</a></li>
+                  <li class="level2 nav-node"><a href="index.html">Controller</a></li>
+                  <li class="level3 nav-node"><a href="route/">Routing</a></li>
+                  <li class="level4 nav-leaf"><a href="route/request.html">Request</a></li>
+                  <li class="level4 nav-leaf"><a href="route/paths.html">Paths</a></li>
+                  <li class="level4 nav-leaf"><a href="route/response.html">Response</a></li>
+                  <li class="level3 active nav-leaf"><a href="#">Handlers</a></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </nav>
+        <nav id="home"><a class="text-link" href="../">Krop</a></nav>
+        <nav id="external"><a class="text-link" href="https://discord.gg/rRhcFbJxVG">Community</a> <a class="text-link" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest">API</a> <a class="text-link" href="https://github.com/creativescala/krop">Source</a></nav>
+      </div>
+    </header>
+
+    <main>
+      <nav id="sitebar">
+        <div class="fixed h-screen overflow-y-auto">
+          <ul class="nav-list">
+            <li class="level1 nav-node"><a href="../">Krop</a></li>
+            <li class="level2 nav-leaf"><a href="../quick-start.html">Quick Start</a></li>
+            <li class="level2 nav-node"><a href="../overview/">Overview</a></li>
+            <li class="level3 nav-leaf"><a href="../overview/architecture.html">Architecture</a></li>
+            <li class="level3 nav-leaf"><a href="../overview/principles.html">Principles</a></li>
+            <li class="level2 nav-leaf"><a href="../application.html">Application</a></li>
+            <li class="level2 nav-leaf"><a href="../server.html">Server</a></li>
+            <li class="level2 nav-leaf"><a href="../views.html">View</a></li>
+            <li class="level2 nav-node"><a href="index.html">Controller</a></li>
+            <li class="level3 nav-node"><a href="route/">Routing</a></li>
+            <li class="level4 nav-leaf"><a href="route/request.html">Request</a></li>
+            <li class="level4 nav-leaf"><a href="route/paths.html">Paths</a></li>
+            <li class="level4 nav-leaf"><a href="route/response.html">Response</a></li>
+            <li class="level3 active nav-leaf"><a href="#">Handlers</a></li>
+          </ul>
+        </div>
+      </nav>
+      <div id="contentbar">
+        <div class="max-w-prose mx-auto">
+          <div id="content"><h1 id="handlers" class="title">Handlers</h1>
+<p>A <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Route.html">Route</a> extracts Scala values from an HTTP request, and converts Scala values into an HTTP response. A <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Handler.html">Handler</a> adds the functionality that connects these two parts together, giving a complete controller that can be run as part of an application.</p>
+<p>There are three ways to create a handler: using <code>handle</code>, <code>handleIO</code>, or <code>passthrough</code>. Assume the request produces a value of type <code>A</code> and the response needs a value of type <code>B</code>. Then these three methods have the following meaning:</p>
+<ul>
+  <li><code>handle</code> requires a function <code>A =&gt; B</code>;</li>
+  <li><code>handleIO</code> requires a function <code>A =&gt; IO[B]</code>; and</li>
+  <li><code>passthrough</code>, which can only be called when <code>A</code> is the same type as <code>B</code>, means that the output of the request is connected directly to the input of the response. This is useful, for example, when the response is loading a static file from the file system and the request produces the name of the file to load.</li>
+</ul>
+<p>Let&#39;s say we have the following <code>Route</code>.</p>
+<pre><code class="nohighlight"><span class="keyword">val</span><span> </span><span class="identifier">route</span><span> = 
+  </span><span class="type-name">Route</span><span>(
+    </span><span class="type-name">Request</span><span>.</span><span class="identifier">get</span><span>(</span><span class="type-name">Path</span><span> / </span><span class="string-literal">&quot;user&quot;</span><span> / </span><span class="type-name">Param</span><span>.</span><span class="identifier">int</span><span>), 
+    </span><span class="type-name">Response</span><span>.</span><span class="identifier">ok</span><span>(</span><span class="type-name">Entity</span><span>.</span><span class="identifier">text</span><span>)
+  )</span></code></pre>
+<p>It produces an <code>Int</code> from the request, and requires a <code>String</code> to create the response. We can create a <code>Handler</code> in the following two ways:</p>
+<pre><code class="nohighlight"><span class="identifier">route</span><span>.</span><span class="identifier">handle</span><span>(</span><span class="identifier">userId</span><span> =&gt; </span><span class="string-literal">s&quot;You asked for user </span><span class="substitution">$userId</span><span class="string-literal">&quot;</span><span>)
+</span><span class="identifier">route</span><span>.</span><span class="identifier">handleIO</span><span>(</span><span class="identifier">userId</span><span> =&gt; </span><span class="type-name">IO</span><span>.</span><span class="identifier">pure</span><span>(</span><span class="string-literal">s&quot;You asked for user </span><span class="substitution">$userId</span><span class="string-literal">&quot;</span><span>))</span></code></pre>
+<p>We cannot use <code>passthrough</code> as the value produced from the request has a different type to the value required to create the response.</p>
+
+<h3 id="type-transformations-for-handlers" class="section">Type Transformations for Handlers</h3>
+<p>If you dig into the types produced by <code>Request</code> you will notice a lot of tuple types are used. Here&#39;s an example, showing a <code>Request</code> producing a <code>Tuple2</code>.</p>
+<pre><code class="nohighlight"><span class="keyword">val</span><span> </span><span class="identifier">request</span><span> = </span><span class="type-name">Request</span><span>.</span><span class="identifier">get</span><span>(</span><span class="type-name">Path</span><span> / </span><span class="type-name">Param</span><span>.</span><span class="identifier">int</span><span> / </span><span class="type-name">Param</span><span>.</span><span class="identifier">string</span><span>)
+</span><span class="comment">// request: RequestMethodPath[*:[Int, *:[String, EmptyTuple]], EmptyTuple] = RequestMethodPath(
+//   method = GET,
+//   path = krop.route.Path@2bb6dd7a
+// )</span></code></pre>
+<p>This <code>Tuple2</code> arises because we extract two elements from the HTTP request&#39;s path: one <code>Int</code> and one <code>String</code>.
+However, when you come to use a handler with such a request, you can use a normal function with two arguments <em>not</em> a function that accepts a single <code>Tuple2</code>.</p>
+<pre><code class="nohighlight"><span class="type-name">Route</span><span>(</span><span class="identifier">request</span><span>, </span><span class="type-name">Response</span><span>.</span><span class="identifier">ok</span><span>(</span><span class="type-name">Entity</span><span>.</span><span class="identifier">text</span><span>))
+  .</span><span class="identifier">handle</span><span>((</span><span class="identifier">int</span><span>, </span><span class="identifier">string</span><span>) =&gt; </span><span class="string-literal">s&quot;</span><span class="substitution">${int.toString}</span><span class="string-literal">: </span><span class="substitution">${string}</span><span class="string-literal">&quot;</span><span>)</span></code></pre>
+<p>The conversion between tuples and functions is done by given instances of <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/TupleApply.html">TupleApply</a>, which allows a function <code>(A, B, ..., N) =&gt; Z</code> to be applied to a tuple <code>(A, B, ..., N)</code></p></div>
+          <div class="flex flex-row justify-between">
+            <a class="pagenav" href="route/response.html">←Response</a> 
+          </div>
+        </div>
+        <footer>
+          Copyright &copy; Noel Welsh. Built with
+          <span class="hover:text-pink-900">💖</span>
+        </footer>
+      </div>
+      <nav id="pagebar">
+        <div class="fixed h-screen overflow-y-auto">
+          <p>On This Page</p>
+          <ul class="nav-list">
+            <li class="level1 nav-leaf"><a href="#type-transformations-for-handlers">Type Transformations for Handlers</a></li>
+          </ul>
+        </div>
+      </nav>
+    </main>
+  </body>
+</html>
