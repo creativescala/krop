@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 import scala.sys.process.*
+import creativescala.ExternalLink
 import laika.config.LinkConfig
 import laika.config.ApiLinks
 import laika.theme.Theme
@@ -126,16 +127,16 @@ lazy val docs =
           TextLink.internal(laika.ast.Path.Root / "README.md", "Krop")
         )
         .withCommunity(
-          TextLink.external("https://discord.gg/rRhcFbJxVG", "Community")
+          ExternalLink("https://discord.gg/rRhcFbJxVG", "Community")
         )
         .withApi(
-          TextLink.external(
+          ExternalLink(
             "https://javadoc.io/doc/org.creativescala/krop-docs_3/latest",
             "API"
           )
         )
         .withSource(
-          TextLink.external(
+          ExternalLink(
             "https://github.com/creativescala/krop",
             "Source"
           )
