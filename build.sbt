@@ -96,6 +96,17 @@ lazy val core = crossProject(JSPlatform, JVMPlatform)
   )
   .jvmSettings(libraryDependencies += Dependencies.log4catsSlf4j.value)
 
+lazy val sqlite = project
+  .in(file("sqlite"))
+  .settings(
+    commonSettings,
+    libraryDependencies ++= Seq(
+      Dependencies.sqlite.value,
+      Dependencies.magnum.value
+    ),
+    moduleName := "krop-sqlite"
+  )
+
 lazy val docs =
   project
     .in(file("docs"))
