@@ -29,7 +29,7 @@ import javax.sql.DataSource
 
 // Copied from https://github.com/AugustNagro/magnum/pull/89 until it is
 // released as part of Magnum
-class TransactorCats[F[_]: Sync] private (
+class Transactor[F[_]: Sync] private (
     private val dataSource: DataSource,
     private val sqlLogger: SqlLogger,
     private val connectionConfig: Connection => Unit,
@@ -37,8 +37,8 @@ class TransactorCats[F[_]: Sync] private (
 ):
   private val makeConn = Resource.make(acquireConnection)(releaseConnection)
 
-  def withSqlLogger(sqlLogger: SqlLogger): TransactorCats[F] =
-    new TransactorCats(
+  def withSqlLogger(sqlLogger: SqlLogger): Transactor[F] =
+    new Transactor(
       dataSource,
       sqlLogger,
       connectionConfig,
@@ -47,8 +47,8 @@ class TransactorCats[F[_]: Sync] private (
 
   def withConnectionConfig(
       connectionConfig: Connection => Unit
-  ): TransactorCats[F] =
-    new TransactorCats(
+  ): Transactor[F] =
+    new Transactor(
       dataSource,
       sqlLogger,
       connectionConfig,
@@ -90,9 +90,9 @@ class TransactorCats[F[_]: Sync] private (
       Sync[F]
         .blocking(conn.close())
         .adaptError(t => SqlException("Unable to close DB connection", t))
-end TransactorCats
+end Transactor
 
-object TransactorCats:
+object Transactor:
   private val noOpConnectionConfig: Connection => Unit = _ => ()
 
   /** Construct a Transactor
@@ -109,14 +109,14 @@ object TransactorCats:
     *   Not needed if using a virtual-thread based blocking executor (e.g. via
     *   evalOn)
     * @return
-    *   F[TransactorCats[F]]
+    *   F[Transactor[F]]
     */
   def apply[F[_]: Async](
       dataSource: DataSource,
       sqlLogger: SqlLogger,
       connectionConfig: Connection => Unit,
       maxBlockingThreads: Int
-  ): F[TransactorCats[F]] =
+  ): F[Transactor[F]] =
     assert(maxBlockingThreads > 0)
 
     val rateLimiter =
@@ -124,7 +124,7 @@ object TransactorCats:
       else Semaphore[F](maxBlockingThreads).map(_.permit)
 
     rateLimiter.map: rl =>
-      new TransactorCats(
+      new Transactor(
         dataSource,
         sqlLogger,
         connectionConfig,
@@ -143,13 +143,13 @@ object TransactorCats:
     *   Not needed if using a virtual-thread based blocking executor (e.g. via
     *   evalOn)
     * @return
-    *   F[TransactorCats[F]]
+    *   F[Transactor[F]]
     */
   def apply[F[_]: Async](
       dataSource: DataSource,
       sqlLogger: SqlLogger,
       maxBlockingThreads: Int
-  ): F[TransactorCats[F]] =
+  ): F[Transactor[F]] =
     apply(dataSource, sqlLogger, noOpConnectionConfig, maxBlockingThreads)
 
   /** Construct a Transactor
@@ -162,12 +162,12 @@ object TransactorCats:
     *   Not needed if using a virtual-thread based blocking executor (e.g. via
     *   evalOn)
     * @return
-    *   F[TransactorCats[F]]
+    *   F[Transactor[F]]
     */
   def apply[F[_]: Async](
       dataSource: DataSource,
       maxBlockingThreads: Int
-  ): F[TransactorCats[F]] =
+  ): F[Transactor[F]] =
     apply(
       dataSource,
       SqlLogger.Default,
@@ -184,30 +184,30 @@ object TransactorCats:
     * @param connectionConfig
     *   Customize the underlying JDBC Connections
     * @return
-    *   F[TransactorCats[F]]
+    *   F[Transactor[F]]
     */
   def apply[F[_]: Sync](
       dataSource: DataSource,
       sqlLogger: SqlLogger,
       connectionConfig: Connection => Unit
-  ): F[TransactorCats[F]] =
+  ): F[Transactor[F]] =
     Sync[F].pure(
-      new TransactorCats(dataSource, sqlLogger, connectionConfig, None)
+      new Transactor(dataSource, sqlLogger, connectionConfig, None)
     )
 
-  /** Construct a TransactorCats
+  /** Construct a Transactor
     *
     * @param dataSource
     *   Datasource to be used
     * @param sqlLogger
     *   Logging configuration
     * @return
-    *   F[TransactorCats[F]]
+    *   F[Transactor[F]]
     */
   def apply[F[_]: Sync](
       dataSource: DataSource,
       sqlLogger: SqlLogger
-  ): F[TransactorCats[F]] =
+  ): F[Transactor[F]] =
     apply(dataSource, sqlLogger, noOpConnectionConfig)
 
   /** Construct a Transactor
@@ -215,10 +215,10 @@ object TransactorCats:
     * @param dataSource
     *   Datasource to be used
     * @return
-    *   F[TransactorCats[F]]
+    *   F[Transactor[F]]
     */
   def apply[F[_]: Sync](
       dataSource: DataSource
-  ): F[TransactorCats[F]] =
+  ): F[Transactor[F]] =
     apply(dataSource, SqlLogger.Default, noOpConnectionConfig)
-end TransactorCats
+end Transactor
