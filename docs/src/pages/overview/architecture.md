@@ -17,7 +17,7 @@ backend - All backend (server) code here
 │   └── <package>
 │       ├── Main.scala - the main entry point to your backend
 │       ├── models
-│           └── db - database models
+│       │   └── db - database models
 │       └── views - template views using Twirl
 ├── resources - static files that are packaged with your application
 └── test - tests 
