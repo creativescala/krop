@@ -2,9 +2,9 @@
 
 Krop uses a model-view-controller (MVC) architecture, which divides a web application into three components:
 
-- models, which manages the data in the application;
+- [models](../model/README.md), which manages the data in the application;
 - [views](../views.md), which is responsible for generating the user interface; and
-- controllers, which handles actions from the user interface and implements the application logic.
+- [controllers](../controller/README.md), which handles actions from the user interface and implements the application logic.
 
 
 ## Directory Structure
@@ -16,6 +16,8 @@ backend - All backend (server) code here
 ├── src
 │   └── <package>
 │       ├── Main.scala - the main entry point to your backend
+│       ├── models
+│           └── db - database models
 │       └── views - template views using Twirl
 ├── resources - static files that are packaged with your application
 └── test - tests 
