@@ -22,7 +22,7 @@ import laika.helium.config.TextLink
 
 Global / onChangedBuildSource := ReloadOnSourceChanges
 
-ThisBuild / tlBaseVersion := "0.8" // your current series x.y
+ThisBuild / tlBaseVersion := "0.9" // your current series x.y
 
 ThisBuild / organization := "org.creativescala"
 ThisBuild / organizationName := "Creative Scala"
@@ -95,6 +95,17 @@ lazy val core = crossProject(JSPlatform, JVMPlatform)
     moduleName := "krop-core"
   )
   .jvmSettings(libraryDependencies += Dependencies.log4catsSlf4j.value)
+
+lazy val sqlite = project
+  .in(file("sqlite"))
+  .settings(
+    commonSettings,
+    libraryDependencies ++= Seq(
+      Dependencies.sqlite.value,
+      Dependencies.magnum.value
+    ),
+    moduleName := "krop-sqlite"
+  )
 
 lazy val docs =
   project
