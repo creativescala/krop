@@ -12,7 +12,7 @@ object Dependencies {
   val scalaJsDomVersion = "2.4.0"
   val scalaTagsVersion = "0.13.1"
   val log4catsVersion = "2.7.0"
-  val logbackVersion = "1.5.17"
+  val logbackVersion = "1.5.18"
 
   val sqliteVersion = "3.49.1.0"
   val magnumVersion = "1.3.1"
