@@ -5,7 +5,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="generator" content="Laika 1.0.0" />
-    <title>Architecture</title>
+    <title>Models</title>
      
     <meta name="description" content="docs" />
     
@@ -56,12 +56,12 @@
                 <ul class="nav-list">
                   <li class="level1 nav-node"><a href="../">Krop</a></li>
                   <li class="level2 nav-leaf"><a href="../quick-start.html">Quick Start</a></li>
-                  <li class="level2 nav-node"><a href="index.html">Overview</a></li>
-                  <li class="level3 active nav-leaf"><a href="#">Architecture</a></li>
-                  <li class="level3 nav-leaf"><a href="principles.html">Principles</a></li>
+                  <li class="level2 nav-node"><a href="../overview/">Overview</a></li>
+                  <li class="level3 nav-leaf"><a href="../overview/architecture.html">Architecture</a></li>
+                  <li class="level3 nav-leaf"><a href="../overview/principles.html">Principles</a></li>
                   <li class="level2 nav-leaf"><a href="../application.html">Application</a></li>
                   <li class="level2 nav-leaf"><a href="../server.html">Server</a></li>
-                  <li class="level2 nav-leaf"><a href="../model/">Models</a></li>
+                  <li class="level2 active nav-leaf"><a href="#">Models</a></li>
                   <li class="level2 nav-leaf"><a href="../views.html">View</a></li>
                   <li class="level2 nav-node"><a href="../controller/">Controller</a></li>
                   <li class="level3 nav-node"><a href="../controller/route/">Routing</a></li>
@@ -85,12 +85,12 @@
           <ul class="nav-list">
             <li class="level1 nav-node"><a href="../">Krop</a></li>
             <li class="level2 nav-leaf"><a href="../quick-start.html">Quick Start</a></li>
-            <li class="level2 nav-node"><a href="index.html">Overview</a></li>
-            <li class="level3 active nav-leaf"><a href="#">Architecture</a></li>
-            <li class="level3 nav-leaf"><a href="principles.html">Principles</a></li>
+            <li class="level2 nav-node"><a href="../overview/">Overview</a></li>
+            <li class="level3 nav-leaf"><a href="../overview/architecture.html">Architecture</a></li>
+            <li class="level3 nav-leaf"><a href="../overview/principles.html">Principles</a></li>
             <li class="level2 nav-leaf"><a href="../application.html">Application</a></li>
             <li class="level2 nav-leaf"><a href="../server.html">Server</a></li>
-            <li class="level2 nav-leaf"><a href="../model/">Models</a></li>
+            <li class="level2 active nav-leaf"><a href="#">Models</a></li>
             <li class="level2 nav-leaf"><a href="../views.html">View</a></li>
             <li class="level2 nav-node"><a href="../controller/">Controller</a></li>
             <li class="level3 nav-node"><a href="../controller/route/">Routing</a></li>
@@ -103,34 +103,16 @@
       </nav>
       <div id="contentbar">
         <div class="max-w-prose mx-auto">
-          <div id="content"><h1 id="architecture" class="title">Architecture</h1>
-<p>Krop uses a model-view-controller (MVC) architecture, which divides a web application into three components:</p>
+          <div id="content"><h1 id="models" class="title">Models</h1>
+<p>Models are the representations of data in your application. You will usually have several different models:</p>
 <ul>
-  <li><a href="../model/">models</a>, which manages the data in the application;</li>
-  <li><a href="../views.html">views</a>, which is responsible for generating the user interface; and</li>
-  <li><a href="../controller/">controllers</a>, which handles actions from the user interface and implements the application logic.</li>
+  <li>for storing data in a database;</li>
+  <li>for representing communication with external services; and</li>
+  <li>for representing data used internally in your application.</li>
 </ul>
-
-<h2 id="directory-structure" class="section">Directory Structure</h2>
-<p>The standard directory structure for a Krop project is described below. It&#39;s similar to the standard structure for a Scala project, but it drops the <code>main/scala</code> directories that sbt inherits from Maven. This is a bit of unnecessary indirection that makes it harder to find the code and get stuff done, particularly when new to a project.</p>
-<pre><code>backend - All backend (server) code here
-├── src
-│   └── &lt;package&gt;
-│       ├── Main.scala - the main entry point to your backend
-│       ├── models
-│       │   └── db - database models
-│       └── views - template views using Twirl
-├── resources - static files that are packaged with your application
-└── test - tests 
-
-frontend - All frontend (client) code here
-
-shared - Code that is shared between backend and frontend
-└── src
-    └── &lt;package&gt;
-        └── routes - your application&#39;s routes</code></pre></div>
+<p>Krop provides </p></div>
           <div class="flex flex-row justify-between">
-            <a class="pagenav" href="index.html">←Overview</a> <a class="pagenav" href="principles.html">Principles→</a>
+            <a class="pagenav" href="../server.html">←Server</a> <a class="pagenav" href="../views.html">View→</a>
           </div>
         </div>
         <footer>
@@ -142,7 +124,6 @@ shared - Code that is shared between backend and frontend
         <div class="fixed h-screen overflow-y-auto">
           <p>On This Page</p>
           <ul class="nav-list">
-            <li class="level1 nav-leaf"><a href="#directory-structure">Directory Structure</a></li>
           </ul>
         </div>
       </nav>
