@@ -69,7 +69,8 @@ lazy val commonSettings = Seq(
     Dependencies.http4sServer.value,
     Dependencies.http4sDsl.value,
     Dependencies.http4sCirce.value,
-    Dependencies.scalaTags.value
+    Dependencies.scalaTags.value,
+    Dependencies.twirl.value
   )
 )
 

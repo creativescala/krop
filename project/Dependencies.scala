@@ -11,6 +11,7 @@ object Dependencies {
   val http4sVersion = "1.0.0-M44"
   val scalaJsDomVersion = "2.4.0"
   val scalaTagsVersion = "0.13.1"
+  val twirlVersion = "2.0.8"
   val log4catsVersion = "2.7.0"
   val logbackVersion = "1.5.18"
 
@@ -44,6 +45,8 @@ object Dependencies {
   val sqlite = Def.setting("org.xerial" % "sqlite-jdbc" % sqliteVersion)
   val magnum = Def.setting("com.augustnagro" %% "magnum" % magnumVersion)
 
+  val twirl =
+    Def.setting("org.playframework.twirl" %%% "twirl-api" % twirlVersion)
   val scalaTags = Def.setting("com.lihaoyi" %%% "scalatags" % scalaTagsVersion)
 
   val munit = Def.setting("org.scalameta" %%% "munit" % munitVersion % "test")
