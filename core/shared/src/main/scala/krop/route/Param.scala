@@ -110,7 +110,7 @@ object Param {
   }
 
   /** A `Param` that matches a single `Int` parameter */
-  val int: Param.One[Int] =
+  given int: Param.One[Int] =
     Param.One(
       "<Int>",
       str => str.toIntOption.toRight(ParamParseFailure(str, "<Int>")),
@@ -118,12 +118,12 @@ object Param {
     )
 
   /** A `Param` that matches a single `String` parameter */
-  val string: Param.One[String] =
+  given string: Param.One[String] =
     Param.One("<String>", Right(_), identity)
 
   /** `Param` that simply accumulates all parameters as a `Seq[String]`.
     */
-  val seq: Param.All[Seq[String]] =
+  given seq: Param.All[Seq[String]] =
     Param.All("<String>", Right(_), identity)
 
   /** `Param` that matches all parameters and converts them to a `String` by

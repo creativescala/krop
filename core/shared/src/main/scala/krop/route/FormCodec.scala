@@ -28,7 +28,7 @@ import scala.deriving.*
 import scala.quoted.*
 
 final case class FormCodec[A](
-    decode: UrlForm => IO[Either[DecodeFailure, A]],
+    decode: UrlForm => Either[DecodeFailure, A],
     encode: A => UrlForm
 )
 
