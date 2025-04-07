@@ -35,7 +35,7 @@ ThisBuild / developers := List(
 
 ThisBuild / sonatypeCredentialHost := xerial.sbt.Sonatype.sonatypeLegacy
 
-lazy val scala3 = "3.6.3"
+lazy val scala3 = "3.6.4"
 
 ThisBuild / crossScalaVersions := List(scala3)
 ThisBuild / githubWorkflowJavaVersions := List(JavaSpec.temurin("11"))
