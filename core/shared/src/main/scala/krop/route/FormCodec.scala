@@ -17,77 +17,78 @@
 package krop.route
 
 import cats.data.Chain
-import cats.effect.IO
-import krop.route.Param.All
-import krop.route.Param.One
-import org.http4s.DecodeFailure
+import cats.syntax.all.*
 import org.http4s.UrlForm
 
 import scala.compiletime.*
 import scala.deriving.*
-import scala.quoted.*
 
 final case class FormCodec[A](
-    decode: UrlForm => Either[DecodeFailure, A],
+    decode: UrlForm => Either[Chain[SeqStringDecodeFailure], A],
     encode: A => UrlForm
 )
 
 object FormCodec {
-  inline def derived[A]: FormCodec[A] = ${ derivedMacro[A] }
+  private inline def elementLabels[A <: Tuple]: List[String] =
+    inline erasedValue[A] match {
+      case _: EmptyTuple => List.empty
+      case _: (hd *: tl) =>
+        val headLabel = constValue[hd].toString()
+        val tailLabels = elementLabels[tl]
 
-  def derivedMacro[A: Type](using Quotes): Expr[FormCodec[A]] = {
-    val ev: Expr[Mirror.Of[A]] = Expr.summon[Mirror.Of[A]].get
+        headLabel :: tailLabels
+    }
 
-    ev match
-      case '{
-            $m: Mirror.ProductOf[A] { type MirroredElemTypes = elementTypes }
-          } =>
-        val elemInstances = summonInstances[A, elementTypes]
-        def encodeProductBody(v: Expr[Product])(using Quotes): Expr[UrlForm] = {
-          if elemInstances.isEmpty then '{ UrlForm.empty }
-          else {
-            val elts =
-              elemInstances.zipWithIndex
-                .map { case ('{ $elem: Param[t] }, index) =>
-                  val indexExpr = Expr(index)
-                  val e = '{ $v.productElement($indexExpr).asInstanceOf[t] }
-                  val name = '{ $v.productElementName($indexExpr) }
-                  '{
-                    $elem match {
-                      case All(_, _, unparse) =>
-                        Map($name -> Chain.fromSeq(unparse($e)))
-                      case One(_, _, unparse) =>
-                        Map($name -> Chain(unparse($e)))
-                    }
-                  }
-                }
-                .reduce((acc, elem) => '{ $acc ++ $elem })
+  inline given derived[A](using m: Mirror.Of[A]): FormCodec[A] =
+    inline m match {
+      case s: Mirror.SumOf[A] =>
+        error("Derivation of FormCodecs is not implemented for sum types.")
 
-            '{ UrlForm($elts) }
+      case p: Mirror.ProductOf[A] =>
+        // We lose type information when we convert to array
+        //
+
+        // Array[String]
+        val labels =
+          constValueTuple[p.MirroredElemLabels].toArray
+
+        // Array[SeqStringCodec[?]]
+        val codecs =
+          summonAll[Tuple.Map[p.MirroredElemTypes, SeqStringCodec]].toArray
+
+        val decode: UrlForm => Either[Chain[SeqStringDecodeFailure], A] =
+          urlForm => {
+            for {
+              values <- labels.zip(codecs).toList.parTraverse {
+                case (name, codec) =>
+                  codec
+                    .asInstanceOf[SeqStringCodec[?]]
+                    .decode(urlForm.get(name.toString).toList)
+                    .leftMap(Chain.one)
+              }
+            } yield p.fromProduct(Tuple.fromArray(values.toArray[Any]))
           }
-        }
-        '{
-          formCodecProduct((v: A) =>
-            ${ encodeProductBody('v.asExprOf[Product]) }
-          )
-        }
 
-      case '{ $m: Mirror.SumOf[A] { type MirroredElemTypes = elementTypes } } =>
-        '{
-          error(
-            "Generic derivation of FormCodec instances is not supported for sum types."
-          )
-        }
-  }
+        val encode: A => UrlForm =
+          a => {
+            val product = a.asInstanceOf[Product]
 
-  private def formCodecProduct[A](encode: A => UrlForm): FormCodec[A] =
-    FormCodec(decode = _ => ???, encode = encode)
+            codecs.zipWithIndex.foldLeft(UrlForm.empty) {
+              case (urlForm, (codec, idx)) =>
+                codec match {
+                  case c: SeqStringCodec[a] =>
+                    urlForm.updateFormFields(
+                      product.productElementName(idx),
+                      Chain.fromSeq(
+                        codec
+                          .asInstanceOf[SeqStringCodec[Any]]
+                          .encode(product.productElement(idx))
+                      )
+                    )
+                }
+            }
+          }
 
-  private def summonInstances[A: Type, Elems: Type](using
-      Quotes
-  ): List[Expr[Param[?]]] =
-    Type.of[Elems] match
-      case '[elem *: elems] =>
-        '{ summonInline[Param[elem]] } :: summonInstances[A, elems]
-      case '[EmptyTuple] => Nil
+        FormCodec(decode = decode, encode = encode)
+    }
 }
