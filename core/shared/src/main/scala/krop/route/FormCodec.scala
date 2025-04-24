@@ -23,30 +23,27 @@ import org.http4s.UrlForm
 import scala.compiletime.*
 import scala.deriving.*
 
+/** A FormCodec is responsible for encoding and decoding values as
+  * application/x-www-form-urlencoded data. In other words, a `FormCodec[A]`
+  * converts data submitted from a form in a value of type `A`, and converts a
+  * value of type `A` into data that could be submitted from a form.
+  *
+  * FormCodec works with [[org.http4s.UrlForm]] to represent form data.
+  */
 final case class FormCodec[A](
     decode: UrlForm => Either[Chain[SeqStringDecodeFailure], A],
     encode: A => UrlForm
 )
 
 object FormCodec {
-  private inline def elementLabels[A <: Tuple]: List[String] =
-    inline erasedValue[A] match {
-      case _: EmptyTuple => List.empty
-      case _: (hd *: tl) =>
-        val headLabel = constValue[hd].toString()
-        val tailLabels = elementLabels[tl]
-
-        headLabel :: tailLabels
-    }
-
   inline given derived[A](using m: Mirror.Of[A]): FormCodec[A] =
     inline m match {
       case s: Mirror.SumOf[A] =>
         error("Derivation of FormCodecs is not implemented for sum types.")
 
       case p: Mirror.ProductOf[A] =>
-        // We lose type information when we convert to array
-        //
+        // We lose type information when we convert tuples to arrays. The
+        // comments above the arrays give the correct types.
 
         // Array[String]
         val labels =
