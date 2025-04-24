@@ -33,6 +33,39 @@ trait SeqStringCodec[A] {
   def name: String
   def decode(value: Seq[String]): Either[SeqStringDecodeFailure, A]
   def encode(value: A): Seq[String]
+
+  /** Construct a `SeqStringCodec[B]` from a `SeqStringCodec[A]` using functions
+    * to convert from A to B and B to A.
+    *
+    * You should probably call `withName` after `imap`, to give the
+    * `SeqStringCodec` you just created a more appropriate name.
+    */
+  def imap[B](f: A => B)(g: B => A): SeqStringCodec[B] = {
+    val self = this
+    new SeqStringCodec[B] {
+      val name: String = self.name
+
+      def decode(value: Seq[String]): Either[SeqStringDecodeFailure, B] =
+        self.decode(value).map(f)
+
+      def encode(value: B): Seq[String] = self.encode(g(value))
+    }
+  }
+
+  /** Create a new [[SeqStringCodec]] that works exactly the same as this
+    * [[SeqStringCodec]] except it has the given name.
+    */
+  def withName(newName: String): SeqStringCodec[A] = {
+    val self = this
+    new SeqStringCodec[A] {
+      val name: String = newName
+
+      def decode(value: Seq[String]): Either[SeqStringDecodeFailure, A] =
+        self.decode(value)
+
+      def encode(value: A): Seq[String] = self.encode(value)
+    }
+  }
 }
 object SeqStringCodec {
 
