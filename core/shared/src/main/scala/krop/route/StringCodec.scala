@@ -60,6 +60,7 @@ trait StringCodec[A] {
 
       def decode(value: String): Either[StringDecodeFailure, A] =
         self.decode(value)
+
       def encode(value: A): String = self.encode(value)
     }
   }
