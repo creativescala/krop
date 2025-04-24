@@ -31,6 +31,38 @@ trait StringCodec[A] {
   def name: String
   def decode(value: String): Either[StringDecodeFailure, A]
   def encode(value: A): String
+
+  /** Construct a `StringCodec[B]` from a `StringCodec[A]` using functions to
+    * convert from A to B and B to A.
+    *
+    * You should probably call `withName` after `imap`, to give the
+    * `StringCodec` you just created a more appropriate name.
+    */
+  def imap[B](f: A => B)(g: B => A): StringCodec[B] = {
+    val self = this
+    new StringCodec[B] {
+      val name: String = self.name
+
+      def decode(value: String): Either[StringDecodeFailure, B] =
+        self.decode(value).map(f)
+
+      def encode(value: B): String = self.encode(g(value))
+    }
+  }
+
+  /** Create a new [[StringCodec]] that works exactly the same as this
+    * [[StringCodec]] except it has the given name.
+    */
+  def withName(newName: String): StringCodec[A] = {
+    val self = this
+    new StringCodec[A] {
+      val name: String = newName
+
+      def decode(value: String): Either[StringDecodeFailure, A] =
+        self.decode(value)
+      def encode(value: A): String = self.encode(value)
+    }
+  }
 }
 object StringCodec {
   given int: StringCodec[Int] =
