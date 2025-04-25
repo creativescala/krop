@@ -90,7 +90,7 @@ To collect all the query parameters as a `Map[String, List[String]]` use `Query.
 val everything = Query.everything
 ```
 
-We can also construct a `QueryParam` directly, which requires a name and a type parameter, similarly to working with `Query`. The type parameter is used to find a given instance of @:api(krop.route.StringCodec) or @:api(krop.route.SeqStringCodec), depending on the kind of `QueryParam` that is being constructed.
+We can also construct a `QueryParam` directly, which requires a name and a type parameter, similarly to working with `Query`. The type parameter is used to find a given instance of @:api(krop.route.StringCodec) or @:api(krop.route.SeqStringCodec), depending on the kind of `QueryParam` that is being constructed. See [Codecs](codecs.md) for more on the codec types.
 
 ```scala mdoc:silent
 val param = QueryParam.one[Int]("id") // Looks for StringCodec
