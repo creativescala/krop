@@ -63,39 +63,37 @@ Path / Segment.all / "crash"
 A `Path` can also match and capture query parameters. For instance, the following path captures the query parameter `id` as an `Int`.
 
 ```scala mdoc:silent
-Path / "user" :? Query("id", Param.int)
+Path / "user" :? Query[Int]("id")
 ```
 
 Multiple parameters can be captured. This example captures an `Int` and `String`.
 
 ```scala mdoc:silent
-Path / "user" :? Query("id", Param.int).and("name", Param.string)
+Path / "user" :? Query[Int]("id").and[String]("name")
 ```
 
-There can be multiple parameters with the same name. How this is handled depends on the underlying `Param`. A `Param` that captures only a single element, such as `Param.int` or `Param.string`, will only capture the first of multiple parameters. A `Param` that captures multiple elements, such as `Param.seq` will capture all the parameters with the given name. For example, this will capture all parameters called `name`, producing a `Seq[String]`.
+There can be multiple parameters with the same name. How this is handled depends on the underlying @:api(krop.route.QueryParam). A `QueryParam` that captures only a single element, such as `QueryParam.int` or `QueryParam.string`, will only capture the first of multiple parameters. A `QueryParam` that captures multiple elements, created with `Query.all` will capture all the parameters with the given name. For example, this will capture all parameters called `name`, producing a `Seq[String]`.
 
 ```scala mdoc:silent
-Path / "user" :? Query("name", Param.seq)
+Path / "user" :? Query.all[Seq[String]]("name")
 ```
 
-A parameter can be optional. To indicate this we need to work directly with @:api(krop.route.QueryParam), which has so far been hidden by convenience methods in the examples above.
-
-Constructing a `QueryParam` requires a name and a `Param`, which is the same as we've seen above.
+A parameter can be optional, which we can create with `Query.optional`. Optional parameters don't cause a route to fail to match if the parameter is missing. 
 
 ```scala mdoc:silent
-val param = QueryParam("id", Param.int)
+Path / "user" :? Query.optional[String]("name") // Returns Option[String]
 ```
 
-We can also call the `optional` constructor on the `QueryParam` companion object to create an optional query parameter. Optional parameters don't cause a route to fail to match if the parameter is missing. Instead `None` is returned.
+To collect all the query parameters as a `Map[String, List[String]]` use `Query.everything`.
 
 ```scala mdoc:silent
-val optional = QueryParam.optional("id", Param.int)
+val everything = Query.everything
 ```
 
-To collect all the query parameters as a `Map[String, List[String]]` use `QueryParam.all`.
+We can also construct a `QueryParam` directly, which requires a name and a type parameter, similarly to working with `Query`. The type parameter is used to find a given instance of @:api(krop.route.StringCodec) or @:api(krop.route.SeqStringCodec), depending on the kind of `QueryParam` that is being constructed.
 
 ```scala mdoc:silent
-val all = QueryParam.all
+val param = QueryParam.one[Int]("id") // Looks for StringCodec
 ```
 
 
@@ -103,8 +101,8 @@ val all = QueryParam.all
 
 Query parameter semantics can be quite complex. There are four cases to consider:
 
-1. A parameter exists under the given name and the associated value can be parsed.
-2. A parameter exists under the given name and the associated value cannot be parsed.
+1. A parameter exists under the given name and the associated value can be decoded.
+2. A parameter exists under the given name and the associated value cannot be decoded.
 3. A parameter exists under the given name but there is no associated value.
 4. No parameter exists under the given name.
 
@@ -114,33 +112,33 @@ The first case is the straightforward one where query parameter parsing always s
 import krop.all.*
 ```
 ```scala mdoc:silent
-val required = QueryParam("id", Param.int)
-val optional = QueryParam.optional("id", Param.int)
+val required = QueryParam.one[Int]("id")
+val optional = QueryParam.optional[Int]("id")
 ```
 ```scala mdoc
-required.parse(Map("id" -> List("1")))
-optional.parse(Map("id" -> List("1")))
+required.decode(Map("id" -> List("1")))
+optional.decode(Map("id" -> List("1")))
 ```
 
 In the second case both required and optional query parameters fail.
 
 ```scala mdoc
-required.parse(Map("id" -> List("abc")))
-optional.parse(Map("id" -> List("abc")))
+required.decode(Map("id" -> List("abc")))
+optional.decode(Map("id" -> List("abc")))
 ```
 
 A required parameter will fail in the third case, but an optional parameter will succeed with `None`.
 
 ```scala mdoc
-required.parse(Map("id" -> List()))
-optional.parse(Map("id" -> List()))
+required.decode(Map("id" -> List()))
+optional.decode(Map("id" -> List()))
 ```
 
 Similarly, a required parameter will fail in the fourth case but an optional parameter will succeed with `None`.
 
 ```scala mdoc
-required.parse(Map())
-optional.parse(Map())
+required.decode(Map())
+optional.decode(Map())
 ```
 
 
@@ -158,29 +156,29 @@ built-in `Param[String]`.
 val intParam = Param.string.imap(_.toInt)(_.toString)
 ```
 ```scala mdoc
-intParam.parse("100")
+intParam.decode("100")
 ```
 
 A `Param.One[A]` can be lifted to a `Param.All[Seq[A]]` that uses the given
 `Param.One` for every element in the `Seq`.
 
 ```scala mdoc:silent
-val intParams = Param.lift(intParam)
+val intParams = Param.all(intParam)
 ```
 ```scala mdoc
-intParams.unparse(Seq(1, 2, 3))
+intParams.encode(Seq(1, 2, 3))
 ```
 
-The `mkString` method can be used for a `Param.All` that constructs a `String`
+The `separatedString` method can be used for a `Param.All` that constructs a `String`
 containing elements separated by a separator. For example, to accumulate a
 sub-path we could use the following.
 
 ```scala mdoc:silent
-val subPath = Param.mkString("/")
+val subPath = Param.separatedString("/")
 ```
 ```scala mdoc
-subPath.parse(Vector("assets", "css"))
-subPath.unparse("assets/css")
+subPath.decode(Vector("assets", "css"))
+subPath.encode("assets/css")
 ```
 
 Finally, you can directly call the constructors for `Param.One` and `Param.All`.
@@ -194,7 +192,7 @@ Finally, you can directly call the constructors for `Param.One` and `Param.All`.
 Param.string.name
 ```
 
-The name is mosty used in development mode, to output useful debugging information. You can change the name of a `Param` using the `withName` method. It's good practice to set the name whenever you create a new `Param`. For example, if deriving a new `Param` from an existing one you should consider changing the name.
+The name is mostly used in development mode, to output useful debugging information. You can change the name of a `Param` using the `withName` method. It's good practice to set the name whenever you create a new `Param`. For example, if deriving a new `Param` from an existing one you should consider changing the name.
 
 ```scala mdoc
 // Bad, as the name doesn't reflect the underlying type.

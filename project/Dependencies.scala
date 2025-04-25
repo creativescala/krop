@@ -19,7 +19,7 @@ object Dependencies {
   val magnumVersion = "1.3.1"
 
   val munitVersion = "0.7.29"
-  val munitCatsVersion = "2.0.0"
+  val munitCatsVersion = "2.1.0"
 
   // Libraries
   val catsEffect =

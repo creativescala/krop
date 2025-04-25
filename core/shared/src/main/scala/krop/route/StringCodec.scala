@@ -26,7 +26,7 @@ package krop.route
 trait StringCodec[A] {
 
   /** A short description of this codec. By convention the name of the type this
-    * codec encodes.
+    * codec encodes enclosed within angle brackets.
     */
   def name: String
   def decode(value: String): Either[DecodeFailure, A]
@@ -68,7 +68,7 @@ trait StringCodec[A] {
 object StringCodec {
   given int: StringCodec[Int] =
     new StringCodec[Int] {
-      val name: String = "Int"
+      val name: String = "<Int>"
 
       def decode(value: String): Either[DecodeFailure, Int] =
         value.toIntOption.toRight(DecodeFailure(value, name))
@@ -78,7 +78,7 @@ object StringCodec {
 
   given string: StringCodec[String] =
     new StringCodec[String] {
-      val name: String = "String"
+      val name: String = "<String>"
 
       def decode(value: String): Either[DecodeFailure, String] =
         Right(value)

@@ -29,47 +29,57 @@ final case class Query[A <: Tuple](segments: Vector[QueryParam[?]]) {
   def and[B](param: QueryParam[B]): Query[Tuple.Append[A, B]] =
     Query(segments :+ param)
 
-  def and[B](name: String, param: Param[B]): Query[Tuple.Append[A, B]] =
-    this.and(QueryParam(name, param))
+  def and[B](name: String)(using StringCodec[B]): Query[Tuple.Append[A, B]] =
+    this.and(QueryParam.one(name))
 
   //
   // Interpreters --------------------------------------------------------------
   //
 
-  def parse(params: Map[String, List[String]]): Either[QueryParseFailure, A] =
+  def decode(params: Map[String, List[String]]): Either[QueryParseFailure, A] =
     segments
-      .traverse(s => s.parse(params))
+      .traverse(s => s.decode(params))
       .map(v => Tuple.fromArray(v.toArray).asInstanceOf[A])
 
-  def unparse(a: A): Map[String, List[String]] = {
+  def encode(a: A): Map[String, Seq[String]] = {
     val aArray = a.toArray
 
     def loop(
         idx: Int,
         segments: Vector[QueryParam[?]],
-        accum: Map[String, List[String]]
-    ): Map[String, List[String]] =
+        accum: Map[String, Seq[String]]
+    ): Map[String, Seq[String]] =
       if segments.isEmpty then accum
       else {
         val hd = segments.head
         val tl = segments.tail
 
         hd match {
-          case q: QueryParam.Required[a] =>
+          case q: QueryParam.One[a] =>
             loop(
               idx + 1,
               tl,
-              q.unparse(aArray(idx).asInstanceOf[a])
+              q.encode(aArray(idx).asInstanceOf[a])
                 .fold(accum)(p => accum + p)
             )
+
+          case q: QueryParam.All[a] =>
+            loop(
+              idx + 1,
+              tl,
+              q.encode(aArray(idx).asInstanceOf[a])
+                .fold(accum)(p => accum + p)
+            )
+
           case q: QueryParam.Optional[a] =>
             loop(
               idx + 1,
               tl,
-              q.unparse(aArray(idx).asInstanceOf[Option[a]])
+              q.encode(aArray(idx).asInstanceOf[Option[a]])
                 .fold(accum)(p => accum + p)
             )
-          case QueryParam.All => loop(idx + 1, tl, accum)
+
+          case QueryParam.Everything => loop(idx + 1, tl, accum)
         }
       }
 
@@ -86,6 +96,17 @@ object Query {
   def apply[A](param: QueryParam[A]): Query[Tuple1[A]] =
     Query(Vector(param))
 
-  def apply[A](name: String, param: Param[A]): Query[Tuple1[A]] =
-    Query(Vector(QueryParam(name, param)))
+  def apply[A](name: String)(using StringCodec[A]): Query[Tuple1[A]] =
+    Query(Vector(QueryParam.one(name)))
+
+  def all[A](name: String)(using SeqStringCodec[A]): Query[Tuple1[A]] =
+    Query(Vector(QueryParam.all(name)))
+
+  def optional[A](name: String)(using
+      StringCodec[A]
+  ): Query[Tuple1[Option[A]]] =
+    Query(Vector(QueryParam.optional(name)))
+
+  val everything: Query[Tuple1[Map[String, List[String]]]] =
+    Query(QueryParam.everything)
 }

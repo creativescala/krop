@@ -18,9 +18,6 @@ package krop.route
 
 import cats.syntax.all.*
 
-import java.util.regex.Pattern
-import scala.collection.immutable.ArraySeq
-
 /** A [[package.Param]] is used to extract values from a URI's path or query
   * parameters.
   *
@@ -40,26 +37,23 @@ sealed abstract class Param[A] extends Product, Serializable {
   /** Gets the name of this `Param`. By convention it describes the type within
     * angle brackets.
     */
-  def name: String
-
-  /** Gets a human-readable description of this `Param`. */
-  def describe: String =
+  def name: String =
     this match {
-      case All(name, _, _) => s"$name*"
-      case One(name, _, _) => name
+      case All(codec) => codec.name
+      case One(codec) => codec.name
     }
 
-  /** Create a `Path` with a more informative name. For example, you might use
+  /** Create a `Param` with a more informative name. For example, you might use
     * this method to note that an Int is in fact a user id.
     *
-    * ```
-    * Param.int.withName("<userId>")
+    * ```scala
+    * Param.int.withName("<UserId>")
     * ```
     */
   def withName(name: String): Param[A] =
     this match {
-      case All(_, p, u) => All(name, p, u)
-      case One(_, p, u) => One(name, p, u)
+      case All(codec) => All(codec.withName(name))
+      case One(codec) => One(codec.withName(name))
     }
 }
 object Param {
@@ -67,83 +61,67 @@ object Param {
    *
    * @param name
    *   The name used when printing this `Param`. Usually a short word in angle
-   *   brackets, like "<int>" or "<string>".
-   * @param parse
-   *   The function to convert from a `String` to `A`, which can fail.
-   * @param unparse
-   *   The function to convert from `A` to a `String`.
+   *   brackets, like "<Int>" or "<String>".
+   * @param codec
+   *   The [[SeqStringCodec]] that does encoding and decoding
    */
-  final case class All[A](
-      name: String,
-      parse: Seq[String] => Either[ParamParseFailure, A],
-      unparse: A => Seq[String]
-  ) extends Param[A] {
+  final case class All[A](codec: SeqStringCodec[A]) extends Param[A] {
+    export codec.{decode, encode}
 
     /** Construct a `Param.All[B]` from a `Param.All[A]` using functions to
       * convert from A to B and B to A.
       */
     def imap[B](f: A => B)(g: B => A): All[B] =
-      All(name, v => parse(v).map(f), b => unparse(g(b)))
+      All(codec.imap(f)(g))
   }
 
   /* A `Param` that matches a single parameter.
    *
    * @param name
    *   The name used when printing this `Param`. Usually a short word in angle
-   *   brackets, like "<int>" or "<string>".
-   * @param parse
-   *   The function to convert from a `String` to `A`, which can fail.
-   * @param unparse
-   *   The function to convert from `A` to a `String`.
+   *   brackets, like "<Int>" or "<String>".
+   * @param codec
+   *   The [[StringCodec]] that does encoding and decoding
    */
-  final case class One[A](
-      name: String,
-      parse: String => Either[ParamParseFailure, A],
-      unparse: A => String
-  ) extends Param[A] {
+  final case class One[A](codec: StringCodec[A]) extends Param[A] {
+    export codec.{decode, encode}
 
     /** Construct a `Param.One[B]` from a `Param.One[A]` using functions to
       * convert from A to B and B to A.
       */
     def imap[B](f: A => B)(g: B => A): One[B] =
-      One(name, parse(_).map(f), g.andThen(unparse))
+      One(codec.imap(f)(g))
   }
 
   /** A `Param` that matches a single `Int` parameter */
-  given int: Param.One[Int] =
-    Param.One(
-      "<Int>",
-      str => str.toIntOption.toRight(ParamParseFailure(str, "<Int>")),
-      _.toString
-    )
+  val int: Param.One[Int] =
+    Param.One(StringCodec.int)
 
   /** A `Param` that matches a single `String` parameter */
-  given string: Param.One[String] =
-    Param.One("<String>", Right(_), identity)
+  val string: Param.One[String] =
+    Param.One(StringCodec.string)
 
   /** `Param` that simply accumulates all parameters as a `Seq[String]`.
     */
-  given seq: Param.All[Seq[String]] =
-    Param.All("<String>", Right(_), identity)
+  val seq: Param.All[Seq[String]] =
+    Param.All(SeqStringCodec.seqString)
 
-  /** `Param` that matches all parameters and converts them to a `String` by
-    * adding `separator` between matched elements. The inverse splits on this
-    * separator.
+  /** Constructs a [[Param]] that decodes input into a `String` by appending all
+    * the input together with `separator` inbetween each element. Encodes data
+    * by splitting on `separator`.
+    *
+    * For example,
+    *
+    * ```scala
+    * val slash = Param.separatedString("/")
+    * ```
+    *
+    * decodes `Seq("a", "b", "c")` to `"a/b/c"` and encodes `"a/b/c"` as
+    * `Seq("a", "b", "c")`.
     */
-  def mkString(separator: String): Param.All[String] = {
-    val quotedSeparator = Pattern.quote(separator)
-    Param.All(
-      s"<String>${separator}",
-      seq => Right(seq.mkString(separator)),
-      string => ArraySeq.unsafeWrapArray(string.split(quotedSeparator))
-    )
-  }
+  def separatedString(separator: String): Param.All[String] =
+    Param.All(SeqStringCodec.separatedString(separator))
 
-  /** Lift a `Param.One` to a `Param.All`. */
-  def lift[A](one: One[A]): Param.All[Seq[A]] =
-    Param.All(
-      one.name,
-      _.traverse(one.parse),
-      _.map(one.unparse)
-    )
+  def all[A](param: Param.One[A]): Param.All[Seq[A]] =
+    Param.All(SeqStringCodec.all(using param.codec))
 }

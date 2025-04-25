@@ -50,7 +50,7 @@ object TurboStream extends IOApp {
 
     val assetRoute =
       Route(
-        Request.get(Path.root / "asset" / Param.mkString("/")),
+        Request.get(Path.root / "asset" / Param.separatedString("/")),
         Response.staticResource("/asset/")
       )
 

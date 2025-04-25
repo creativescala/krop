@@ -29,7 +29,7 @@ object DefaultAssets {
     Route(
       Request.get(
         Path / "assets" / Param
-          .mkString("/")
+          .separatedString("/")
           .imap(Fs2Path.apply)(_.toString)
       ),
       Response.staticDirectory(Fs2Path("assets/"))

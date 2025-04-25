@@ -19,34 +19,34 @@ package krop.route
 import munit.FunSuite
 
 class ParamSuite extends FunSuite {
-  def paramOneParsesValid[A](param: Param.One[A], values: Seq[(String, A)])(
+  def paramOneDecodesValid[A](param: Param.One[A], values: Seq[(String, A)])(
       using munit.Location
   ) =
     values.foreach { case (str, a) =>
-      assertEquals(param.parse(str), Right(a))
+      assertEquals(param.decode(str), Right(a))
     }
 
-  def paramOneParsesInvalid[A](param: Param.One[A], values: Seq[String])(using
+  def paramOneDecodesInvalid[A](param: Param.One[A], values: Seq[String])(using
       munit.Location
   ) =
-    values.foreach { (str) => assert(param.parse(str).isLeft) }
+    values.foreach { (str) => assert(param.decode(str).isLeft) }
 
-  def paramAllParsesValid[A](
+  def paramAllDecodesValid[A](
       param: Param.All[A],
       values: Seq[(Seq[String], A)]
   )(using
       munit.Location
   ) =
     values.foreach { case (strings, a) =>
-      assertEquals(param.parse(strings), Right(a))
+      assertEquals(param.decode(strings), Right(a))
     }
 
-  test("Param.one parses valid parameter") {
-    paramOneParsesValid(
+  test("Param.one decodes valid parameter") {
+    paramOneDecodesValid(
       Param.int,
       Seq(("1" -> 1), ("42" -> 42), ("-10" -> -10))
     )
-    paramOneParsesValid(
+    paramOneDecodesValid(
       Param.string,
       Seq(
         ("a" -> "a"),
@@ -56,21 +56,21 @@ class ParamSuite extends FunSuite {
     )
   }
 
-  test("Param.one fails to parse invalid parameter") {
-    paramOneParsesInvalid(Param.int, Seq("a", " ", "xyz"))
+  test("Param.one fails to decode invalid parameter") {
+    paramOneDecodesInvalid(Param.int, Seq("a", " ", "xyz"))
   }
 
-  test("Param.all parses valid parameters") {
-    paramAllParsesValid(
+  test("Param.all decodes valid parameters") {
+    paramAllDecodesValid(
       Param.seq,
       Seq(Seq() -> Seq(), Seq("a", "b", "c") -> Seq("a", "b", "c"))
     )
-    paramAllParsesValid(
-      Param.mkString(","),
+    paramAllDecodesValid(
+      Param.separatedString(","),
       Seq(Seq() -> "", Seq("a") -> "a", Seq("a", "b", "c") -> "a,b,c")
     )
-    paramAllParsesValid(
-      Param.lift(Param.int),
+    paramAllDecodesValid(
+      Param.all(Param.int),
       Seq(
         Seq() -> Seq(),
         Seq("1") -> Seq(1),

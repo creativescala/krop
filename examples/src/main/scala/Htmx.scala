@@ -24,7 +24,7 @@ object Htmx {
   val reverseRoute =
     Route(
       Request.get(
-        Path / "reverse" :? Query("word", Param.string)
+        Path / "reverse" :? Query[String]("word")
       ),
       Response.ok(Entity.scalatags)
     )

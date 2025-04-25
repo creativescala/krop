@@ -25,9 +25,9 @@ class PathParseSuite extends FunSuite {
   val nonCapturingAllPath = Path / "assets" / "html" / Segment.all
   val capturingAllPath = Path / "assets" / "html" / Param.seq
   val simplePath = Path / "user" / Param.int.withName("<userId>") / "view"
-  val simpleQueryPath = Path / "user" / Param.int :? Query("mode", Param.string)
+  val simpleQueryPath = Path / "user" / Param.int :? Query[String]("mode")
   val multipleQueryPath =
-    Path / "users" :? Query("page", Param.int).and("count", Param.int)
+    Path / "users" :? Query[Int]("page").and[Int]("count")
 
   test("Path description is as expected") {
     assertEquals(simplePath.describe, "/user/<userId>/view")
