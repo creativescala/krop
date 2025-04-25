@@ -31,7 +31,7 @@ import scala.deriving.*
   * FormCodec works with [[org.http4s.UrlForm]] to represent form data.
   */
 final case class FormCodec[A](
-    decode: UrlForm => Either[Chain[SeqStringDecodeFailure], A],
+    decode: UrlForm => Either[Chain[DecodeFailure], A],
     encode: A => UrlForm
 )
 
@@ -53,7 +53,7 @@ object FormCodec {
         val codecs =
           summonAll[Tuple.Map[p.MirroredElemTypes, SeqStringCodec]].toArray
 
-        val decode: UrlForm => Either[Chain[SeqStringDecodeFailure], A] =
+        val decode: UrlForm => Either[Chain[DecodeFailure], A] =
           urlForm => {
             for {
               values <- labels.zip(codecs).toList.parTraverse {

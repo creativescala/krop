@@ -31,7 +31,7 @@ trait SeqStringCodec[A] {
     * codec encodes.
     */
   def name: String
-  def decode(value: Seq[String]): Either[SeqStringDecodeFailure, A]
+  def decode(value: Seq[String]): Either[DecodeFailure, A]
   def encode(value: A): Seq[String]
 
   /** Construct a `SeqStringCodec[B]` from a `SeqStringCodec[A]` using functions
@@ -45,7 +45,7 @@ trait SeqStringCodec[A] {
     new SeqStringCodec[B] {
       val name: String = self.name
 
-      def decode(value: Seq[String]): Either[SeqStringDecodeFailure, B] =
+      def decode(value: Seq[String]): Either[DecodeFailure, B] =
         self.decode(value).map(f)
 
       def encode(value: B): Seq[String] = self.encode(g(value))
@@ -60,7 +60,7 @@ trait SeqStringCodec[A] {
     new SeqStringCodec[A] {
       val name: String = newName
 
-      def decode(value: Seq[String]): Either[SeqStringDecodeFailure, A] =
+      def decode(value: Seq[String]): Either[DecodeFailure, A] =
         self.decode(value)
 
       def encode(value: A): Seq[String] = self.encode(value)
@@ -76,7 +76,7 @@ object SeqStringCodec {
 
       def decode(
           value: Seq[String]
-      ): Either[SeqStringDecodeFailure, Seq[String]] =
+      ): Either[DecodeFailure, Seq[String]] =
         Right(value)
 
       def encode(value: Seq[String]): Seq[String] = value
@@ -89,14 +89,10 @@ object SeqStringCodec {
     new SeqStringCodec[A] {
       val name: String = codec.name
 
-      def decode(value: Seq[String]): Either[SeqStringDecodeFailure, A] =
+      def decode(value: Seq[String]): Either[DecodeFailure, A] =
         value.headOption
-          .map(
-            codec
-              .decode(_)
-              .leftMap(SeqStringDecodeFailure.fromStringDecodeFailure)
-          )
-          .getOrElse(Left(SeqStringDecodeFailure(value, codec.name)))
+          .map(codec.decode(_))
+          .getOrElse(Left(DecodeFailure(value, codec.name)))
 
       def encode(value: A): Seq[String] =
         Seq(codec.encode(value))
@@ -112,12 +108,11 @@ object SeqStringCodec {
 
       def decode(
           value: Seq[String]
-      ): Either[SeqStringDecodeFailure, Option[A]] =
+      ): Either[DecodeFailure, Option[A]] =
         value.headOption
           .map(
             codec
               .decode(_)
-              .leftMap(SeqStringDecodeFailure.fromStringDecodeFailure)
               .map(_.some)
           )
           .getOrElse(Right(None))
@@ -125,19 +120,4 @@ object SeqStringCodec {
       def encode(value: Option[A]): Seq[String] =
         value.map(codec.encode).toSeq
     }
-}
-
-/** Indicates that decoding a sequence of string failed.
-  *
-  * @param input:
-  *   The string for which decoding was attempted
-  * @param expected:
-  *   A description of what was expected. By convention this is the type name.
-  */
-final case class SeqStringDecodeFailure(input: Seq[String], expected: String)
-object SeqStringDecodeFailure {
-  def fromStringDecodeFailure(
-      failure: StringDecodeFailure
-  ): SeqStringDecodeFailure =
-    SeqStringDecodeFailure(Seq(failure.input), failure.expected)
 }

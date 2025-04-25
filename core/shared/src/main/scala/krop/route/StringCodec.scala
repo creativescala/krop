@@ -29,7 +29,7 @@ trait StringCodec[A] {
     * codec encodes.
     */
   def name: String
-  def decode(value: String): Either[StringDecodeFailure, A]
+  def decode(value: String): Either[DecodeFailure, A]
   def encode(value: A): String
 
   /** Construct a `StringCodec[B]` from a `StringCodec[A]` using functions to
@@ -43,7 +43,7 @@ trait StringCodec[A] {
     new StringCodec[B] {
       val name: String = self.name
 
-      def decode(value: String): Either[StringDecodeFailure, B] =
+      def decode(value: String): Either[DecodeFailure, B] =
         self.decode(value).map(f)
 
       def encode(value: B): String = self.encode(g(value))
@@ -58,7 +58,7 @@ trait StringCodec[A] {
     new StringCodec[A] {
       val name: String = newName
 
-      def decode(value: String): Either[StringDecodeFailure, A] =
+      def decode(value: String): Either[DecodeFailure, A] =
         self.decode(value)
 
       def encode(value: A): String = self.encode(value)
@@ -70,8 +70,8 @@ object StringCodec {
     new StringCodec[Int] {
       val name: String = "Int"
 
-      def decode(value: String): Either[StringDecodeFailure, Int] =
-        value.toIntOption.toRight(StringDecodeFailure(value, name))
+      def decode(value: String): Either[DecodeFailure, Int] =
+        value.toIntOption.toRight(DecodeFailure(value, name))
 
       def encode(value: Int): String = value.toString
     }
@@ -80,18 +80,9 @@ object StringCodec {
     new StringCodec[String] {
       val name: String = "String"
 
-      def decode(value: String): Either[StringDecodeFailure, String] =
+      def decode(value: String): Either[DecodeFailure, String] =
         Right(value)
 
       def encode(value: String): String = value
     }
 }
-
-/** Indicates that decoding a string failed.
-  *
-  * @param input:
-  *   The string for which decoding was attempted
-  * @param expected:
-  *   A description of what was expected. By convention this is the type name.
-  */
-final case class StringDecodeFailure(input: String, expected: String)
