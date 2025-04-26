@@ -34,7 +34,6 @@ final case class FormCodec[A](
     decode: UrlForm => Either[Chain[DecodeFailure], A],
     encode: A => UrlForm
 )
-
 object FormCodec {
   inline given derived[A](using m: Mirror.Of[A]): FormCodec[A] =
     inline m match {

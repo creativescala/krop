@@ -24,4 +24,10 @@ package krop.route
   *   A description of what was expected from the input. By convention this is
   *   the name of the type we expected to decode to.
   */
-final case class DecodeFailure(input: String | Seq[String], description: String)
+final case class DecodeFailure(
+    input: String | Seq[String],
+    description: String
+) {
+  def describe: String =
+    s"Decoding input ${input} failed. Expected ${description}."
+}

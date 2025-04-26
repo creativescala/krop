@@ -16,11 +16,13 @@
 
 package krop.route
 
+import cats.data.EitherT
 import cats.effect.IO
 import io.circe.Decoder
 import io.circe.Encoder
 import io.circe.Json
 import org.http4s.DecodeResult
+import org.http4s.InvalidMessageBodyFailure
 import org.http4s.EntityDecoder
 import org.http4s.EntityEncoder
 import org.http4s.Media
@@ -80,6 +82,28 @@ object Entity {
     Entity(
       CirceEntityDecoder.circeEntityDecoder,
       CirceEntityEncoder.circeEntityEncoder
+    )
+
+  def formOf[A](using codec: FormCodec[A]): InvariantEntity[A] =
+    Entity(
+      UrlForm
+        .entityDecoder[IO]
+        .flatMapR(urlForm =>
+          codec.decode(urlForm) match {
+            case Left(errors) =>
+              EitherT(
+                IO.pure(
+                  Left(
+                    InvalidMessageBodyFailure(
+                      errors.toList.map(_.describe).mkString("\n")
+                    )
+                  )
+                )
+              )
+            case Right(value) => EitherT(IO.pure(Right(value)))
+          }
+        ),
+      UrlForm.entityEncoder.contramap(codec.encode)
     )
 
   def jsonOf[A: Encoder: Decoder]: InvariantEntity[A] =
