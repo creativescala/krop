@@ -97,4 +97,4 @@ Here's an example of a `Request` that extracts HTML content as a `String` value.
 Request.get(Path.root).withEntity(Entity.html)
 ```
 
-There are several predefined `Entity` values on the companion object, but you can easily create your own if needed.
+There are several predefined `Entity` values on the companion object, but you can easily create your own if needed. The [documentation for entities](entities.md) has more details.
