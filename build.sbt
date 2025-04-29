@@ -164,7 +164,8 @@ lazy val docs =
           mdoc.toTask(""),
           laikaSite
         )
-        .value
+        .value,
+      libraryDependencies += Dependencies.circeGeneric.value
     )
     .enablePlugins(TypelevelSitePlugin)
     .dependsOn(core.jvm)

@@ -7,6 +7,7 @@ object Dependencies {
   // Library Versions
   val catsVersion = "2.10.0"
   val catsEffectVersion = "3.5.1"
+  val circeVersion = "0.14.13"
   val fs2Version = "3.6.1"
   val http4sVersion = "1.0.0-M44"
   val scalaJsDomVersion = "2.4.0"
@@ -41,6 +42,7 @@ object Dependencies {
     Def.setting("org.http4s" %%% "http4s-ember-server" % http4sVersion)
   val http4sDsl = Def.setting("org.http4s" %%% "http4s-dsl" % http4sVersion)
   val http4sCirce = Def.setting("org.http4s" %%% "http4s-circe" % http4sVersion)
+  val circeGeneric = Def.setting("io.circe" %% "circe-generic" % circeVersion)
 
   val sqlite = Def.setting("org.xerial" % "sqlite-jdbc" % sqliteVersion)
   val magnum = Def.setting("com.augustnagro" %% "magnum" % magnumVersion)
