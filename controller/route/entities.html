@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="generator" content="Laika 1.0.0" />
+    <title>Entities</title>
+     
+    <meta name="description" content="docs" />
+    
+    <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?version=4.8.0&features=es6"></script>
+    <script
+      id="MathJax-script"
+      async
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
+    ></script>
+    <link
+      href="https://fonts.googleapis.com/css?family=Source+Code+Pro:400|Source+Sans+Pro:300,400,600"
+      rel="stylesheet"
+      type="text/css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css?family=Crimson+Pro:400"
+      rel="stylesheet"
+      type="text/css"
+    />
+    <link rel="stylesheet" type="text/css" href="../../css/creative-scala.css" /> <script src="../../js/solution.js"></script>
+    <script>
+      /* for avoiding page load transitions */
+    </script>
+  </head>
+
+  <body>
+    <header>
+      <div id="topbar">
+        <nav id="topbar">
+          <button
+            class="text-sm text-pink-800 font-sans font-semibold hover:text-pink-600 focus:text-pink-600"
+            popovertarget="topbar-nav"
+          >
+            Contents
+          </button>
+          <div id="topbar-nav" popover>
+            <div id="topbar-nav-container">
+              <div
+                class="p-4 mx-auto rounded-md bg-white border border-slate-900 relative"
+              >
+                <button
+                  class="absolute top-4 right-4 text-slate-900 hover:text-pink-800 focus:text-pink-800"
+                  popovertarget="topbar-nav"
+                  popovertargetaction="hide"
+                >
+                  ✕
+                </button>
+                <ul class="nav-list">
+                  <li class="level1 nav-node"><a href="../../">Krop</a></li>
+                  <li class="level2 nav-leaf"><a href="../../quick-start.html">Quick Start</a></li>
+                  <li class="level2 nav-node"><a href="../../overview/">Overview</a></li>
+                  <li class="level3 nav-leaf"><a href="../../overview/architecture.html">Architecture</a></li>
+                  <li class="level3 nav-leaf"><a href="../../overview/principles.html">Principles</a></li>
+                  <li class="level2 nav-leaf"><a href="../../application.html">Application</a></li>
+                  <li class="level2 nav-leaf"><a href="../../server.html">Server</a></li>
+                  <li class="level2 nav-leaf"><a href="../../model/">Models</a></li>
+                  <li class="level2 nav-leaf"><a href="../../views.html">View</a></li>
+                  <li class="level2 nav-node"><a href="../">Controller</a></li>
+                  <li class="level3 nav-node"><a href="index.html">Routing</a></li>
+                  <li class="level4 nav-leaf"><a href="request.html">Request</a></li>
+                  <li class="level4 nav-leaf"><a href="paths.html">Paths</a></li>
+                  <li class="level4 active nav-leaf"><a href="#">Entities</a></li>
+                  <li class="level4 nav-leaf"><a href="response.html">Response</a></li>
+                  <li class="level4 nav-leaf"><a href="codecs.html">Codecs</a></li>
+                  <li class="level3 nav-leaf"><a href="../handler.html">Handlers</a></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </nav>
+        <nav id="home"><a class="text-link" href="../../">Krop</a></nav>
+        <nav id="external"><a href="https://discord.gg/rRhcFbJxVG">Community<span><svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' class='lucide lucide-square-arrow-out-up-right' > <path d='M21 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h6' /> <path d='m21 3-9 9' /> <path d='M15 3h6v6' /> </svg></span></a> <a href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest">API<span><svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' class='lucide lucide-square-arrow-out-up-right' > <path d='M21 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h6' /> <path d='m21 3-9 9' /> <path d='M15 3h6v6' /> </svg></span></a> <a href="https://github.com/creativescala/krop">Source<span><svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' class='lucide lucide-square-arrow-out-up-right' > <path d='M21 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h6' /> <path d='m21 3-9 9' /> <path d='M15 3h6v6' /> </svg></span></a></nav>
+      </div>
+    </header>
+
+    <main>
+      <nav id="sitebar">
+        <div class="fixed h-screen overflow-y-auto">
+          <ul class="nav-list">
+            <li class="level1 nav-node"><a href="../../">Krop</a></li>
+            <li class="level2 nav-leaf"><a href="../../quick-start.html">Quick Start</a></li>
+            <li class="level2 nav-node"><a href="../../overview/">Overview</a></li>
+            <li class="level3 nav-leaf"><a href="../../overview/architecture.html">Architecture</a></li>
+            <li class="level3 nav-leaf"><a href="../../overview/principles.html">Principles</a></li>
+            <li class="level2 nav-leaf"><a href="../../application.html">Application</a></li>
+            <li class="level2 nav-leaf"><a href="../../server.html">Server</a></li>
+            <li class="level2 nav-leaf"><a href="../../model/">Models</a></li>
+            <li class="level2 nav-leaf"><a href="../../views.html">View</a></li>
+            <li class="level2 nav-node"><a href="../">Controller</a></li>
+            <li class="level3 nav-node"><a href="index.html">Routing</a></li>
+            <li class="level4 nav-leaf"><a href="request.html">Request</a></li>
+            <li class="level4 nav-leaf"><a href="paths.html">Paths</a></li>
+            <li class="level4 active nav-leaf"><a href="#">Entities</a></li>
+            <li class="level4 nav-leaf"><a href="response.html">Response</a></li>
+            <li class="level4 nav-leaf"><a href="codecs.html">Codecs</a></li>
+            <li class="level3 nav-leaf"><a href="../handler.html">Handlers</a></li>
+          </ul>
+        </div>
+      </nav>
+      <div id="contentbar">
+        <div class="max-w-prose mx-auto">
+          <div id="content"><h1 id="entities" class="title">Entities</h1>
+<p>In HTTP, the term &quot;entity&quot; refers to the body of a request. For example, a JSON request will have JSON data in the entity. An <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Entity.html">Entity</a> in Krop is responsible for converting an HTTP entity into a Scala type, and converting a Scala type into an HTTP entity. <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Entity.html">Entity</a> is therefore a type of <a href="codecs.html">codec</a>. </p>
+<p>As well an decoding and encoding data, an <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Entity.html">Entity</a> also specifies the <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Content-Type">Content-Type</a> is supports for decoding and encoding. It is usually the case that the decoding Content-Type is more permissive than the encoding Content-Type. For example <code>Entity.text</code> will decode <code>text/*</code> but encodes <code>text/plain</code>.</p>
+<p>The <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Entity.html">Entity</a> type is defined as <code>Entity[D, E]</code>, where <code>D</code> is the type of value that will be decoded from an HTTP request, and <code>E</code> is the type of values that will be encoded in a response. Most of the time <code>D</code> and <code>E</code> are the same, and the entity is called an <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/InvariantEntity.html">InvariantEntity</a>. Occassionally, however, they differ. For example, the <a href="https://github.com/com-lihaoyi/scalatags">ScalaTags</a> entity decodes a <code>String</code> but encodes ScalaTags&#39; data structure. This is because there is no parser from <code>String</code> to ScalaTags, so there is no way to parse an HTTP request with an HTML entity into ScalaTags.</p>
+
+<h2 id="simple-entities" class="section">Simple Entities</h2>
+<p>Simple entities decode and encode Scala types without an intermediaries. You should check the <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Entity$.html">Entity</a> companion object for the full list of supported entities, but here are some of the most commonly used:</p>
+<ul>
+  <li><code>Entity.json</code> is an <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/InvariantEntity.html">InvariantEntity</a> for <a href="https://circe.github.io/circe/">Circe&#39;s</a> <code>JSON</code> type, decoding and encoding Content-Type <code>application/json</code>.</li>
+  <li><code>Entity.html</code> is an <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/InvariantEntity.html">InvariantEntity</a> for <code>String</code>, decoding and encoding Content-Type <code>text/html</code>.</li>
+  <li><code>Entity.scalatags</code> is an <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Entity.html">Entity</a> decoding <code>String</code> and encoding <a href="https://github.com/com-lihaoyi/scalatags">Scalatag&#39;s</a> <code>TypedTag[String]</code> type, with Content-Type <code>text/html</code>.</li>
+  <li><code>Entity.text</code> is an <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/InvariantEntity.html">InvariantEntity</a> for <code>String</code>, decoding Content-Type <code>text/*</code> and encoding Content-Type <code>text/plain</code>.</li>
+  <li><code>Entity.twirl</code> is an <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Entity.html">Entity</a> decoding <code>String</code> and encoding <a href="https://index.scala-lang.org/playframework/twirl">Twirl&#39;s</a> <code>Html</code> type, with Content-Type <code>text/html</code>.</li>
+</ul>
+
+<h2 id="json" class="section">JSON</h2>
+<p>Krop, by default, uses <a href="https://circe.github.io/circe/">Circe</a> for JSON decoding and encoding. If you have a type <code>A</code> that you want to decode and encode as JSON, assuming you have created given instances of Circe&#39;s <code>Decoder</code> and <code>Encoder</code> type for <code>A</code>, creating an <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/InvariantEntity.html">InvariantEntity</a> is as simple as calling
+<code>Entity.jsonOf[A]</code>.</p>
+<p>Here&#39;s a quick example, using Circe&#39;s semi-automatic generic derivation to create the <code>Decoder</code> and <code>Encoder</code> types.</p>
+<pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">io</span><span>.</span><span class="identifier">circe</span><span>.{</span><span class="type-name">Decoder</span><span>, </span><span class="type-name">Encoder</span><span>}
+</span><span class="keyword">import</span><span> </span><span class="identifier">io</span><span>.</span><span class="identifier">circe</span><span>.</span><span class="identifier">generic</span><span>.</span><span class="identifier">semiauto</span><span>.*
+</span><span class="keyword">import</span><span> </span><span class="identifier">krop</span><span>.</span><span class="identifier">all</span><span>.*
+
+</span><span class="keyword">final</span><span> </span><span class="keyword">case</span><span> </span><span class="keyword">class</span><span> </span><span class="type-name">Cat</span><span>(</span><span class="identifier">name</span><span>: </span><span class="type-name">String</span><span>) </span><span class="identifier">derives</span><span> </span><span class="type-name">Decoder</span><span>, </span><span class="type-name">Encoder</span><span>
+
+</span><span class="keyword">val</span><span> </span><span class="identifier">jsonEntity</span><span> = </span><span class="type-name">Entity</span><span>.</span><span class="identifier">jsonOf</span><span>[</span><span class="type-name">Cat</span><span>]</span></code></pre>
+
+<h2 id="forms" class="section">Forms</h2>
+<p>Decoding and encoding of form data delegates to a <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/FormCodec.html">FormCodec</a> given instance. The usual way to create such an instance if with generic derivation. Here is an example, showing both generic derivation of the <code>FormCodec</code> instance and creation of an <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Entity.html">Entity</a> using <code>Entity.formOf</code>.</p>
+<pre><code class="nohighlight"><span class="keyword">final</span><span> </span><span class="keyword">case</span><span> </span><span class="keyword">class</span><span> </span><span class="type-name">Dog</span><span>(</span><span class="identifier">name</span><span>: </span><span class="type-name">String</span><span>) </span><span class="identifier">derives</span><span> </span><span class="type-name">FormCodec</span><span>
+
+</span><span class="keyword">val</span><span> </span><span class="identifier">formEntity</span><span> = </span><span class="type-name">Entity</span><span>.</span><span class="identifier">formOf</span><span>[</span><span class="type-name">Dog</span><span>]</span></code></pre></div>
+          <div class="flex flex-row justify-between">
+            <a class="pagenav" href="paths.html">←Paths</a> <a class="pagenav" href="response.html">Response→</a>
+          </div>
+        </div>
+        <footer>
+          Copyright &copy; Noel Welsh. Built with
+          <span class="hover:text-pink-900">💖</span>
+        </footer>
+      </div>
+      <nav id="pagebar">
+        <div class="fixed h-screen overflow-y-auto">
+          <p>On This Page</p>
+          <ul class="nav-list">
+            <li class="level1 nav-leaf"><a href="#simple-entities">Simple Entities</a></li>
+            <li class="level1 nav-leaf"><a href="#json">JSON</a></li>
+            <li class="level1 nav-leaf"><a href="#forms">Forms</a></li>
+          </ul>
+        </div>
+      </nav>
+    </main>
+  </body>
+</html>

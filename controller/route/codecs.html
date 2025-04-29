@@ -5,7 +5,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="generator" content="Laika 1.0.0" />
-    <title>Response</title>
+    <title>Codecs</title>
      
     <meta name="description" content="docs" />
     
@@ -68,8 +68,8 @@
                   <li class="level4 nav-leaf"><a href="request.html">Request</a></li>
                   <li class="level4 nav-leaf"><a href="paths.html">Paths</a></li>
                   <li class="level4 nav-leaf"><a href="entities.html">Entities</a></li>
-                  <li class="level4 active nav-leaf"><a href="#">Response</a></li>
-                  <li class="level4 nav-leaf"><a href="codecs.html">Codecs</a></li>
+                  <li class="level4 nav-leaf"><a href="response.html">Response</a></li>
+                  <li class="level4 active nav-leaf"><a href="#">Codecs</a></li>
                   <li class="level3 nav-leaf"><a href="../handler.html">Handlers</a></li>
                 </ul>
               </div>
@@ -99,45 +99,25 @@
             <li class="level4 nav-leaf"><a href="request.html">Request</a></li>
             <li class="level4 nav-leaf"><a href="paths.html">Paths</a></li>
             <li class="level4 nav-leaf"><a href="entities.html">Entities</a></li>
-            <li class="level4 active nav-leaf"><a href="#">Response</a></li>
-            <li class="level4 nav-leaf"><a href="codecs.html">Codecs</a></li>
+            <li class="level4 nav-leaf"><a href="response.html">Response</a></li>
+            <li class="level4 active nav-leaf"><a href="#">Codecs</a></li>
             <li class="level3 nav-leaf"><a href="../handler.html">Handlers</a></li>
           </ul>
         </div>
       </nav>
       <div id="contentbar">
         <div class="max-w-prose mx-auto">
-          <div id="content"><h1 id="response" class="title">Response</h1>
-<p>A <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Response.html">Response</a> describes how to create a HTTP response from a Scala value. 
-For example, the following <code>Response</code> will produce an HTTP OK response with a <code>text/plain</code> entity.</p>
-<pre><code class="nohighlight"><span class="keyword">val</span><span> </span><span class="identifier">ok</span><span>: </span><span class="type-name">Response</span><span>[</span><span class="type-name">String</span><span>] = </span><span class="type-name">Response</span><span>.</span><span class="identifier">ok</span><span>(</span><span class="type-name">Entity</span><span>.</span><span class="identifier">text</span><span>)</span></code></pre>
-<p>The entity will be constructed from a <code>String</code> that is passed to the <code>respond</code> method on the <code>Response</code>.
-You usually won&#39;t do this yourself; it is handled by the <code>Route</code> the <code>Response</code> is part of.</p>
+          <div id="content"><h1 id="codecs" class="title">Codecs</h1>
+<p>Many tasks in Krop require converting to and from some external representation. For example, dealing with path segments, query parameters, or form submissions all requires converting values to and from strings. Types that handle these conversions are called codecs, which is short for &quot;coder and decoder&quot;. </p>
+<p>Some codecs, such as <a href="entities.html"><code>Entity</code></a>, have their own documentation. This section documents <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/StringCodec.html">StringCodec</a> and <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/SeqStringCodec.html">SeqStringCodec</a>. They are usually used as <code>given</code> values in constructing <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Param.html">Param</a>, <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Query.html">Query</a>, and <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/FormCodec.html">FormCodec</a> values, so the developer typically doesn&#39;t work with them directly if a predefined instance already exists for the types they are using.</p>
 
-<h2 id="entities" class="section">Entities</h2>
-<p>Entities (response bodies) are handled in the same way as <a href="request.html">requests</a>: by specifying an <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Entity.html">Entity</a>. In this case the <code>Entity</code> is responsible for encoding Scala values as data in the HTTP response.</p>
-<p>Use <code>Entity.unit</code> to indicate that your response has no entity. For example:</p>
-<pre><code class="nohighlight"><span class="keyword">val</span><span> </span><span class="identifier">noBody</span><span>: </span><span class="type-name">Response</span><span>[</span><span class="type-name">Unit</span><span>] = </span><span class="type-name">Response</span><span>.</span><span class="identifier">ok</span><span>(</span><span class="type-name">Entity</span><span>.</span><span class="identifier">unit</span><span>)</span></code></pre>
+<h2 id="stringcodec" class="section">StringCodec</h2>
+<p><a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/StringCodec.html">StringCodec</a> decodes a <code>String</code> to a value and encodes a value as a <code>String</code>.</p>
 
-<h2 id="headers" class="section">Headers</h2>
-<p>Headers can be added using the <code>withHeader</code> method. This method accepts one of more values in any of the following forms:</p>
-<ul>
-  <li>A value of type <code>A</code> which has a <code>Header[A]</code> in scope</li>
-  <li>A <code>(name, value)</code> pair of <code>String</code>, which is treated as a <code>Recurring</code>
-  header</li>
-  <li>A <code>Header.Raw</code></li>
-  <li>A <code>Foldable</code> (<code>List</code>, <code>Option</code>, etc) of the above.</li>
-</ul>
-<p>In the example below we add a header using the <code>(name, value)</code> form, and a value with a <code>Header[A]</code> in scope.</p>
-<pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">http4s</span><span>.</span><span class="identifier">headers</span><span>.</span><span class="type-name">Allow</span><span>
-
-</span><span class="keyword">val</span><span> </span><span class="identifier">headers</span><span> = 
-  </span><span class="type-name">Response</span><span>.</span><span class="identifier">ok</span><span>(</span><span class="type-name">Entity</span><span>.</span><span class="identifier">html</span><span>).</span><span class="identifier">withHeader</span><span>(</span><span class="string-literal">&quot;X-Awesomeness&quot;</span><span> -&gt; </span><span class="string-literal">&quot;10.0&quot;</span><span>, </span><span class="type-name">Allow</span><span>(</span><span class="type-name">Method</span><span>.</span><span class="type-name">GET</span><span>))</span></code></pre>
-
-<h2 id="error-handling" class="section">Error Handling</h2>
-<p>In many cases you&#39;ll need to generate an error response despite a valid request. For example, you would generate a 404 Not Found if the client has sent a well-formed request but the requested resource doesn&#39;t exist. This situation can be handled using the <code>orNotFound</code> method, which converts a <code>Response[A]</code> to a <code>Response[Option[A]]</code>. When passed a <code>None</code> the <code>Response</code> responds with a 404. For more complex cases you can use <code>orElse</code>, which allows you to handle an <code>Either[A, B]</code> and introduce custom error handling.</p></div>
+<h2 id="seqstringcodec" class="section">SeqStringCodec</h2>
+<p><a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/SeqStringCodec.html">SeqStringCodec</a> decodes a <code>Seq[String]</code> to a value and encodes a value as a <code>Seq[String]</code>.</p></div>
           <div class="flex flex-row justify-between">
-            <a class="pagenav" href="entities.html">←Entities</a> <a class="pagenav" href="codecs.html">Codecs→</a>
+            <a class="pagenav" href="response.html">←Response</a> <a class="pagenav" href="../handler.html">Handlers→</a>
           </div>
         </div>
         <footer>
@@ -149,9 +129,8 @@ You usually won&#39;t do this yourself; it is handled by the <code>Route</code> 
         <div class="fixed h-screen overflow-y-auto">
           <p>On This Page</p>
           <ul class="nav-list">
-            <li class="level1 nav-leaf"><a href="#entities">Entities</a></li>
-            <li class="level1 nav-leaf"><a href="#headers">Headers</a></li>
-            <li class="level1 nav-leaf"><a href="#error-handling">Error Handling</a></li>
+            <li class="level1 nav-leaf"><a href="#stringcodec">StringCodec</a></li>
+            <li class="level1 nav-leaf"><a href="#seqstringcodec">SeqStringCodec</a></li>
           </ul>
         </div>
       </nav>

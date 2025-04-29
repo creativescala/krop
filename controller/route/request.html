@@ -67,7 +67,9 @@
                   <li class="level3 nav-node"><a href="index.html">Routing</a></li>
                   <li class="level4 active nav-leaf"><a href="#">Request</a></li>
                   <li class="level4 nav-leaf"><a href="paths.html">Paths</a></li>
+                  <li class="level4 nav-leaf"><a href="entities.html">Entities</a></li>
                   <li class="level4 nav-leaf"><a href="response.html">Response</a></li>
+                  <li class="level4 nav-leaf"><a href="codecs.html">Codecs</a></li>
                   <li class="level3 nav-leaf"><a href="../handler.html">Handlers</a></li>
                 </ul>
               </div>
@@ -96,7 +98,9 @@
             <li class="level3 nav-node"><a href="index.html">Routing</a></li>
             <li class="level4 active nav-leaf"><a href="#">Request</a></li>
             <li class="level4 nav-leaf"><a href="paths.html">Paths</a></li>
+            <li class="level4 nav-leaf"><a href="entities.html">Entities</a></li>
             <li class="level4 nav-leaf"><a href="response.html">Response</a></li>
+            <li class="level4 nav-leaf"><a href="codecs.html">Codecs</a></li>
             <li class="level3 nav-leaf"><a href="../handler.html">Handlers</a></li>
           </ul>
         </div>
@@ -155,7 +159,7 @@
 <p>Calling the <code>withEntity</code> method on a <code>Request</code> allows you to specify an <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Entity.html">Entity</a>, which is responsible for extracting data from an HTTP request. The <code>Entity</code> is responsible for checking the HTTP Content-Type header, and, if it matches, decoding the HTTP entity into a Scala value.</p>
 <p>Here&#39;s an example of a <code>Request</code> that extracts HTML content as a <code>String</code> value.</p>
 <pre><code class="nohighlight"><span class="type-name">Request</span><span>.</span><span class="identifier">get</span><span>(</span><span class="type-name">Path</span><span>.</span><span class="identifier">root</span><span>).</span><span class="identifier">withEntity</span><span>(</span><span class="type-name">Entity</span><span>.</span><span class="identifier">html</span><span>)</span></code></pre>
-<p>There are several predefined <code>Entity</code> values on the companion object, but you can easily create your own if needed.</p></div>
+<p>There are several predefined <code>Entity</code> values on the companion object, but you can easily create your own if needed. The <a href="entities.html">documentation for entities</a> has more details.</p></div>
           <div class="flex flex-row justify-between">
             <a class="pagenav" href="index.html">←Routing</a> <a class="pagenav" href="paths.html">Paths→</a>
           </div>
