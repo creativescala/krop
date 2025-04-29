@@ -141,7 +141,7 @@ object SeqStringCodec {
   def separatedString(separator: String): SeqStringCodec[String] = {
     val quotedSeparator = Pattern.quote(separator)
     new SeqStringCodec[String] {
-      val name: String = "(<String>$separator)*"
+      val name: String = s"(<String>$separator)*"
 
       def decode(value: Seq[String]): Either[DecodeFailure, String] =
         value.mkString(separator).asRight
