@@ -22,9 +22,9 @@ import io.circe.Decoder
 import io.circe.Encoder
 import io.circe.Json
 import org.http4s.DecodeResult
-import org.http4s.InvalidMessageBodyFailure
 import org.http4s.EntityDecoder
 import org.http4s.EntityEncoder
+import org.http4s.InvalidMessageBodyFailure
 import org.http4s.Media
 import org.http4s.MediaRange
 import org.http4s.UrlForm
