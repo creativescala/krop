@@ -5,7 +5,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="generator" content="Laika 1.0.0" />
-    <title>Architecture</title>
+    <title>SQLite</title>
      
     <meta name="description" content="docs" />
     
@@ -56,13 +56,13 @@
                 <ul class="nav-list">
                   <li class="level1 nav-node"><a href="../">Krop</a></li>
                   <li class="level2 nav-leaf"><a href="../quick-start.html">Quick Start</a></li>
-                  <li class="level2 nav-node"><a href="index.html">Overview</a></li>
-                  <li class="level3 active nav-leaf"><a href="#">Architecture</a></li>
-                  <li class="level3 nav-leaf"><a href="principles.html">Principles</a></li>
+                  <li class="level2 nav-node"><a href="../overview/">Overview</a></li>
+                  <li class="level3 nav-leaf"><a href="../overview/architecture.html">Architecture</a></li>
+                  <li class="level3 nav-leaf"><a href="../overview/principles.html">Principles</a></li>
                   <li class="level2 nav-leaf"><a href="../application.html">Application</a></li>
                   <li class="level2 nav-leaf"><a href="../server.html">Server</a></li>
-                  <li class="level2 nav-node"><a href="../model/">Models</a></li>
-                  <li class="level3 nav-leaf"><a href="../model/sqlite.html">SQLite</a></li>
+                  <li class="level2 nav-node"><a href="index.html">Models</a></li>
+                  <li class="level3 active nav-leaf"><a href="#">SQLite</a></li>
                   <li class="level2 nav-leaf"><a href="../views.html">View</a></li>
                   <li class="level2 nav-node"><a href="../controller/">Controller</a></li>
                   <li class="level3 nav-node"><a href="../controller/route/">Routing</a></li>
@@ -88,13 +88,13 @@
           <ul class="nav-list">
             <li class="level1 nav-node"><a href="../">Krop</a></li>
             <li class="level2 nav-leaf"><a href="../quick-start.html">Quick Start</a></li>
-            <li class="level2 nav-node"><a href="index.html">Overview</a></li>
-            <li class="level3 active nav-leaf"><a href="#">Architecture</a></li>
-            <li class="level3 nav-leaf"><a href="principles.html">Principles</a></li>
+            <li class="level2 nav-node"><a href="../overview/">Overview</a></li>
+            <li class="level3 nav-leaf"><a href="../overview/architecture.html">Architecture</a></li>
+            <li class="level3 nav-leaf"><a href="../overview/principles.html">Principles</a></li>
             <li class="level2 nav-leaf"><a href="../application.html">Application</a></li>
             <li class="level2 nav-leaf"><a href="../server.html">Server</a></li>
-            <li class="level2 nav-node"><a href="../model/">Models</a></li>
-            <li class="level3 nav-leaf"><a href="../model/sqlite.html">SQLite</a></li>
+            <li class="level2 nav-node"><a href="index.html">Models</a></li>
+            <li class="level3 active nav-leaf"><a href="#">SQLite</a></li>
             <li class="level2 nav-leaf"><a href="../views.html">View</a></li>
             <li class="level2 nav-node"><a href="../controller/">Controller</a></li>
             <li class="level3 nav-node"><a href="../controller/route/">Routing</a></li>
@@ -109,34 +109,26 @@
       </nav>
       <div id="contentbar">
         <div class="max-w-prose mx-auto">
-          <div id="content"><h1 id="architecture" class="title">Architecture</h1>
-<p>Krop uses a model-view-controller (MVC) architecture, which divides a web application into three components:</p>
-<ul>
-  <li><a href="../model/">models</a>, which manages the data in the application;</li>
-  <li><a href="../views.html">views</a>, which is responsible for generating the user interface; and</li>
-  <li><a href="../controller/">controllers</a>, which handles actions from the user interface and implements the application logic.</li>
-</ul>
+          <div id="content"><h1 id="sqlite" class="title">SQLite</h1>
+<p><a href="https://sqlite.org/">SQLite</a> is an in-process database that is becoming more popular for web applications due to the simplicity of running it. It&#39;s appropriate for applications that don&#39;t need to expand beyond a single web server, which covers many applications due to the speed of modern computers.
+Krop provides SQLite integration via the <a href="https://github.com/xerial/sqlite-jdbc">sqlite-jdbc</a> and <a href="https://github.com/augustnagro/magnum">Magnum</a> projects.</p>
 
-<h2 id="directory-structure" class="section">Directory Structure</h2>
-<p>The standard directory structure for a Krop project is described below. It&#39;s similar to the standard structure for a Scala project, but it drops the <code>main/scala</code> directories that sbt inherits from Maven. This is a bit of unnecessary indirection that makes it harder to find the code and get stuff done, particularly when new to a project.</p>
-<pre><code>backend - All backend (server) code here
-├── src
-│   └── &lt;package&gt;
-│       ├── Main.scala - the main entry point to your backend
-│       ├── models
-│       │   └── db - database models
-│       └── views - template views using Twirl
-├── resources - static files that are packaged with your application
-└── test - tests 
+<h2 id="creating-a-database-connection" class="section">Creating a Database Connection</h2>
+<p>Connecting to a database is trivial, as SQLite only requires the name of the file that stores the database. If the file doesn&#39;t already exist it will be created. The code below shows how to connect to a database. This uses a default configuration that has been tuned to the needs of a typical web application.</p>
+<pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">krop</span><span>.</span><span class="identifier">sqlite</span><span>.</span><span class="type-name">Sqlite</span><span>
 
-frontend - All frontend (client) code here
+</span><span class="keyword">val</span><span> </span><span class="identifier">dbFile</span><span> = </span><span class="string-literal">&quot;./database.sqlite3&quot;</span><span>
 
-shared - Code that is shared between backend and frontend
-└── src
-    └── &lt;package&gt;
-        └── routes - your application&#39;s routes</code></pre></div>
+</span><span class="keyword">val</span><span> </span><span class="identifier">db</span><span> = </span><span class="type-name">Sqlite</span><span>.</span><span class="identifier">create</span><span>(</span><span class="identifier">dbFile</span><span>)</span></code></pre>
+<p>If we wanted a custom configuration we could set one ourselves. If the example below we use an empty configuration, but we can call methods on the object returned by <code>empty</code> to customise the configuration.</p>
+<pre><code class="nohighlight"><span class="type-name">Sqlite</span><span>.</span><span class="identifier">create</span><span>(</span><span class="identifier">dbFile</span><span>, </span><span class="type-name">Sqlite</span><span>.</span><span class="identifier">config</span><span>.</span><span class="identifier">empty</span><span>)</span></code></pre>
+<p>The value returned by <code>Sqlite.create</code> is a Cats Effect <a href="https://typelevel.org/cats-effect/docs/std/resource">Resource</a>. This means that nothing actually happens until we <code>use</code> the <code>Resource</code>, with code like the following.</p>
+<pre><code class="nohighlight"><span class="identifier">db</span><span>.</span><span class="identifier">use</span><span> { </span><span class="identifier">xa</span><span> =&gt;
+  </span><span class="comment">// Use the Transactor, xa, here
+</span><span>}</span></code></pre>
+<p>Using the <code>Resource</code> gives us a <code>Transactor</code>, which is a <a href="https://github.com/augustnagro/magnum">Magnum</a> type to work with databases.</p></div>
           <div class="flex flex-row justify-between">
-            <a class="pagenav" href="index.html">←Overview</a> <a class="pagenav" href="principles.html">Principles→</a>
+            <a class="pagenav" href="index.html">←Models</a> <a class="pagenav" href="../views.html">View→</a>
           </div>
         </div>
         <footer>
@@ -148,7 +140,7 @@ shared - Code that is shared between backend and frontend
         <div class="fixed h-screen overflow-y-auto">
           <p>On This Page</p>
           <ul class="nav-list">
-            <li class="level1 nav-leaf"><a href="#directory-structure">Directory Structure</a></li>
+            <li class="level1 nav-leaf"><a href="#creating-a-database-connection">Creating a Database Connection</a></li>
           </ul>
         </div>
       </nav>
