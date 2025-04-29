@@ -17,7 +17,6 @@
 package krop.route
 
 import cats.syntax.all.*
-import krop.route.Param.One
 
 /** A [[package.QueryParam]] extracts values from a URI's query parameters. It
   * consists of a [[package.Param]], which does the necessary type conversion,
@@ -37,90 +36,117 @@ enum QueryParam[A] {
   import QueryParseFailure.*
 
   /** Get a human-readable description of this `QueryParam`. */
-  def describe: String =
-    this match {
-      case Required(name, param) => s"${name}=${param.describe}"
-      case Optional(name, param) => s"optional(${name}=${param.describe})"
-      case All                   => "all"
-    }
+  def describe: String = ???
 
-  def parse(params: Map[String, List[String]]): Either[QueryParseFailure, A] =
+  def decode(params: Map[String, List[String]]): Either[QueryParseFailure, A] =
     this match {
-      case Required(name, param) =>
+      case One(name, codec) =>
         params.get(name) match {
           case Some(values) =>
-            param match {
-              case Param.All(_, parse, _) =>
-                parse(values).left.map(f =>
-                  ValueParsingFailed(name, f.value, param)
-                )
-              case Param.One(_, parse, _) =>
-                if values.isEmpty then NoValuesForName(name).asLeft
-                else {
-                  val hd = values.head
-                  parse(hd).left.map(_ => ValueParsingFailed(name, hd, param))
+            values.headOption match {
+              case None => NoValuesForName(name).asLeft
+              case Some(value) =>
+                codec.decode(value) match {
+                  case Right(value) => Right(value)
+                  case Left(error) =>
+                    ValueParsingFailed(name, value, error.description).asLeft
                 }
             }
+
           case None => NoParameterWithName(name).asLeft
         }
 
-      case Optional(name, param) =>
+      case All(name, codec) =>
         params.get(name) match {
           case Some(values) =>
-            param match {
-              case Param.All(_, parse, _) =>
-                parse(values)
-                  .map(Some(_))
-                  .left
-                  .map(f => ValueParsingFailed(name, f.value, param))
-              case Param.One(_, parse, _) =>
-                if values.isEmpty then None.asRight
-                else {
-                  val hd = values.head
-                  parse(hd)
-                    .map(Some(_))
-                    .left
-                    .map(_ => ValueParsingFailed(name, hd, param))
-                }
+            codec.decode(values) match {
+              case Right(value) => Right(value)
+              case Left(error) =>
+                ValueParsingFailed(
+                  name,
+                  values.toString,
+                  error.description
+                ).asLeft
+            }
+
+          case None => NoParameterWithName(name).asLeft
+        }
+
+      case Optional(name, codec) =>
+        params.get(name) match {
+          case Some(values) =>
+            if values.isEmpty then None.asRight
+            else {
+              val hd = values.head
+              codec
+                .decode(hd)
+                .map(Some(_))
+                .leftMap(error =>
+                  ValueParsingFailed(name, hd, error.description)
+                )
             }
 
           case None => None.asRight
         }
 
-      case All => params.asRight
+      case Everything => params.asRight
     }
 
-  def unparse(a: A): Option[(String, List[String])] =
+  def encode(a: A): Option[(String, Seq[String])] =
     this match {
-      case Required(name, param) =>
-        param match {
-          case Param.All(_, _, unparse) => Some(name -> unparse(a).toList)
-          case Param.One(_, _, unparse) => Some(name -> List(unparse(a)))
-        }
+      case One(name, codec) =>
+        Some(name -> List(codec.encode(a)))
 
-      case Optional(name, param) =>
+      case All(name, codec) =>
+        Some(name -> codec.encode(a))
+
+      case Optional(name, codec) =>
         a match {
-          case Some(a1) =>
-            param match {
-              case Param.All(_, _, unparse) => Some(name -> unparse(a1).toList)
-              case Param.One(_, _, unparse) => Some(name -> List(unparse(a1)))
-            }
-          case None => None
+          case Some(a1) => Some(name -> List(codec.encode(a1)))
+          case None     => None
         }
 
-      case All => None
+      case Everything => None
     }
 
-  case Required(name: String, param: Param[A])
-  case Optional[A](name: String, param: Param[A]) extends QueryParam[Option[A]]
-  case All extends QueryParam[Map[String, List[String]]]
+  case One(name: String, codec: StringCodec[A])
+  case All(name: String, codec: SeqStringCodec[A])
+  case Optional(name: String, codec: StringCodec[A])
+      extends QueryParam[Option[A]]
+  case Everything extends QueryParam[Map[String, List[String]]]
 }
 object QueryParam {
-  def apply[A](name: String, param: Param[A]): QueryParam[A] =
-    QueryParam.Required(name, param)
 
-  def optional[A](name: String, param: Param[A]): QueryParam[Option[A]] =
-    QueryParam.Optional(name, param)
+  /** Construct a [[QueryParam]] that decodes the first value from any query
+    * parameters with the given name.
+    */
+  def one[A](name: String)(using codec: StringCodec[A]): QueryParam[A] =
+    QueryParam.One(name, codec)
 
-  val all = QueryParam.All
+  /** Construct a [[QueryParam]] that decodes all the values from any query
+    * parameters with the given name.
+    */
+  def all[A](name: String)(using codec: SeqStringCodec[A]): QueryParam[A] =
+    QueryParam.All(name, codec)
+
+  /** Construct a [[QueryParam]] that decodes the first value from any query
+    * parameters with the given name, and returns None if there are no values.
+    */
+  def optional[A](name: String)(using
+      codec: StringCodec[A]
+  ): QueryParam[Option[A]] =
+    QueryParam.Optional(name, codec)
+
+  def int(name: String)(using StringCodec[Int]): QueryParam[Int] =
+    one[Int](name)
+
+  def string(name: String)(using StringCodec[String]): QueryParam[String] =
+    one[String](name)
+
+  /** A QueryParam that returns all the query parameters unchanged. */
+  val everything: QueryParam[Map[String, List[String]]] =
+    QueryParam.Everything
+
+  def apply[A](name: String, codec: StringCodec[A]): QueryParam[A] =
+    QueryParam.One(name, codec)
 }

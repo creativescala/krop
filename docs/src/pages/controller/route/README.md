@@ -132,8 +132,7 @@ Here's an example of a @:api(krop.route.Route) that extracts elements from both 
 ```scala mdoc:silent
 val searchUsers = Route(
   Request.get(
-    Path / "users" / "search" / Param.string :? Query("start", Param.int)
-      .and("stop", Param.int)
+    Path / "users" / "search" / Param.string :? Query[Int]("start").and[Int]("stop")
   ),
   Response.ok(Entity.text)
 )

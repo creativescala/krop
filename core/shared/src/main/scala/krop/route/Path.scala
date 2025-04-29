@@ -103,9 +103,9 @@ final class Path[P <: Tuple, Q <: Tuple] private (
   def /[B](param: Param[B]): Path[Tuple.Append[P, B], Q] = {
     assertOpen()
     param match {
-      case Param.One(_, _, _) =>
+      case Param.One(_) =>
         Path(segments :+ param, paramCount + 1, query, true)
-      case Param.All(_, _, _) =>
+      case Param.All(_) =>
         Path(segments :+ param, paramCount + 1, query, false)
     }
   }
@@ -163,7 +163,7 @@ final class Path[P <: Tuple, Q <: Tuple] private (
           case p: Param.All[a] =>
             builder
               .addOne('/')
-              .append(p.unparse(paramsArray(idx).asInstanceOf[a]).mkString("/"))
+              .append(p.encode(paramsArray(idx).asInstanceOf[a]).mkString("/"))
               .result()
           case p: Param.One[a] =>
             loop(
@@ -171,7 +171,7 @@ final class Path[P <: Tuple, Q <: Tuple] private (
               tl,
               builder
                 .addOne('/')
-                .append(p.unparse(paramsArray(idx).asInstanceOf[a]))
+                .append(p.encode(paramsArray(idx).asInstanceOf[a]))
             )
         }
       }
@@ -185,7 +185,7 @@ final class Path[P <: Tuple, Q <: Tuple] private (
 
     val q =
       query
-        .unparse(queryParams)
+        .encode(queryParams)
         .filterNot { case (_, params) => params.isEmpty }
         .map { case (name, params) =>
           params.mkString(s"${name}=", "&name=", "")
@@ -222,19 +222,19 @@ final class Path[P <: Tuple, Q <: Tuple] private (
 
           case Segment.All => EmptyTuple
 
-          case Param.One(_, parse, _) =>
+          case p: Param.One[a] =>
             if pathSegments.isEmpty then
               Path.failure.raise(Path.failure.noMorePathSegments)
             else
-              parse(pathSegments(0).decoded()) match {
+              p.decode(pathSegments(0).decoded()) match {
                 case Left(err) =>
                   Path.failure.raise(Path.failure.paramMismatch(err))
                 case Right(value) =>
                   value *: loop(matchSegments.tail, pathSegments.tail)
               }
 
-          case Param.All(_, parse, _) =>
-            parse(pathSegments.map(_.decoded())) match {
+          case p: Param.All[a] =>
+            p.decode(pathSegments.map(_.decoded())) match {
               case Left(err) =>
                 Path.failure.raise(Path.failure.paramMismatch(err))
               case Right(value) => value *: EmptyTuple
@@ -243,7 +243,7 @@ final class Path[P <: Tuple, Q <: Tuple] private (
       }
 
     val p: P = loop(segments, uri.path.segments).asInstanceOf[P]
-    val q: Q = query.parse(uri.multiParams) match {
+    val q: Q = query.decode(uri.multiParams) match {
       case Left(err)    => Path.failure.raise(Path.failure.queryFailure(err))
       case Right(value) => value
     }
@@ -268,7 +268,7 @@ final class Path[P <: Tuple, Q <: Tuple] private (
     val (pArr, qArr) = ps.splitAt(paramCount)
 
     val q = Tuple.fromIArray(qArr).asInstanceOf[Q]
-    val uriQuery = org.http4s.Query.fromMap(query.unparse(q))
+    val uriQuery = org.http4s.Query.fromMap(query.encode(q))
 
     @tailrec
     def loop(
@@ -287,13 +287,13 @@ final class Path[P <: Tuple, Q <: Tuple] private (
             loop(idx, tl, path.addSegment(value))
           case p: Param.All[a] =>
             path.addSegments(
-              p.unparse(pArr(idx).asInstanceOf[a]).map(Uri.Path.Segment.apply)
+              p.encode(pArr(idx).asInstanceOf[a]).map(Uri.Path.Segment.apply)
             )
           case p: Param.One[a] =>
             loop(
               idx + 1,
               tl,
-              path.addSegment(p.unparse(pArr(idx).asInstanceOf[a]))
+              path.addSegment(p.encode(pArr(idx).asInstanceOf[a]))
             )
         }
       }
@@ -310,7 +310,7 @@ final class Path[P <: Tuple, Q <: Tuple] private (
     val p = segments
       .map {
         case s: Segment  => s.describe
-        case p: Param[?] => p.describe
+        case p: Param[?] => p.name
       }
       .mkString("/", "/", "")
 
@@ -376,13 +376,13 @@ object Path {
            |contained the segment ${actual} which does not match.""".stripMargin
       )
 
-    def paramMismatch(error: ParamParseFailure) =
+    def paramMismatch(error: DecodeFailure) =
       ParseFailure(
         ParseStage.Uri,
         "A URI segment does not match a parameter",
         s"""This Path is expecting a segment to match the Param
            |${error.description}. However the URI contained the segment
-           |${error.value} which does not match.""".stripMargin
+           |${error.input} which does not match.""".stripMargin
       )
 
     def queryFailure(error: QueryParseFailure) =

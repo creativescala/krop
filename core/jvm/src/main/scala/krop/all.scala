@@ -22,6 +22,7 @@ object all {
   export krop.ServerBuilder
 
   export krop.route.Entity
+  export krop.route.FormCodec
   export krop.route.Handler
   export krop.route.Handlers
   export krop.route.Route

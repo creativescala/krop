@@ -35,7 +35,7 @@ ThisBuild / developers := List(
 
 ThisBuild / sonatypeCredentialHost := xerial.sbt.Sonatype.sonatypeLegacy
 
-lazy val scala3 = "3.6.3"
+lazy val scala3 = "3.6.4"
 
 ThisBuild / crossScalaVersions := List(scala3)
 ThisBuild / githubWorkflowJavaVersions := List(JavaSpec.temurin("11"))
@@ -69,7 +69,8 @@ lazy val commonSettings = Seq(
     Dependencies.http4sServer.value,
     Dependencies.http4sDsl.value,
     Dependencies.http4sCirce.value,
-    Dependencies.scalaTags.value
+    Dependencies.scalaTags.value,
+    Dependencies.twirl.value
   )
 )
 
@@ -163,7 +164,8 @@ lazy val docs =
           mdoc.toTask(""),
           laikaSite
         )
-        .value
+        .value,
+      libraryDependencies += Dependencies.circeGeneric.value
     )
     .enablePlugins(TypelevelSitePlugin)
     .dependsOn(core.jvm)

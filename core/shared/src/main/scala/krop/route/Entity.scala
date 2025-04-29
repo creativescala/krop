@@ -16,6 +16,7 @@
 
 package krop.route
 
+import cats.data.EitherT
 import cats.effect.IO
 import io.circe.Decoder
 import io.circe.Encoder
@@ -23,6 +24,7 @@ import io.circe.Json
 import org.http4s.DecodeResult
 import org.http4s.EntityDecoder
 import org.http4s.EntityEncoder
+import org.http4s.InvalidMessageBodyFailure
 import org.http4s.Media
 import org.http4s.MediaRange
 import org.http4s.UrlForm
@@ -30,6 +32,7 @@ import org.http4s.circe.CirceEntityDecoder
 import org.http4s.circe.CirceEntityEncoder
 import org.http4s.headers.`Content-Type`
 import org.http4s.syntax.all.*
+import play.twirl.api.Html
 import scalatags.Text.TypedTag
 
 /** Type alias for an Entity where the decoded and encoded type are the same. */
@@ -81,6 +84,28 @@ object Entity {
       CirceEntityEncoder.circeEntityEncoder
     )
 
+  def formOf[A](using codec: FormCodec[A]): InvariantEntity[A] =
+    Entity(
+      UrlForm
+        .entityDecoder[IO]
+        .flatMapR(urlForm =>
+          codec.decode(urlForm) match {
+            case Left(errors) =>
+              EitherT(
+                IO.pure(
+                  Left(
+                    InvalidMessageBodyFailure(
+                      errors.toList.map(_.describe).mkString("\n")
+                    )
+                  )
+                )
+              )
+            case Right(value) => EitherT(IO.pure(Right(value)))
+          }
+        ),
+      UrlForm.entityEncoder.contramap(codec.encode)
+    )
+
   def jsonOf[A: Encoder: Decoder]: InvariantEntity[A] =
     Entity(
       CirceEntityDecoder.circeEntityDecoder,
@@ -112,4 +137,7 @@ object Entity {
 
   val scalatags: Entity[String, TypedTag[String]] =
     html.contramap(tags => "<!DOCTYPE html>" + tags.toString)
+
+  val twirl: Entity[String, Html] =
+    html.contramap(html => html.body)
 }

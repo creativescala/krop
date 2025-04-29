@@ -36,8 +36,8 @@ enum QueryParseFailure(val message: String) {
         s"There were no values associated with the name ${name}"
       )
 
-  case ValueParsingFailed(name: String, value: String, param: Param[?])
+  case ValueParsingFailed(name: String, value: String, description: String)
       extends QueryParseFailure(
-        s"Parsing the value ${value} as ${param.describe} failed for the query parameter ${name}"
+        s"Parsing the value ${value} as ${description} failed for the query parameter ${name}"
       )
 }

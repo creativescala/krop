@@ -20,73 +20,73 @@ import munit.FunSuite
 
 class QueryParamSuite extends FunSuite {
   test("Required QueryParam succeeds if first value parses") {
-    val qp = QueryParam("id", Param.int)
+    val qp = QueryParam("id", StringCodec.int)
     assertEquals(
-      qp.parse(Map("id" -> List("1"), "name" -> List("Van Gogh"))),
+      qp.decode(Map("id" -> List("1"), "name" -> List("Van Gogh"))),
       Right(1)
     )
     assertEquals(
-      qp.parse(Map("id" -> List("1", "foobar"), "name" -> List("Van Gogh"))),
+      qp.decode(Map("id" -> List("1", "foobar"), "name" -> List("Van Gogh"))),
       Right(1)
     )
   }
 
   test("Required QueryParam fails if first value fails to parse") {
-    val qp = QueryParam("id", Param.int)
+    val qp = QueryParam("id", StringCodec.int)
     assertEquals(
-      qp.parse(Map("id" -> List("abc"))),
-      Left(QueryParseFailure.ValueParsingFailed("id", "abc", Param.int))
+      qp.decode(Map("id" -> List("abc"))),
+      Left(QueryParseFailure.ValueParsingFailed("id", "abc", "<Int>"))
     )
   }
 
   test("Required QueryParam fails if no values are found for name") {
-    val qp = QueryParam("id", Param.int)
+    val qp = QueryParam("id", StringCodec.int)
     assertEquals(
-      qp.parse(Map("id" -> List())),
+      qp.decode(Map("id" -> List())),
       Left(QueryParseFailure.NoValuesForName("id"))
     )
   }
 
   test("Required QueryParam fails if name does not exist") {
-    val qp = QueryParam("id", Param.int)
+    val qp = QueryParam("id", StringCodec.int)
     assertEquals(
-      qp.parse(Map("foo" -> List("1"))),
+      qp.decode(Map("foo" -> List("1"))),
       Left(QueryParseFailure.NoParameterWithName("id"))
     )
   }
 
   test("Optional QueryParam succeeds if first value parses") {
-    val qp = QueryParam.optional("id", Param.int)
+    val qp = QueryParam.optional[Int]("id")
     assertEquals(
-      qp.parse(Map("id" -> List("1"), "name" -> List("Van Gogh"))),
+      qp.decode(Map("id" -> List("1"), "name" -> List("Van Gogh"))),
       Right(Some(1))
     )
     assertEquals(
-      qp.parse(Map("id" -> List("1", "foobar"), "name" -> List("Van Gogh"))),
+      qp.decode(Map("id" -> List("1", "foobar"), "name" -> List("Van Gogh"))),
       Right(Some(1))
     )
   }
 
   test("Optional QueryParam fails if first value fails to parse") {
-    val qp = QueryParam.optional("id", Param.int)
+    val qp = QueryParam.optional[Int]("id")
     assertEquals(
-      qp.parse(Map("id" -> List("abc"))),
-      Left(QueryParseFailure.ValueParsingFailed("id", "abc", Param.int))
+      qp.decode(Map("id" -> List("abc"))),
+      Left(QueryParseFailure.ValueParsingFailed("id", "abc", "<Int>"))
     )
   }
 
   test("Optional QueryParam succeeds if no values are found for name") {
-    val qp = QueryParam.optional("id", Param.int)
+    val qp = QueryParam.optional[Int]("id")
     assertEquals(
-      qp.parse(Map("id" -> List())),
+      qp.decode(Map("id" -> List())),
       Right(None)
     )
   }
 
   test("Optional QueryParam succeeds if name does not exist") {
-    val qp = QueryParam.optional("id", Param.int)
+    val qp = QueryParam.optional[Int]("id")
     assertEquals(
-      qp.parse(Map("foo" -> List("1"))),
+      qp.decode(Map("foo" -> List("1"))),
       Right(None)
     )
   }

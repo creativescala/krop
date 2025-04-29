@@ -7,10 +7,12 @@ object Dependencies {
   // Library Versions
   val catsVersion = "2.10.0"
   val catsEffectVersion = "3.5.1"
+  val circeVersion = "0.14.13"
   val fs2Version = "3.6.1"
   val http4sVersion = "1.0.0-M44"
   val scalaJsDomVersion = "2.4.0"
   val scalaTagsVersion = "0.13.1"
+  val twirlVersion = "2.0.8"
   val log4catsVersion = "2.7.0"
   val logbackVersion = "1.5.18"
 
@@ -18,7 +20,7 @@ object Dependencies {
   val magnumVersion = "1.3.1"
 
   val munitVersion = "0.7.29"
-  val munitCatsVersion = "2.0.0"
+  val munitCatsVersion = "2.1.0"
 
   // Libraries
   val catsEffect =
@@ -40,10 +42,13 @@ object Dependencies {
     Def.setting("org.http4s" %%% "http4s-ember-server" % http4sVersion)
   val http4sDsl = Def.setting("org.http4s" %%% "http4s-dsl" % http4sVersion)
   val http4sCirce = Def.setting("org.http4s" %%% "http4s-circe" % http4sVersion)
+  val circeGeneric = Def.setting("io.circe" %% "circe-generic" % circeVersion)
 
   val sqlite = Def.setting("org.xerial" % "sqlite-jdbc" % sqliteVersion)
   val magnum = Def.setting("com.augustnagro" %% "magnum" % magnumVersion)
 
+  val twirl =
+    Def.setting("org.playframework.twirl" %%% "twirl-api" % twirlVersion)
   val scalaTags = Def.setting("com.lihaoyi" %%% "scalatags" % scalaTagsVersion)
 
   val munit = Def.setting("org.scalameta" %%% "munit" % munitVersion % "test")

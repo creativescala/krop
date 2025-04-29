@@ -25,7 +25,7 @@ class PathUnparseSuite extends FunSuite {
   val nonCapturingAllPath = Path / "assets" / "html" / Segment.all
   val capturingAllPath = Path / "assets" / "html" / Param.seq
   val simplePath = Path / "user" / Param.int.withName("<userId>") / "view"
-  val pathWithQuery = Path / "user" / "view" :? Query("id", Param.int)
+  val pathWithQuery = Path / "user" / "view" :? Query[Int]("id")
 
   test("Root path unparses to expected Uri") {
     assertEquals(

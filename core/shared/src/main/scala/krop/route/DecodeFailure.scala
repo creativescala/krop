@@ -16,9 +16,18 @@
 
 package krop.route
 
-/** Represents a failure of a Param to parse a value
+/** Represents a failure to decode a value
   *
-  * Value is the value that failed to parse. Description is a description of the
-  * Param.
+  * @param input
+  *   The input that we attempted to decode.
+  * @param description
+  *   A description of what was expected from the input. By convention this is
+  *   the name of the type we expected to decode to.
   */
-final case class ParamParseFailure(value: String, description: String)
+final case class DecodeFailure(
+    input: String | Seq[String],
+    description: String
+) {
+  def describe: String =
+    s"Decoding input ${input} failed. Expected ${description}."
+}

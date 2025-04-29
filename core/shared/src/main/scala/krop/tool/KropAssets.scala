@@ -26,7 +26,7 @@ import krop.route.Route
 object KropAssets {
   val kropAssets: Handler1[String, String] =
     Route(
-      Request.get(Path / "krop" / "assets" / Param.mkString("/")),
+      Request.get(Path / "krop" / "assets" / Param.separatedString("/")),
       Response.staticResource("/krop/assets/")
     ).passthrough
 }
