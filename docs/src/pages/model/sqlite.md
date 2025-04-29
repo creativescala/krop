@@ -12,7 +12,6 @@ Connecting to a database is trivial, as SQLite only requires the name of the fil
 import krop.sqlite.Sqlite
 
 val dbFile = "./database.sqlite3"
-
 val db = Sqlite.create(dbFile)
 ```
 
