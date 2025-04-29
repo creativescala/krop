@@ -84,6 +84,7 @@ lazy val kropJs =
 lazy val rootJvm =
   krop.jvm.aggregate(
     core.jvm,
+    sqlite,
     examples,
     unidocs
   )
@@ -168,7 +169,7 @@ lazy val docs =
       libraryDependencies += Dependencies.circeGeneric.value
     )
     .enablePlugins(TypelevelSitePlugin)
-    .dependsOn(core.jvm)
+    .dependsOn(core.jvm, sqlite)
 
 lazy val unidocs = project
   .in(file("unidocs"))

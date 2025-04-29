@@ -6,4 +6,4 @@ Models are the representations of data in your application. You will usually hav
 - for representing communication with external services; and
 - for representing data used internally in your application.
 
-Krop provides 
+Krop provides features to help you with these tasks.
