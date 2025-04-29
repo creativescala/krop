@@ -118,7 +118,6 @@ Krop provides SQLite integration via the <a href="https://github.com/xerial/sqli
 <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">krop</span><span>.</span><span class="identifier">sqlite</span><span>.</span><span class="type-name">Sqlite</span><span>
 
 </span><span class="keyword">val</span><span> </span><span class="identifier">dbFile</span><span> = </span><span class="string-literal">&quot;./database.sqlite3&quot;</span><span>
-
 </span><span class="keyword">val</span><span> </span><span class="identifier">db</span><span> = </span><span class="type-name">Sqlite</span><span>.</span><span class="identifier">create</span><span>(</span><span class="identifier">dbFile</span><span>)</span></code></pre>
 <p>If we wanted a custom configuration we could set one ourselves. If the example below we use an empty configuration, but we can call methods on the object returned by <code>empty</code> to customise the configuration.</p>
 <pre><code class="nohighlight"><span class="type-name">Sqlite</span><span>.</span><span class="identifier">create</span><span>(</span><span class="identifier">dbFile</span><span>, </span><span class="type-name">Sqlite</span><span>.</span><span class="identifier">config</span><span>.</span><span class="identifier">empty</span><span>)</span></code></pre>
