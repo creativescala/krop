@@ -3,6 +3,14 @@
 [SQLite][sqlite] is an in-process database that is becoming more popular for web applications due to the simplicity of running it. It's appropriate for applications that don't need to expand beyond a single web server, which covers many applications due to the speed of modern computers.
 Krop provides SQLite integration via the [sqlite-jdbc][sqlite-jdbc] and [Magnum][magnum] projects.
 
+## Using SQLite
+
+Krop's integration lives in a separate artifact. To use it you'll need to add the following dependency to your `build.sbt`.
+
+```scala
+libraryDependencies += "org.creativescala" %% "krop-sqlite" % "@VERSION@"
+```
+
 
 ## Creating a Database Connection
 
