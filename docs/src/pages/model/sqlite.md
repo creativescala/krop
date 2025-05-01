@@ -17,10 +17,11 @@ libraryDependencies += "org.creativescala" %% "krop-sqlite" % "@VERSION@"
 Connecting to a database is trivial, as SQLite only requires the name of the file that stores the database. If the file doesn't already exist it will be created. The code below shows how to connect to a database. This uses a default configuration that has been tuned to the needs of a typical web application.
 
 ```scala mdoc:silent
-import krop.sqlite.Sqlite
+import cats.effect.{IO, Resource}
+import krop.sqlite.{Sqlite, Transactor}
 
 val dbFile = "./database.sqlite3"
-val db = Sqlite.create(dbFile)
+val db: Resource[IO, Transactor] = Sqlite.create(dbFile)
 ```
 
 If we wanted a custom configuration we could set one ourselves. If the example below we use an empty configuration, but we can call methods on the object returned by `empty` to customise the configuration.
@@ -29,7 +30,7 @@ If we wanted a custom configuration we could set one ourselves. If the example b
 Sqlite.create(dbFile, Sqlite.config.empty)
 ```
 
-The value returned by `Sqlite.create` is a Cats Effect [Resource][resource]. This means that nothing actually happens until we `use` the `Resource`, with code like the following.
+The value returned by `Sqlite.create` is a Cats Effect [Resource][resource] containing a @:api(krop.sqlite.Transactor). This means that nothing actually happens until we `use` the `Resource`, with code like the following.
 
 ```scala
 db.use { xa =>
@@ -37,7 +38,7 @@ db.use { xa =>
 }
 ```
 
-Using the `Resource` gives us a `Transactor`, which is a [Magnum][magnum] type to work with databases.
+The @:api(krop.sqlite.Transactor) is a [Magnum][magnum] type to work with databases.
 
 
 [sqlite]: https://sqlite.org/

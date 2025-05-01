@@ -18,7 +18,6 @@ package krop.sqlite
 
 import cats.effect.IO
 import cats.effect.Resource
-import com.augustnagro.magnum.magcats.Transactor
 import org.sqlite.SQLiteConfig
 import org.sqlite.SQLiteConfig.JournalMode
 import org.sqlite.SQLiteConfig.Pragma
@@ -26,10 +25,10 @@ import org.sqlite.SQLiteConfig.SynchronousMode
 import org.sqlite.SQLiteDataSource
 
 final class Sqlite private (filename: String, config: SQLiteConfig) {
-  def create: Resource[IO, Transactor[IO]] = {
+  def create: Resource[IO, Transactor] = {
     val dataSource = SQLiteDataSource(config)
     dataSource.setUrl(s"jdbc:sqlite:./${filename}")
-    Transactor[IO](dataSource).toResource
+    Transactor(dataSource).toResource
   }
 }
 object Sqlite {
@@ -68,12 +67,12 @@ object Sqlite {
     def empty: SQLiteConfig = SQLiteConfig()
   }
 
-  def create(filename: String): Resource[IO, Transactor[IO]] =
+  def create(filename: String): Resource[IO, Transactor] =
     Sqlite(filename, config.default).create
 
   def create(
       filename: String,
       config: SQLiteConfig
-  ): Resource[IO, Transactor[IO]] =
+  ): Resource[IO, Transactor] =
     Sqlite(filename, config).create
 }
