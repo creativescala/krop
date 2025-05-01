@@ -16,6 +16,7 @@ backend - All backend (server) code here
 ├── src
 │   └── <package>
 │       ├── Main.scala - the main entry point to your backend
+│       ├── conf - backend configuration
 │       ├── models
 │       │   └── db - database models
 │       └── views - template views using Twirl
