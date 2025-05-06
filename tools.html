@@ -5,7 +5,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="generator" content="Laika 1.0.0" />
-    <title>Application</title>
+    <title>Tools</title>
      
     <meta name="description" content="docs" />
     
@@ -59,7 +59,7 @@
                   <li class="level2 nav-node"><a href="overview/">Overview</a></li>
                   <li class="level3 nav-leaf"><a href="overview/architecture.html">Architecture</a></li>
                   <li class="level3 nav-leaf"><a href="overview/principles.html">Principles</a></li>
-                  <li class="level2 active nav-leaf"><a href="#">Application</a></li>
+                  <li class="level2 nav-leaf"><a href="application.html">Application</a></li>
                   <li class="level2 nav-leaf"><a href="server.html">Server</a></li>
                   <li class="level2 nav-node"><a href="model/">Models</a></li>
                   <li class="level3 nav-leaf"><a href="model/sqlite.html">SQLite</a></li>
@@ -72,7 +72,7 @@
                   <li class="level4 nav-leaf"><a href="controller/route/response.html">Response</a></li>
                   <li class="level4 nav-leaf"><a href="controller/route/codecs.html">Codecs</a></li>
                   <li class="level3 nav-leaf"><a href="controller/handler.html">Handlers</a></li>
-                  <li class="level2 nav-leaf"><a href="tools.html">Tools</a></li>
+                  <li class="level2 active nav-leaf"><a href="#">Tools</a></li>
                 </ul>
               </div>
             </div>
@@ -92,7 +92,7 @@
             <li class="level2 nav-node"><a href="overview/">Overview</a></li>
             <li class="level3 nav-leaf"><a href="overview/architecture.html">Architecture</a></li>
             <li class="level3 nav-leaf"><a href="overview/principles.html">Principles</a></li>
-            <li class="level2 active nav-leaf"><a href="#">Application</a></li>
+            <li class="level2 nav-leaf"><a href="application.html">Application</a></li>
             <li class="level2 nav-leaf"><a href="server.html">Server</a></li>
             <li class="level2 nav-node"><a href="model/">Models</a></li>
             <li class="level3 nav-leaf"><a href="model/sqlite.html">SQLite</a></li>
@@ -105,26 +105,22 @@
             <li class="level4 nav-leaf"><a href="controller/route/response.html">Response</a></li>
             <li class="level4 nav-leaf"><a href="controller/route/codecs.html">Codecs</a></li>
             <li class="level3 nav-leaf"><a href="controller/handler.html">Handlers</a></li>
-            <li class="level2 nav-leaf"><a href="tools.html">Tools</a></li>
+            <li class="level2 active nav-leaf"><a href="#">Tools</a></li>
           </ul>
         </div>
       </nav>
       <div id="contentbar">
         <div class="max-w-prose mx-auto">
-          <div id="content"><h1 id="application" class="title">Application</h1>
-<p>An <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/Application.html">Application</a> in what a Krop <a href="server.html">server</a> runs, and thus building an <code>Application</code> is the end goal of working with Krop.</p>
-<p>An <code>Application</code> consists of any number of <a href="controller/handler.html">Handlers</a> followed by a catch-all that handles any requests not matched by a route. The usual catch-all is <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/tool/Application/notFound.html">notFound</a>.</p>
+          <div id="content"><h1 id="tools" class="title">Tools</h1>
+<p>Tools are add-ons to Krop that are useful but not central to its functionality.</p>
 
-<h2 id="development-and-production-mode" class="section">Development and Production Mode</h2>
-<p>Krop can run in one of two modes: development and production. In development
-mode it shows output that is useful for debugging and otherwise inspecting
-the running state. In production this output is hidden.</p>
-<p>The mode is set by the <code>krop.mode</code> JVM system property. If it has the value of
-&quot;development&quot; (without the quotes; any capitalization is fine) then the mode
-is development. Otherwise it is production.</p>
-<p>The mode is determined when Krop starts, and is available as the value of <code>krop.Mode</code>.</p></div>
+<h2 id="notfound" class="section">NotFound</h2>
+<p>Adds the informative page when a route is not found.</p>
+
+<h2 id="cli" class="section">CLI</h2>
+<p>Provides the commmand-line parser used by the template project.</p></div>
           <div class="flex flex-row justify-between">
-            <a class="pagenav" href="overview/principles.html">←Principles</a> <a class="pagenav" href="server.html">Server→</a>
+            <a class="pagenav" href="controller/handler.html">←Handlers</a> 
           </div>
         </div>
         <footer>
@@ -136,7 +132,8 @@ is development. Otherwise it is production.</p>
         <div class="fixed h-screen overflow-y-auto">
           <p>On This Page</p>
           <ul class="nav-list">
-            <li class="level1 nav-leaf"><a href="#development-and-production-mode">Development and Production Mode</a></li>
+            <li class="level1 nav-leaf"><a href="#notfound">NotFound</a></li>
+            <li class="level1 nav-leaf"><a href="#cli">CLI</a></li>
           </ul>
         </div>
       </nav>

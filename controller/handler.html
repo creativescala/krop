@@ -72,6 +72,7 @@
                   <li class="level4 nav-leaf"><a href="route/response.html">Response</a></li>
                   <li class="level4 nav-leaf"><a href="route/codecs.html">Codecs</a></li>
                   <li class="level3 active nav-leaf"><a href="#">Handlers</a></li>
+                  <li class="level2 nav-leaf"><a href="../tools.html">Tools</a></li>
                 </ul>
               </div>
             </div>
@@ -104,6 +105,7 @@
             <li class="level4 nav-leaf"><a href="route/response.html">Response</a></li>
             <li class="level4 nav-leaf"><a href="route/codecs.html">Codecs</a></li>
             <li class="level3 active nav-leaf"><a href="#">Handlers</a></li>
+            <li class="level2 nav-leaf"><a href="../tools.html">Tools</a></li>
           </ul>
         </div>
       </nav>
@@ -133,7 +135,7 @@
 <pre><code class="nohighlight"><span class="keyword">val</span><span> </span><span class="identifier">request</span><span> = </span><span class="type-name">Request</span><span>.</span><span class="identifier">get</span><span>(</span><span class="type-name">Path</span><span> / </span><span class="type-name">Param</span><span>.</span><span class="identifier">int</span><span> / </span><span class="type-name">Param</span><span>.</span><span class="identifier">string</span><span>)
 </span><span class="comment">// request: RequestMethodPath[*:[Int, *:[String, EmptyTuple]], EmptyTuple] = RequestMethodPath(
 //   method = GET,
-//   path = krop.route.Path@e6125b2
+//   path = krop.route.Path@40b1fb4d
 // )</span></code></pre>
 <p>This <code>Tuple2</code> arises because we extract two elements from the HTTP request&#39;s path: one <code>Int</code> and one <code>String</code>.
 However, when you come to use a handler with such a request, you can use a normal function with two arguments <em>not</em> a function that accepts a single <code>Tuple2</code>.</p>
@@ -141,7 +143,7 @@ However, when you come to use a handler with such a request, you can use a norma
   .</span><span class="identifier">handle</span><span>((</span><span class="identifier">int</span><span>, </span><span class="identifier">string</span><span>) =&gt; </span><span class="string-literal">s&quot;</span><span class="substitution">${int.toString}</span><span class="string-literal">: </span><span class="substitution">${string}</span><span class="string-literal">&quot;</span><span>)</span></code></pre>
 <p>The conversion between tuples and functions is done by given instances of <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/TupleApply.html">TupleApply</a>, which allows a function <code>(A, B, ..., N) =&gt; Z</code> to be applied to a tuple <code>(A, B, ..., N)</code></p></div>
           <div class="flex flex-row justify-between">
-            <a class="pagenav" href="route/codecs.html">←Codecs</a> 
+            <a class="pagenav" href="route/codecs.html">←Codecs</a> <a class="pagenav" href="../tools.html">Tools→</a>
           </div>
         </div>
         <footer>
