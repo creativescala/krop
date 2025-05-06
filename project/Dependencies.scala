@@ -8,6 +8,7 @@ object Dependencies {
   val catsVersion = "2.10.0"
   val catsEffectVersion = "3.5.1"
   val circeVersion = "0.14.13"
+  val declineVersion = "2.5.0"
   val fs2Version = "3.6.1"
   val http4sVersion = "1.0.0-M44"
   val scalaJsDomVersion = "2.4.0"
@@ -26,6 +27,9 @@ object Dependencies {
   val catsEffect =
     Def.setting("org.typelevel" %%% "cats-effect" % catsEffectVersion)
   val catsCore = Def.setting("org.typelevel" %%% "cats-core" % catsVersion)
+
+  val declineEffect =
+    Def.setting("com.monovore" %% "decline-effect" % declineVersion)
 
   val fs2Core = Def.setting("co.fs2" %%% "fs2-core" % fs2Version)
 
