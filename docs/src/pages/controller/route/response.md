@@ -49,3 +49,19 @@ val headers =
 ## Error Handling
 
 In many cases you'll need to generate an error response despite a valid request. For example, you would generate a 404 Not Found if the client has sent a well-formed request but the requested resource doesn't exist. This situation can be handled using the `orNotFound` method, which converts a `Response[A]` to a `Response[Option[A]]`. When passed a `None` the `Response` responds with a 404. For more complex cases you can use `orElse`, which allows you to handle an `Either[A, B]` and introduce custom error handling.
+
+```scala mdoc:silent
+  val updateMyEntityRoute = new Route(
+    Request.patch(Path / "my_entities" / Param.int).withEntity(Entity.jsonOf[MyEntity]),
+    Response.ok(Entity.jsonOf[MyEntity]).orNotFound
+  )
+
+  val updateMyEntityMoreComplexRoute = new Route(
+    Request.patch(Path / "my_entities" / Param.string / Param.int).withEntity(Entity.jsonOf[MyEntity]),
+    Response.ok(Entity.jsonOf[MyEntity]).orElse(Response.status(BadRequest, Entity.text)).orNotFound
+  )
+```
+
+The last example demonstrates how it's possible to handle a scenario in which the error response could be more complex, based on some business logic in the handler, or return 404 if the route didn't match.
+
+
