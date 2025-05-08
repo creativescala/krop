@@ -39,16 +39,16 @@ enum Response[A] {
       runtime: KropRuntime
   ): IO[Http4sResponse[IO]] =
     this match {
-      case OrNotFound(source) =>
+      case OrEmpty(success, failure) =>
         value match {
-          case Some(a) => source.respond(request, a)
-          case None    => Http4sResponse.notFoundFor(request)
+          case Some(a) => success.respond(request, a)
+          case None    => failure.respond(request, ())
         }
 
-      case OrElse(left, right) =>
+      case OrElse(success, failure) =>
         value match {
-          case Left(a)  => left.respond(request, a)
-          case Right(b) => right.respond(request, b)
+          case Left(a)  => failure.respond(request, a)
+          case Right(b) => success.respond(request, b)
         }
 
       case StaticResource(pathPrefix) =>
@@ -116,7 +116,13 @@ enum Response[A] {
     * `Response`.
     */
   def orNotFound: Response[Option[A]] =
-    OrNotFound(this)
+    OrEmpty(this, Response.status(Status.NotFound, Entity.unit))
+
+  /** Produce this `Response` if given `Right[A]`, otherwise produce a 404
+    * `Response` with entity given by `Left[B]`.
+    */
+  def orNotFound[B](entity: Entity[?, B]): Response[Either[B, A]] =
+    OrElse(this, Response.status(Status.NotFound, entity))
 
   /** Produce this `Response` if given `Right[A]`, otherwise produce that
     * `Response` given `Left[B]`.
@@ -125,7 +131,7 @@ enum Response[A] {
     * For this reason we specify the successful `Right` case first.
     */
   def orElse[B](that: Response[B]): Response[Either[B, A]] =
-    OrElse(that, this)
+    OrElse(this, that)
 
   /** Add headers to this Response. The headers can be any form that
     * [[org.http4s.Header.ToRaw]] accepts, which is:
@@ -139,9 +145,10 @@ enum Response[A] {
   def withHeader(header: ToRaw, headers: ToRaw*): Response[A] =
     WithHeader(this, Headers(header.values ++ headers.flatMap(_.values)))
 
-  case OrNotFound[A](source: Response[A]) extends Response[Option[A]]
-  case OrElse[A, B](left: Response[A], right: Response[B])
-      extends Response[Either[A, B]]
+  case OrEmpty[A](success: Response[A], failure: Response[Unit])
+      extends Response[Option[A]]
+  case OrElse[A, B](success: Response[A], failure: Response[B])
+      extends Response[Either[B, A]]
   case StaticResource(pathPrefix: String) extends Response[String]
   case StaticDirectory(pathPrefix: Fs2Path) extends Response[Fs2Path]
   case StaticFile(path: Fs2Path) extends Response[Unit]
