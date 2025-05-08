@@ -27,7 +27,6 @@ Here's a quick example, using Circe's semi-automatic generic derivation to creat
 
 ```scala mdoc:silent
 import io.circe.{Decoder, Encoder}
-import io.circe.generic.semiauto.*
 import krop.all.*
 
 final case class Cat(name: String) derives Decoder, Encoder

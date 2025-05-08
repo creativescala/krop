@@ -118,11 +118,14 @@ enum Response[A] {
   def orNotFound: Response[Option[A]] =
     OrNotFound(this)
 
-  /** Produce this `Response` if given `Left[A]`, otherwise produce that
-    * `Response` given `Right[B]`.
+  /** Produce this `Response` if given `Right[A]`, otherwise produce that
+    * `Response` given `Left[B]`.
+    *
+    * Usually used for error handling, where that `Response` is the error case.
+    * For this reason we specify the successful `Right` case first.
     */
-  def orElse[B](that: Response[B]): Response[Either[A, B]] =
-    OrElse(this, that)
+  def orElse[B](that: Response[B]): Response[Either[B, A]] =
+    OrElse(that, this)
 
   /** Add headers to this Response. The headers can be any form that
     * [[org.http4s.Header.ToRaw]] accepts, which is:

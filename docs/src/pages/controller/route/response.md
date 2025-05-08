@@ -48,20 +48,51 @@ val headers =
 
 ## Error Handling
 
-In many cases you'll need to generate an error response despite a valid request. For example, you would generate a 404 Not Found if the client has sent a well-formed request but the requested resource doesn't exist. This situation can be handled using the `orNotFound` method, which converts a `Response[A]` to a `Response[Option[A]]`. When passed a `None` the `Response` responds with a 404. For more complex cases you can use `orElse`, which allows you to handle an `Either[A, B]` and introduce custom error handling.
+In many cases you'll need to generate an error response despite a valid request. For example, you could generate a 404 Not Found if the client has sent a well-formed request for a user but that user does not exist. This situation can be handled using the `orNotFound` method, which converts a `Response[A]` to a `Response[Option[A]]`. When passed a `None` the `Response` responds with a 404. This is shown in the example below. If the user ID is not 1 (the only valid ID) a 404 will be returned.
 
 ```scala mdoc:silent
-  val updateMyEntityRoute = new Route(
-    Request.patch(Path / "my_entities" / Param.int).withEntity(Entity.jsonOf[MyEntity]),
-    Response.ok(Entity.jsonOf[MyEntity]).orNotFound
-  )
-
-  val updateMyEntityMoreComplexRoute = new Route(
-    Request.patch(Path / "my_entities" / Param.string / Param.int).withEntity(Entity.jsonOf[MyEntity]),
-    Response.ok(Entity.jsonOf[MyEntity]).orElse(Response.status(BadRequest, Entity.text)).orNotFound
+val getUser = 
+  Route(
+    Request.get(Path / "user" / Param.int),
+    Response.ok(Entity.text).orNotFound
+  ).handle(id => 
+    if id == 1 then Some("Found the user!") else None
   )
 ```
 
-The last example demonstrates how it's possible to handle a scenario in which the error response could be more complex, based on some business logic in the handler, or return 404 if the route didn't match.
+For more complex cases you can use `orElse`, which allows you to handle an `Either[A, B]` and introduce custom error handling. The example below shows complex error handling combining `orElse` and `orNotFound`. A 404 Not Found is returned if the user id does not correspond to an existing user, and a 400 Bad Request is returned if the `Name` [entity](entities.md) is not valid.
 
+```scala mdoc:silent
+import io.circe.{Decoder, Encoder}
+
+final case class Name(name: String) derives Decoder, Encoder
+final case class User(id: Int, name: String) derives Decoder, Encoder
+
+val postUser = 
+  Route(
+    Request.post(Path / "user" / Param.int).withEntity(Entity.jsonOf[Name]),
+    Response.ok(Entity.jsonOf[User])
+      .orElse(Response.status(Status.BadRequest, Entity.text))
+      .orNotFound
+  ).handle((id, name) => 
+    // Check ID is valid
+    if id == 1 then
+      // Check name is valid
+      if name.name == "Hieronymus Bosch" then Some(Right(User(1, name.name)))
+      else Some(Left("$name is not an allowed name"))
+    else None
+  )
+```
+
+Not that when using `orElse` the *first* `Response` is the successful one, and the second is the error case. This follows the usual convention in English, but means that when written the `Response` on the left-hand side corresponds to a `Right` value. In other words, we write
+
+```scala
+success.orElse(error)
+```
+
+not
+
+```scala
+error.orElse(success)
+```
 
