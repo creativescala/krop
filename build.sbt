@@ -22,7 +22,7 @@ import laika.helium.config.TextLink
 
 Global / onChangedBuildSource := ReloadOnSourceChanges
 
-ThisBuild / tlBaseVersion := "0.9" // your current series x.y
+ThisBuild / tlBaseVersion := "0.10" // your current series x.y
 
 ThisBuild / organization := "org.creativescala"
 ThisBuild / organizationName := "Creative Scala"
