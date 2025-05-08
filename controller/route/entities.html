@@ -131,7 +131,6 @@
 <code>Entity.jsonOf[A]</code>.</p>
 <p>Here&#39;s a quick example, using Circe&#39;s semi-automatic generic derivation to create the <code>Decoder</code> and <code>Encoder</code> types.</p>
 <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">io</span><span>.</span><span class="identifier">circe</span><span>.{</span><span class="type-name">Decoder</span><span>, </span><span class="type-name">Encoder</span><span>}
-</span><span class="keyword">import</span><span> </span><span class="identifier">io</span><span>.</span><span class="identifier">circe</span><span>.</span><span class="identifier">generic</span><span>.</span><span class="identifier">semiauto</span><span>.*
 </span><span class="keyword">import</span><span> </span><span class="identifier">krop</span><span>.</span><span class="identifier">all</span><span>.*
 
 </span><span class="keyword">final</span><span> </span><span class="keyword">case</span><span> </span><span class="keyword">class</span><span> </span><span class="type-name">Cat</span><span>(</span><span class="identifier">name</span><span>: </span><span class="type-name">String</span><span>) </span><span class="identifier">derives</span><span> </span><span class="type-name">Decoder</span><span>, </span><span class="type-name">Encoder</span><span>
