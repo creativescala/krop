@@ -183,11 +183,17 @@ object Response {
   def staticFile(path: String): Response[Unit] =
     Response.StaticFile(fs2.io.file.Path(path))
 
+  def badRequest[A](entity: Entity[?, A]): Response[A] =
+    status(Status.BadRequest, entity)
+
   def notFound[A](entity: Entity[?, A]): Response[A] =
     status(Status.NotFound, entity)
 
   def ok[A](entity: Entity[?, A]): Response[A] =
     status(Status.Ok, entity)
+
+  def internalServerError[A](entity: Entity[?, A]): Response[A] =
+    status(Status.InternalServerError, entity)
 
   def status[A](status: Status, entity: Entity[?, A]): Response[A] =
     Response.StatusEntityEncoding(status, entity)
