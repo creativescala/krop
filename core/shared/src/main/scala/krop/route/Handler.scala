@@ -16,7 +16,6 @@
 
 package krop.route
 
-import cats.Monad
 import cats.data.Chain
 import cats.data.Kleisli
 import cats.data.OptionT
@@ -70,7 +69,6 @@ final class Handler[I <: Tuple, R](
   def run[F[_, _]: Raise.Handler](
       req: Http4sRequest[IO]
   )(using
-      Monad[F[ParseFailure, *]],
       KropRuntime
   ): IO[F[ParseFailure, Http4sResponse[IO]]] =
     route.request

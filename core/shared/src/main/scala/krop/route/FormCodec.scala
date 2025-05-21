@@ -58,7 +58,7 @@ object FormCodec {
               values <- labels.zip(codecs).toList.parTraverse {
                 case (name, codec) =>
                   codec
-                    .asInstanceOf[SeqStringCodec[?]]
+                    .asInstanceOf[SeqStringCodec[A]]
                     .decode(urlForm.get(name.toString).toList)
                     .leftMap(Chain.one)
               }

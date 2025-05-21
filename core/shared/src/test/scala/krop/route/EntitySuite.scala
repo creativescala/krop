@@ -26,7 +26,7 @@ class EntitySuite extends CatsEffectSuite {
   test("FormCodec encoding is invertible") {
     val entity = Entity.formOf[Form]
     val form = Form(42, "Krop")
-    val request = Request[IO]().withEntity(form)(entity.encoder)
+    val request = Request[IO]().withEntity(form)(using entity.encoder)
 
     entity.decoder
       .decode(request, true)

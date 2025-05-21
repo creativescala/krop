@@ -25,7 +25,6 @@ import org.http4s.Uri.Path as UriPath
 
 import scala.annotation.tailrec
 import scala.collection.mutable
-import scala.compiletime.constValue
 
 /** A [[krop.route.Path]] represents a pattern to match against the path
   * component of the URI of a request.`Paths` are created by calling the `/`

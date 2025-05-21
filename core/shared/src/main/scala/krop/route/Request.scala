@@ -17,7 +17,6 @@
 package krop.route
 
 import cats.effect.IO
-import cats.syntax.all.*
 import krop.Types.TupleConcat
 import krop.raise.Raise
 import org.http4s.EntityDecoder

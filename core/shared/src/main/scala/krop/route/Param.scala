@@ -16,8 +16,6 @@
 
 package krop.route
 
-import cats.syntax.all.*
-
 /** A [[package.Param]] is used to extract values from a URI's path or query
   * parameters.
   *

@@ -35,8 +35,8 @@ class TupleApplySuite extends FunSuite {
   test("Type inference works for Tuple1") {
     val route = Route(intRequest, Response.ok(Entity.text))
 
-    route.handle(i => s"Ok!")
-    route.handleIO(i => IO.pure(s"Ok!"))
+    route.handle(i => s"$i Ok!")
+    route.handleIO(i => IO.pure(s"$i Ok!"))
   }
 
   test("Type inference works for Tuple2") {
