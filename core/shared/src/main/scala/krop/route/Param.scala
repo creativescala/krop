@@ -120,6 +120,6 @@ object Param {
   def separatedString(separator: String): Param.All[String] =
     Param.All(SeqStringCodec.separatedString(separator))
 
-  def all[A](param: Param.One[A]): Param.All[Seq[A]] =
-    Param.All(SeqStringCodec.all(using param.codec))
+  def all[A](using codec: StringCodec[A]): Param.All[Seq[A]] =
+    Param.All(SeqStringCodec.all(using codec))
 }

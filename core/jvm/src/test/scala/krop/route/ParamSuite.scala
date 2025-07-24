@@ -70,7 +70,7 @@ class ParamSuite extends FunSuite {
       Seq(Seq() -> "", Seq("a") -> "a", Seq("a", "b", "c") -> "a,b,c")
     )
     paramAllDecodesValid(
-      Param.all(Param.int),
+      Param.all[Int],
       Seq(
         Seq() -> Seq(),
         Seq("1") -> Seq(1),
