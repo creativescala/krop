@@ -144,7 +144,7 @@ element to a closed path will result in an exception.</p>
 //   A closed path cannot have additional segments of parameters added to it.
 // 	at krop.route.Path.assertOpen(Path.scala:119)
 // 	at krop.route.Path.$div(Path.scala:88)
-// 	at repl.MdocSession$MdocApp.$init$$$anonfun$1(paths.md:41)</span></code></pre>
+// 	at repl.MdocSession$MdocApp.$init$$$anonfun$1(paths.md:44)</span></code></pre>
 
 <h2 id="capturing-query-parameters" class="section">Capturing Query Parameters</h2>
 <p>A <code>Path</code> can also match and capture query parameters. For instance, the following path captures the query parameter <code>id</code> as an <code>Int</code>.</p>
@@ -213,7 +213,7 @@ built-in <code>Param[String]</code>.</p>
 </span><span class="comment">// res17: Either[DecodeFailure, Int] = Right(value = 100)</span></code></pre>
 <p>A <code>Param.One[A]</code> can be lifted to a <code>Param.All[Seq[A]]</code> that uses the given
 <code>Param.One</code> for every element in the <code>Seq</code>.</p>
-<pre><code class="nohighlight"><span class="keyword">val</span><span> </span><span class="identifier">intParams</span><span> = </span><span class="type-name">Param</span><span>.</span><span class="identifier">all</span><span>(</span><span class="identifier">intParam</span><span>)</span></code></pre>
+<pre><code class="nohighlight"><span class="keyword">val</span><span> </span><span class="identifier">intParams</span><span> = </span><span class="type-name">Param</span><span>.</span><span class="identifier">all</span><span>[</span><span class="type-name">Int</span><span>]</span></code></pre>
 <pre><code class="nohighlight"><span class="identifier">intParams</span><span>.</span><span class="identifier">encode</span><span>(</span><span class="type-name">Seq</span><span>(</span><span class="number-literal">1</span><span>, </span><span class="number-literal">2</span><span>, </span><span class="number-literal">3</span><span>))
 </span><span class="comment">// res18: Seq[String] = List(&quot;1&quot;, &quot;2&quot;, &quot;3&quot;)</span></code></pre>
 <p>The <code>separatedString</code> method can be used for a <code>Param.All</code> that constructs a <code>String</code>
