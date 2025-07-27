@@ -2,6 +2,7 @@
 
 ```scala mdoc:invisible
 import krop.all.*
+import krop.route.StringCodec.given
 ```
 
 A @:api(krop.route.Path) represents a pattern to match against the path component of the request's URI. `Paths` are created by calling the `/` method on a `Path` to add segments to the pattern. For example
@@ -163,7 +164,7 @@ A `Param.One[A]` can be lifted to a `Param.All[Seq[A]]` that uses the given
 `Param.One` for every element in the `Seq`.
 
 ```scala mdoc:silent
-val intParams = Param.all(intParam)
+val intParams = Param.all[Int]
 ```
 ```scala mdoc
 intParams.encode(Seq(1, 2, 3))
