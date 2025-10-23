@@ -33,8 +33,6 @@ ThisBuild / developers := List(
   tlGitHubDev("noelwelsh", "Noel Welsh")
 )
 
-ThisBuild / sonatypeCredentialHost := xerial.sbt.Sonatype.sonatypeLegacy
-
 lazy val scala3 = "3.6.4"
 
 ThisBuild / crossScalaVersions := List(scala3)
@@ -85,6 +83,7 @@ lazy val rootJvm =
   krop.jvm.aggregate(
     core.jvm,
     sqlite,
+    assets,
     examples,
     unidocs
   )
@@ -113,6 +112,17 @@ lazy val sqlite = project
     ),
     moduleName := "krop-sqlite"
   )
+
+lazy val assets = project
+  .in(file("assets"))
+  .settings(
+    commonSettings,
+    libraryDependencies ++= Seq(
+      Dependencies.directoryWatcher.value,
+      Dependencies.betterFiles.value
+    )
+  )
+  .dependsOn(core.jvm)
 
 lazy val docs =
   project
