@@ -16,7 +16,7 @@
 
 package krop.tool
 
-import krop.route.Handler1
+import krop.route.Handler
 import krop.route.Param
 import krop.route.Path
 import krop.route.Request
@@ -24,7 +24,7 @@ import krop.route.Response
 import krop.route.Route
 
 object KropAssets {
-  val kropAssets: Handler1[String, String] =
+  val kropAssets: Handler =
     Route(
       Request.get(Path / "krop" / "assets" / Param.separatedString("/")),
       Response.staticResource("/krop/assets/")

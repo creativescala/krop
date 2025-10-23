@@ -17,26 +17,13 @@
 package krop
 
 import cats.effect.IO
-import org.http4s.server.websocket.WebSocketBuilder
 import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.LoggerFactory
-import org.typelevel.log4cats.slf4j.Slf4jFactory
 
-final class JvmKropRuntime(
-    base: BaseRuntime,
-    val webSocketBuilder: WebSocketBuilder[IO]
-) extends KropRuntime {
-  given loggerFactory: LoggerFactory[IO] = base.loggerFactory
-  given logger: Logger[IO] = base.logger
-}
-
-final class JvmBaseRuntime() extends BaseRuntime {
-  given loggerFactory: LoggerFactory[IO] = Slf4jFactory.create[IO]
-  given logger: Logger[IO] = loggerFactory.getLoggerFromName("krop-core")
-
-  def toKropRuntime(webSocketBuilder: WebSocketBuilder[IO]): KropRuntime =
-    JvmKropRuntime(this, webSocketBuilder)
-}
-object JvmRuntime {
-  val base: JvmBaseRuntime = JvmBaseRuntime()
+/** Provides platform specific services and utilities that are available before
+  * the http4s server has started.
+  */
+trait BaseRuntime {
+  given loggerFactory: LoggerFactory[IO]
+  given logger: Logger[IO]
 }

@@ -17,23 +17,17 @@
 package krop.route
 
 import cats.data.Chain
-import cats.data.Kleisli
-import cats.data.OptionT
-import cats.effect.IO
-import cats.syntax.all.*
 import krop.Application
-import krop.KropRuntime
 import krop.tool.NotFound
-import org.http4s.HttpRoutes
 
 /** [[package.Handlers]] are a collection of zero or more [[package.Handler]].
   */
-final class Handlers(val handlers: Chain[Handler[?, ?]]) {
+final class Handlers(val handlers: Chain[Handler]) {
 
   /** Create a [[package.Handlers]] that tries first these handlers, and if they
     * fail to match, the route in the given parameter.
     */
-  def orElse(that: Handler[?, ?]): Handlers =
+  def orElse(that: Handler): Handlers =
     Handlers(this.handlers :+ that)
 
   /** Create a [[package.Handlers]] that tries first these handlers, and if they
@@ -55,14 +49,14 @@ final class Handlers(val handlers: Chain[Handler[?, ?]]) {
   def orElseNotFound: Application =
     this.orElse(NotFound.notFound)
 
-  /** Convert to the representation used by http4s */
-  def toHttpRoutes(using runtime: KropRuntime): HttpRoutes[IO] =
-    this.handlers.foldLeft(HttpRoutes.empty[IO])((accum, handler) =>
-      accum <+> handler.toHttpRoutes(using runtime)
-    )
+  // /** Convert to the representation used by http4s */
+  // def toHttpRoutes(using runtime: KropRuntime): Resource[IO, HttpRoutes[IO]] =
+  //   this.handlers.foldLeft(Resource.eval(IO.pure(HttpRoutes.empty[IO])))(
+  //     (accum, handler) => accum.combineK(handler.build(runtime))
+  //   )
 }
 object Handlers {
 
   /** The empty [[package.Handlers]], which don't match any request. */
-  val empty: Handlers = new Handlers(Chain.empty[Handler[?, ?]])
+  val empty: Handlers = new Handlers(Chain.empty[Handler])
 }

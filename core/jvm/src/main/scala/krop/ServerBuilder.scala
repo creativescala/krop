@@ -19,16 +19,39 @@ package krop
 import cats.effect.IO
 import com.comcast.ip4s.Host
 import com.comcast.ip4s.Port
+import com.comcast.ip4s.host
+import com.comcast.ip4s.port
 import org.http4s.ember.server.*
 import org.typelevel.log4cats.LoggerFactory
 import org.typelevel.log4cats.slf4j.Slf4jFactory
 
 /** A description of how to create a [[krop.Server.Server]]. */
-final case class ServerBuilder(unwrap: IO[EmberServerBuilder[IO]]) {
+final class ServerBuilder(
+    val port: Port,
+    val host: Host,
+    val application: Application
+) {
 
   /** Build a [[krop.Server.Server]] from this description. */
-  def build: Server =
-    Server(unwrap.toResource.flatMap(_.build))
+  def build: Server = {
+    val baseRuntime = JvmRuntime.base
+    val emberServer =
+      application.toHttpApp(baseRuntime).flatMap { withRuntime =>
+        import baseRuntime.given
+        val builder = EmberServerBuilder
+          .default[IO]
+          .withPort(port)
+          .withHost(host)
+          .withHttp2
+          .withHttpWebSocketApp { wsBuilder =>
+            withRuntime(baseRuntime.toKropRuntime(wsBuilder))
+          }
+
+        builder.build
+      }
+
+    Server(emberServer)
+  }
 
   /** Build a[[krop.Server.Server]] from this description and immediately run
     * it. The server is run synchronously, so this method will only return when
@@ -46,7 +69,7 @@ final case class ServerBuilder(unwrap: IO[EmberServerBuilder[IO]]) {
     * ```
     */
   def withPort(port: Port): ServerBuilder =
-    ServerBuilder(unwrap.map(_.withPort(port)))
+    ServerBuilder(port, this.host, this.application)
 
   /** Set the host address on which the server will listen. Use the `host`
     * string context to create a `Host` value.
@@ -57,19 +80,14 @@ final case class ServerBuilder(unwrap: IO[EmberServerBuilder[IO]]) {
     * ```
     */
   def withHost(host: Host): ServerBuilder =
-    ServerBuilder(unwrap.map(_.withHost(host)))
+    ServerBuilder(this.port, host, this.application)
 
   /** Set the application that the server will run. */
-  def withApplication(app: Application): ServerBuilder =
-    ServerBuilder(unwrap.map { builder =>
-      builder.withHttpWebSocketApp { wsBuilder =>
-        val runtime = JvmRuntime(wsBuilder)
-        app.toHttpApp(using runtime)
-      }
-    })
+  def withApplication(application: Application): ServerBuilder =
+    ServerBuilder(this.port, this.host, application)
 }
 object ServerBuilder {
   implicit val loggerFactory: LoggerFactory[IO] = Slf4jFactory.create[IO]
 
-  val default = ServerBuilder(IO.pure(EmberServerBuilder.default[IO]))
+  val default = ServerBuilder(port"8080", host"localhost", Application.notFound)
 }

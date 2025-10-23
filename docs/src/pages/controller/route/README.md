@@ -10,9 +10,9 @@ Routing handles the HTTP specific details of incoming requests and outgoing resp
 2. convert Scala values to an HTTP response; and
 3. reversing a route to create a link to the route or a client that calls the route.
 
-A @:api(krop.route.Route) describes how to convert an incoming request into Scala values, and how to turn Scala values in an outgoing response.
-A @:api(krop.route.Handler) is a `Route` that also includes the code to convert the values parsed from the request into the values that are used to create the response. In other words, a `Handler` includes business logic.
-A @:api(krop.route.Handlers) is a collection of `Handler`.
+A @:api(krop.route.Route) describes how to convert an incoming request into Scala values, and how to turn Scala values in an outgoing response. A route is purely a description. It doesn't do anything with a request, or produce a response, until it is converted to a @:api(krop.route.Handler).
+
+A @:api(krop.route.Handler) can handle an HTTP request and, if it accepts the request, produce a response. Handlers can also create resources that live for the lifetime of the web server, which allows for implementing caches and the like. A @:api(krop.route.Handlers) is a collection of `Handler`.
 
 
 ## The Route Type

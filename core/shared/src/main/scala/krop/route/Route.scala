@@ -33,10 +33,8 @@ type SimpleRoute[R] = Route[EmptyTuple, EmptyTuple, EmptyTuple, EmptyTuple, R]
   */
 type Path1Route[P, R] = PathRoute[Tuple1[P], EmptyTuple, R]
 
-/** A [[krop.Route]] accepts a request and produces a response. A Route is the
-  * basic unit for building a web service. The majority of the service will
-  * consist of routes (and their associated handlers), with a final catch-all to
-  * deal with any requests that are not handled by other routes.
+/** A [[krop.Route]] describes an HTTP request and an HTTP response,
+  * encapsulating the HTTP specific parts of an endpoint.
   *
   * @tparam P
   *   The type of the parameters extracted from the [[package.Path]].
@@ -49,10 +47,13 @@ type Path1Route[P, R] = PathRoute[Tuple1[P], EmptyTuple, R]
   * @tparam R
   *   The type of the value used to build the [[package.Response]].
   */
-final class Route[P <: Tuple, Q <: Tuple, I <: Tuple, O <: Tuple, R](
-    val request: Request[P, Q, I, O],
-    val response: Response[R]
-) {
+trait Route[P <: Tuple, Q <: Tuple, I <: Tuple, O <: Tuple, R] {
+
+  /** The [[krop.route.Request]] associated with this Route. */
+  def request: Request[P, Q, I, O]
+
+  /** The [[krop.route.Response]] associated with this Route. */
+  def response: Response[R]
 
   /** Overload of `pathTo` for the case where the path has no parameters.
     */
@@ -148,30 +149,53 @@ final class Route[P <: Tuple, Q <: Tuple, I <: Tuple, O <: Tuple, R](
   /** Pass the result of parsing the request directly the response with no
     * modification.
     */
-  def passthrough(using pb: PassthroughBuilder[I, R]): Handler[I, R] =
+  def passthrough(using pb: PassthroughBuilder[I, R]): Handler =
     Handler(this, pb.build)
 }
+object Route {
 
-/** This class exists to make type inference work better when constructing a
-  * Handler from a Route.
+  /** Represents the common case of a Route as a simple container for a Request
+    * and a Response.
+    */
+  private final class BasicRoute[
+      P <: Tuple,
+      Q <: Tuple,
+      I <: Tuple,
+      O <: Tuple,
+      R
+  ](val request: Request[P, Q, I, O], val response: Response[R])
+      extends Route[P, Q, I, O, R]
+
+  /** Construct a [[krop.route.Route]] from a [[krop.route.Request]] and a
+    * [[krop.route.Response]].
+    */
+  def apply[P <: Tuple, Q <: Tuple, I <: Tuple, O <: Tuple, R](
+      request: Request[P, Q, I, O],
+      response: Response[R]
+  ): Route[P, Q, I, O, R] =
+    BasicRoute(request, response)
+}
+
+/** This class exists to help type inference when constructing a Handler from a
+  * Route.
   */
 final class HandlerPureBuilder[I <: Tuple, F, R](
     route: Route[?, ?, I, ?, R],
     ta: TupleApply.Aux[I, F, R]
 ) {
-  def apply(f: F): Handler[I, R] = {
+  def apply(f: F): Handler = {
     val handle = ta.tuple(f)
     Handler(route, i => IO.pure(handle(i)))
   }
 }
 
-/** This class exists to make type inference work better when constructing a
-  * Handler from a Route.
+/** This class exists to help type inference when constructing a Handler from a
+  * Route.
   */
 final class HandlerIOBuilder[I <: Tuple, F, R](
     route: Route[?, ?, I, ?, R],
     ta: TupleApply.Aux[I, F, IO[R]]
 ) {
-  def apply(f: F): Handler[I, R] = Handler(route, ta.tuple(f))
+  def apply(f: F): Handler = Handler(route, ta.tuple(f))
 
 }

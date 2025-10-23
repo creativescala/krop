@@ -16,12 +16,10 @@
 
 package krop
 
-import cats.data.Kleisli
 import cats.effect.IO
+import cats.effect.Resource
 import krop.route.Handlers
 import org.http4s.HttpApp
-import org.http4s.Request
-import org.http4s.Response
 
 /** An [[krop.Application]] produces a response for every HTTP request. Compare
   * to [[krop.router.Handler]], which may not produce a response for some
@@ -35,31 +33,41 @@ import org.http4s.Response
   */
 final case class Application(
     handlers: Handlers,
-    supervisor: (Handlers, KropRuntime) => HttpApp[IO]
+    supervisor: (
+        Handlers,
+        BaseRuntime
+    ) => Resource[IO, WithRuntime[HttpApp[IO]]]
 ) {
-  def toHttpApp(using runtime: KropRuntime): HttpApp[IO] =
+  def toHttpApp(runtime: BaseRuntime): Resource[IO, WithRuntime[HttpApp[IO]]] =
     supervisor(handlers, runtime)
 }
 object Application {
 
   /** Construct an [[Application]] with no route and the given supervisor. */
   def apply(
-      supervisor: (Handlers, KropRuntime) => HttpApp[IO]
+      supervisor: (
+          Handlers,
+          BaseRuntime
+      ) => Resource[IO, WithRuntime[HttpApp[IO]]]
   ): Application =
     Application(Handlers.empty, supervisor)
 
-  /** Lift an [[org.http4s.HttpApp]] into an [[krop.Application]]. */
-  def liftApp(app: HttpApp[IO]): Application =
-    Application(
-      Handlers.empty,
-      (handlers, runtime) => {
-        val r = handlers.toHttpRoutes(using runtime)
-        Kleisli(req => r.run(req).getOrElseF(app.run(req)))
-      }
-    )
+  // /** Lift an [[org.http4s.HttpApp]] into an [[krop.Application]]. */
+  // def liftApp(app: HttpApp[IO]): Application =
+  //   Application(
+  //     Handlers.empty,
+  //     (handlers, runtime) => {
+  //       val r = handlers.toHttpRoutes(using runtime)
+  //       r.map(httpRoutes =>
+  //         Kleisli((req: Request[IO]) =>
+  //           httpRoutes.run(req).getOrElseF(app.run(req))
+  //         )
+  //       )
+  //     }
+  //   )
 
-  def lift(f: Request[IO] => IO[Response[IO]]): Application =
-    Application.liftApp(HttpApp(f))
+  // def lift(f: Request[IO] => IO[Response[IO]]): Application =
+  //   Application.liftApp(HttpApp(f))
 
   /** The Application that returns 404 Not Found to all requests. See
     * [[krop.tool.NotFound]] for details on the implementation.

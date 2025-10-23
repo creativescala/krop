@@ -14,16 +14,24 @@
  * limitations under the License.
  */
 
-package krop
+package krop.route
 
 import cats.effect.IO
-import org.http4s.server.websocket.WebSocketBuilder
+import krop.KropRuntime
+import krop.raise.Raise
+import org.http4s.Request as Http4sRequest
+import org.http4s.Response as Http4sResponse
 
-/** Provides platform and server specific services and utilities that are
-  * available after the http4s server has started.
+/** A RouteHandler is what actually handles an HTTP request and produces an HTTP
+  * response.
   */
-trait KropRuntime extends BaseRuntime {
-  def webSocketBuilder: WebSocketBuilder[IO]
-}
+trait RouteHandler {
 
-type WithRuntime[A] = KropRuntime => A
+  /** Run this RouteHandler on the given request, producing a response or
+    * possibly failing.
+    */
+  def run[F[_, _]](request: Http4sRequest[IO])(using
+      handle: Raise.Handler[F],
+      runtime: KropRuntime
+  ): IO[F[ParseFailure, Http4sResponse[IO]]]
+}
