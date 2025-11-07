@@ -34,28 +34,28 @@ import org.http4s.Request as Http4sRequest
   * method and URI path, using the methods such as `get`, and `post` on the
   * companion object.
   *
+  * @tparam C
+  *   The type of values to create a [[org.http4s.Request]] that matches this
+  *   [[krop.route.Request]].
   * @tparam P
   *   The type of values extracted from the URI path.
   * @tparam Q
   *   The type of values extracted from the URI query parameters.
-  * @tparam I
+  * @tparam E
   *   The type of values extracted from all parts of the request, including path
   *   and query.
-  * @tparam O
-  *   The type of values to create a [[org.http4s.Request]] that matches this
-  *   [[krop.route.Request]].
   */
-sealed abstract class Request[P <: Tuple, Q <: Tuple, I <: Tuple, O <: Tuple] {
+sealed abstract class Request[C <: Tuple, P <: Tuple, Q <: Tuple, E <: Tuple] {
 
   /** A type alias for the type of values this Request produces when it
     * successfully parses an incoming request.
     */
-  type Parsed = I
+  type Parsed = E
 
   /** A type alias for the type of values this Request requires to construct an
     * incoming request.
     */
-  type Unparsed = O
+  type Unparsed = C
 
   //
   // Interpreters --------------------------------------------------------------
@@ -67,13 +67,13 @@ sealed abstract class Request[P <: Tuple, Q <: Tuple, I <: Tuple, O <: Tuple] {
     */
   def parse[F[_, _]: Raise.Handler](
       req: Http4sRequest[IO]
-  ): IO[F[ParseFailure, I]]
+  ): IO[F[ParseFailure, E]]
 
   /** Given appropriate values construct a [[org.http4s.Request]] that will
     * match this [[krop.route.Request]]. This can be used to construct calls to
     * the [[krop.route.Route]] that uses this [[krop.route.Request]].
     */
-  def unparse(params: O): Http4sRequest[IO]
+  def unparse(params: C): Http4sRequest[IO]
 
   /** Create a [[scala.String]] path suitable for embedding in HTML that links
     * to the path described by this [[package.Request]]. Use this to create
@@ -132,9 +132,9 @@ sealed abstract class Request[P <: Tuple, Q <: Tuple, I <: Tuple, O <: Tuple] {
   /** Overload of `pathAndQueryTo` for the case where the path and query have a
     * single parameter.
     */
-  def pathTo[B, C](pathParam: B, queryParam: C)(using
-      evP: Tuple1[B] =:= P,
-      evQ: Tuple1[C] =:= Q
+  def pathTo[P1, Q1](pathParam: P1, queryParam: Q1)(using
+      evP: Tuple1[P1] =:= P,
+      evQ: Tuple1[Q1] =:= Q
   ): String =
     pathAndQueryTo(evP(Tuple1(pathParam)), evQ(Tuple1(queryParam)))
 
@@ -159,9 +159,9 @@ object Request {
       method: Method,
       path: Path[P, Q]
   ) extends Request[
+        TupleConcat[P, Q],
         P,
         Q,
-        TupleConcat[P, Q],
         TupleConcat[P, Q]
       ] {
 
@@ -241,9 +241,9 @@ object Request {
     ): RequestHeaders[P, Q, EmptyTuple, EmptyTuple] =
       RequestHeaders.empty(this).andEnsureHeader(header)
 
-    def withEntity[D, E](
-        entity: Entity[D, E]
-    ): RequestEntity[P, Q, P, Q, D, E] = {
+    def withEntity[E, D](
+        entity: Entity[E, D]
+    ): RequestEntity[P, Q, P, Q, E, D] = {
       val headers = RequestHeaders.empty(this)
       RequestEntity(headers, entity)
     }
@@ -268,10 +268,10 @@ object Request {
       // Count of values that must be supplied to construct a Request
       outputCount: Int
   ) extends Request[
+        TupleConcat[TupleConcat[P, Q], O],
         P,
         Q,
-        TupleConcat[TupleConcat[P, Q], I],
-        TupleConcat[TupleConcat[P, Q], O]
+        TupleConcat[TupleConcat[P, Q], I]
       ] {
     import RequestHeaders.Process
     import RequestHeaders.failure
@@ -450,12 +450,12 @@ object Request {
       Q <: Tuple,
       I <: Tuple,
       O <: Tuple,
-      D,
-      E
+      E,
+      D
   ](
       headers: RequestHeaders[P, Q, ?, ?],
-      entity: Entity[D, E]
-  ) extends Request[P, Q, Tuple.Append[I, D], Tuple.Append[O, E]] {
+      entity: Entity[E, D]
+  ) extends Request[Tuple.Append[O, E], P, Q, Tuple.Append[I, D]] {
 
     def pathTo(params: P): String =
       headers.pathTo(params)
@@ -501,9 +501,9 @@ object Request {
       request.withEntity(encoded)
     }
 
-    def withEntity[D2, E2](
-        entity: Entity[D2, E2]
-    ): RequestEntity[P, Q, I, O, D2, E2] =
+    def withEntity[E2, D2](
+        entity: Entity[E2, D2]
+    ): RequestEntity[P, Q, I, O, E2, D2] =
       RequestEntity(headers, entity)
   }
 

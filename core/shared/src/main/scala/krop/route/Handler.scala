@@ -47,10 +47,10 @@ import org.http4s.Response as Http4sResponse
   */
 trait Handler {
 
-  /** To allow introspection, the handler must provide the [[krop.route.Route]]
-    * it works with.
+  /** To allow introspection, the handler must provide the
+    * [[krop.route.BaseRoute]] it works with.
     */
-  def route: Route[?, ?, ?, ?, ?]
+  def route: BaseRoute
 
   /** Try this Handler. If it fails to match, pass control to the given
     * [[krop.Application]].
@@ -86,9 +86,9 @@ object Handler {
   /** Implementation of the common case when a Handler is a container of a Route
     * and a handler function. It also a RouteHandler.
     */
-  private final class BasicHandler[I <: Tuple, R](
-      val route: Route[?, ?, I, ?, R],
-      handler: I => IO[R]
+  private final class BasicHandler[E <: Tuple, R](
+      val route: Handleable[E, R],
+      handler: E => IO[R]
   ) extends Handler,
         RouteHandler { self =>
     def build(runtime: BaseRuntime): Resource[IO, RouteHandler] =
@@ -112,7 +112,7 @@ object Handler {
     * handler function.
     */
   def apply[I <: Tuple, R](
-      route: Route[?, ?, I, ?, R],
+      route: Handleable[I, R],
       handler: I => IO[R]
   ): Handler = BasicHandler(route, handler)
 }

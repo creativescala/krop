@@ -34,6 +34,39 @@ The types have the following meanings:
 Most of these types are tuples because they accumulate values extracted from smaller components of the HTTP request.
 This will become clearer in the examples below.
 
+- `BaseRoute`
+  - Has a `Request` that ignores all type parameters
+
+Mixins
+- `BaseRoute`
+  - Not reversible and cannot build a client
+  - Not used for much; just a marker type
+- `ReversibleRoute`
+  - Exposes `Request` type parameters
+  - Can be reversed. Useful for asset routes
+- `ClientRoute`
+  - `Response` exposes the external view
+  - can build a client
+- `Handleable`
+  - `handle`, `handleIO` etc.
+  - exposes internal view
+- `Route`
+  - exposes internal and external view
+  - is `ClientRoute`
+  - is `ReversibleRoute`
+  - is `Handleable`
+
+There are two views of a `Route`: the view from the outside, of a HTTP client that may call a route and handle its response, and from the inside, of a handler that may deal with value extracted from a request and return values to encode in the response. We use the following types:
+
+- `C`, for *consumes*, the type of values needs to construct a request to a route. Viewed from the outside.
+- `E`, for *extracts*, the type of values that are extracted from a request. Viewed from the inside.
+- `R`, for *returns*, the type of values need to construct a response. Viewed from the inside.
+- `P`, for *produces*, the type of values that are produced in a response to a route. Viewed from the outside.
+
+In many cases the outside and inside views are the same. E.g. `C == E` and `P == R`. If they differ is usually due to entity handling. For example, a route that serves static files may require a handler to return a path to a file, which produces a HTTP response containing a stream of bytes.
+
+It can be hard to keep the outside and inside type straight. When writing type signatures we think of a pipeline `Request => Handler => Response`, and keep the outside types on the outside and the inside type on the inside. So for a `Request` the outside types are to the left, and for a `Response` they are to the right.
+
 
 ## Constructing A Route
 

@@ -1,0 +1,49 @@
+package krop.route
+
+import cats.effect.IO
+
+/** The internal view of a route, exposing the types that a handler works with.
+  */
+trait Handleable[E <: Tuple, R] extends BaseRoute {
+  import Handleable.{HandlerIOBuilder, HandlerPureBuilder}
+
+  /** Handler incoming requests with the given function. */
+  def handle(using ta: TupleApply[E, R]): HandlerPureBuilder[E, ta.Fun, R] =
+    HandlerPureBuilder(this, ta)
+
+  /** Handler incoming requests with the given function. */
+  def handleIO(using ta: TupleApply[E, IO[R]]): HandlerIOBuilder[E, ta.Fun, R] =
+    HandlerIOBuilder(this, ta)
+
+  /** Pass the result of parsing the request directly the response with no
+    * modification.
+    */
+  def passthrough(using pb: PassthroughBuilder[E, R]): Handler =
+    Handler(this, pb.build)
+}
+object Handleable {
+
+  /** This class exists to help type inference when constructing a Handler from
+    * a Route.
+    */
+  final class HandlerPureBuilder[E <: Tuple, F, R](
+      route: Handleable[E, R],
+      ta: TupleApply.Aux[E, F, R]
+  ) {
+    def apply(f: F): Handler = {
+      val handle = ta.tuple(f)
+      Handler(route, i => IO.pure(handle(i)))
+    }
+  }
+
+  /** This class exists to help type inference when constructing a Handler from
+    * a Route.
+    */
+  final class HandlerIOBuilder[E <: Tuple, F, R](
+      route: Handleable[E, R],
+      ta: TupleApply.Aux[E, F, IO[R]]
+  ) {
+    def apply(f: F): Handler = Handler(route, ta.tuple(f))
+
+  }
+}

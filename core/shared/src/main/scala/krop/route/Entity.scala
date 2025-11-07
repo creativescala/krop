@@ -41,29 +41,29 @@ type InvariantEntity[A] = Entity[A, A]
 /** An Entity describes how to decode data from an HTTP entity, and encode data
   * to an HTTP entity.
   *
-  * @tparam D
-  *   The type of data that this entity will decode from a request
   * @tparam E
   *   The type of data that this entity will encode in a response
+  * @tparam D
+  *   The type of data that this entity will decode from a request
   */
-final case class Entity[D, E](
-    decoder: EntityDecoder[IO, D],
-    encoder: EntityEncoder[IO, E]
+final case class Entity[E, D](
+    encoder: EntityEncoder[IO, E],
+    decoder: EntityDecoder[IO, D]
 ) {
 
   /** Transform the decoded request data with the given function. */
-  def map[D2](f: D => D2): Entity[D2, E] =
+  def map[D2](f: D => D2): Entity[E, D2] =
     this.copy(
       decoder = decoder.map(f)
     )
 
   /** Transform the encoded response data with the given function. */
-  def contramap[E2](f: E2 => E): Entity[D, E2] =
+  def contramap[E2](f: E2 => E): Entity[E2, D] =
     this.copy(
       encoder = encoder.contramap(f)
     )
 
-  def withContentType(tpe: `Content-Type`): Entity[D, E] =
+  def withContentType(tpe: `Content-Type`): Entity[E, D] =
     this.copy(
       decoder =
         if decoder.consumes.exists(_.satisfies(tpe.mediaType)) then decoder
@@ -80,12 +80,13 @@ final case class Entity[D, E](
 object Entity {
   val json: InvariantEntity[Json] =
     Entity(
-      CirceEntityDecoder.circeEntityDecoder,
-      CirceEntityEncoder.circeEntityEncoder
+      CirceEntityEncoder.circeEntityEncoder,
+      CirceEntityDecoder.circeEntityDecoder
     )
 
   def formOf[A](using codec: FormCodec[A]): InvariantEntity[A] =
     Entity(
+      UrlForm.entityEncoder.contramap(codec.encode),
       UrlForm
         .entityDecoder[IO]
         .flatMapR(urlForm =>
@@ -102,42 +103,41 @@ object Entity {
               )
             case Right(value) => EitherT(IO.pure(Right(value)))
           }
-        ),
-      UrlForm.entityEncoder.contramap(codec.encode)
+        )
     )
 
   def jsonOf[A: Encoder: Decoder]: InvariantEntity[A] =
     Entity(
-      CirceEntityDecoder.circeEntityDecoder,
-      CirceEntityEncoder.circeEntityEncoder
+      CirceEntityEncoder.circeEntityEncoder,
+      CirceEntityDecoder.circeEntityDecoder
     )
 
   val unit: InvariantEntity[Unit] =
     Entity(
+      EntityEncoder.unitEncoder,
       EntityDecoder.decodeBy[IO, Unit](MediaRange.`*/*`)(_ =>
         DecodeResult.success(IO.unit)
-      ),
-      EntityEncoder.unitEncoder
+      )
     )
 
   val text: InvariantEntity[String] =
     Entity(
-      EntityDecoder.text[IO],
-      EntityEncoder.stringEncoder()
+      EntityEncoder.stringEncoder(),
+      EntityDecoder.text[IO]
     )
 
   val urlForm: InvariantEntity[UrlForm] =
     Entity(
-      UrlForm.entityDecoder[IO],
-      UrlForm.entityEncoder
+      UrlForm.entityEncoder,
+      UrlForm.entityDecoder[IO]
     )
 
   val html: InvariantEntity[String] =
     text.withContentType(`Content-Type`(mediaType"text/html"))
 
-  val scalatags: Entity[String, TypedTag[String]] =
+  val scalatags: Entity[TypedTag[String], String] =
     html.contramap(tags => "<!DOCTYPE html>" + tags.toString)
 
-  val twirl: Entity[String, Html] =
+  val twirl: Entity[Html, String] =
     html.contramap(html => html.body)
 }
