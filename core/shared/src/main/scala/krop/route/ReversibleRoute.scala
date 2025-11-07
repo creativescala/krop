@@ -3,9 +3,8 @@ package krop.route
 /** The type of Routes that allow reverse routing. That is, constructing paths
   * that link to this route.
   */
-trait ReversibleRoute[Path <: Tuple, Query <: Tuple](
-    val request: Request[?, Path, Query, ?]
-) { self: BaseRoute =>
+trait ReversibleRoute[Path <: Tuple, Query <: Tuple] {
+  self: WithRequest { def request: Request[?, Path, Query, ?] } =>
 
   /** Overload of `pathTo` for the case where the path has no parameters.
     */

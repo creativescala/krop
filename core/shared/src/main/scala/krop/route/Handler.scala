@@ -87,7 +87,7 @@ object Handler {
     * and a handler function. It also a RouteHandler.
     */
   private final class BasicHandler[E <: Tuple, R](
-      val route: Handleable[E, R],
+      val route: HandleableRoute[E, R],
       handler: E => IO[R]
   ) extends Handler,
         RouteHandler { self =>
@@ -112,7 +112,7 @@ object Handler {
     * handler function.
     */
   def apply[I <: Tuple, R](
-      route: Handleable[I, R],
+      route: HandleableRoute[I, R],
       handler: I => IO[R]
   ): Handler = BasicHandler(route, handler)
 }

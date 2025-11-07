@@ -31,7 +31,7 @@ import krop.raise.Raise
 import krop.route.Handler
 import krop.route.Handlers
 import krop.route.ParseFailure
-import krop.route.Route
+import krop.route.BaseRoute
 import krop.route.RouteHandler
 import org.http4s.*
 import org.http4s.dsl.io.*
@@ -48,7 +48,7 @@ object NotFound {
     s"${request.method} ${request.uri.path}"
 
   def routeTemplate(
-      route: Route[?, ?, ?, ?, ?],
+      route: BaseRoute,
       reason: ParseFailure
   ): String =
     s"""<li>

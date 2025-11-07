@@ -6,5 +6,5 @@ package krop.route
   */
 trait BaseRoute {
   def request: Request[?, ?, ?, ?]
-  def response: Response[?]
+  def response: Response[?, ?]
 }

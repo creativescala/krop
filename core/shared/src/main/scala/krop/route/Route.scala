@@ -18,21 +18,6 @@ package krop.route
 
 import cats.effect.IO
 
-/** Type alias for a [[package.Route]] that has extracts no [[package.Entity]]
-  * from the request.
-  */
-// type PathRoute[P <: Tuple, Q <: Tuple, R] = Route[P, Q, P, P, R]
-
-/** Type alias for a [[package.Route]] that has extracts no [[package.Path]] or
-  * [[package.Entity]]] parameters from the request.
-  */
-// type SimpleRoute[R] = Route[EmptyTuple, EmptyTuple, EmptyTuple, EmptyTuple, R]
-
-/** Type alias for a [[package.Route]] that has extracts no [[package.Entity]]
-  * from the request and extracts a single parameter from the [[package.Path]].
-  */
-// type Path1Route[P, R] = PathRoute[Tuple1[P], EmptyTuple, R]
-
 /** A [[krop.Route]] describes an HTTP request and an HTTP response,
   * encapsulating the HTTP specific parts of an endpoint.
   *
@@ -49,7 +34,12 @@ import cats.effect.IO
   * @tparam P
   *   The type of the value produced in the [[package.Response]].
   */
-trait Route[C <: Tuple, Path <: Tuple, Query <: Tuple, E <: Tuple, R, P] {
+trait Route[C <: Tuple, Path <: Tuple, Query <: Tuple, E <: Tuple, R, P]
+    extends ClientRoute[C, P],
+      HandleableRoute[E, R],
+      ReversibleRoute[Path, Query],
+      BaseRoute {
+  self: WithRequest { def request: Request[C, Path, Query, E] } =>
 
   /** The [[krop.route.Request]] associated with this Route. */
   def request: Request[C, Path, Query, E]
@@ -71,7 +61,8 @@ object Route {
       R,
       P
   ](val request: Request[C, Path, Query, E], val response: Response[R, P])
-      extends Route[C, Path, Query, E, R, P]
+      extends Route[C, Path, Query, E, R, P],
+        WithRequest
 
   /** Construct a [[krop.route.Route]] from a [[krop.route.Request]] and a
     * [[krop.route.Response]].
