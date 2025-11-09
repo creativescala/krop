@@ -1,8 +1,9 @@
 package krop.route
 
-/** A BaseRoute is just a marker indicating that something is a route, and has a
-  * Request and a Response. Subtypes of BaseRoute, such as Route, are more
-  * useful for day-to-day applications.
+/** A BaseRoute indicates that something is a route, and has a Request and a
+  * Response. The types of the Request and Response are erased, so this is only
+  * useful for runtime introspection. Other types keep more information and are
+  * useful for other cases.
   */
 trait BaseRoute {
   def request: Request[?, ?, ?, ?]

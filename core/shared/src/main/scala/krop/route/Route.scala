@@ -39,7 +39,6 @@ trait Route[C <: Tuple, Path <: Tuple, Query <: Tuple, E <: Tuple, R, P]
       HandleableRoute[E, R],
       ReversibleRoute[Path, Query],
       BaseRoute {
-  self: WithRequest { def request: Request[C, Path, Query, E] } =>
 
   /** The [[krop.route.Request]] associated with this Route. */
   def request: Request[C, Path, Query, E]

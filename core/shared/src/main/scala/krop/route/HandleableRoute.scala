@@ -5,10 +5,6 @@ import cats.effect.IO
 /** The internal view of a route, exposing the types that a handler works with.
   */
 trait HandleableRoute[E <: Tuple, R] extends BaseRoute {
-  self: BaseRoute {
-    def request: Request[?, ?, ?, E]
-    def response: Response[R, ?]
-  } =>
   import HandleableRoute.{HandlerIOBuilder, HandlerPureBuilder}
 
   def request: Request[?, ?, ?, E]

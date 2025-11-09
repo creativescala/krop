@@ -4,7 +4,7 @@ package krop.route
   * that link to this route.
   */
 trait ReversibleRoute[Path <: Tuple, Query <: Tuple] {
-  self: WithRequest { def request: Request[?, Path, Query, ?] } =>
+  def request: Request[?, Path, Query, ?]
 
   /** Overload of `pathTo` for the case where the path has no parameters.
     */
