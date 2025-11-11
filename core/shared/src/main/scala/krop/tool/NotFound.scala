@@ -28,10 +28,10 @@ import krop.KropRuntime
 import krop.Mode
 import krop.WithRuntime
 import krop.raise.Raise
+import krop.route.BaseRoute
 import krop.route.Handler
 import krop.route.Handlers
 import krop.route.ParseFailure
-import krop.route.BaseRoute
 import krop.route.RouteHandler
 import org.http4s.*
 import org.http4s.dsl.io.*

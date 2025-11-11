@@ -16,8 +16,6 @@
 
 package krop.route
 
-import cats.effect.IO
-
 /** A [[krop.Route]] describes an HTTP request and an HTTP response,
   * encapsulating the HTTP specific parts of an endpoint.
   *
@@ -60,8 +58,7 @@ object Route {
       R,
       P
   ](val request: Request[C, Path, Query, E], val response: Response[R, P])
-      extends Route[C, Path, Query, E, R, P],
-        WithRequest
+      extends Route[C, Path, Query, E, R, P]
 
   /** Construct a [[krop.route.Route]] from a [[krop.route.Request]] and a
     * [[krop.route.Response]].
