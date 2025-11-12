@@ -83,7 +83,7 @@ lazy val rootJvm =
   krop.jvm.aggregate(
     core.jvm,
     sqlite,
-    assets,
+    asset,
     examples,
     unidocs
   )
@@ -113,8 +113,8 @@ lazy val sqlite = project
     moduleName := "krop-sqlite"
   )
 
-lazy val assets = project
-  .in(file("assets"))
+lazy val asset = project
+  .in(file("asset"))
   .settings(
     commonSettings,
     libraryDependencies ++= Seq(
