@@ -21,6 +21,7 @@ import fs2.Stream
 import fs2.io.file.Files
 import fs2.io.file.Path
 import munit.CatsEffectSuite
+
 import scala.concurrent.duration.*
 
 class HashingFileWatcherSuite extends CatsEffectSuite {

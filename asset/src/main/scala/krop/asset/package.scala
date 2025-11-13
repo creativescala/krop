@@ -19,6 +19,7 @@ package krop.asset
 import cats.effect.IO
 import fs2.hashing.*
 import fs2.io.file.*
+
 import java.security.MessageDigest
 
 extension (path: Path) {
