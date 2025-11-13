@@ -1,10 +1,10 @@
 package krop.asset
 
+import cats.effect.IO
 import fs2.Stream
 import fs2.io.file.Files
 import fs2.io.file.Path
 import munit.CatsEffectSuite
-import cats.effect.IO
 
 class HashingFileWatcherSuite extends CatsEffectSuite {
   test("HashingFileWatcher emits hashes of already extant files") {
