@@ -79,12 +79,12 @@ class HashingFileWatcherSuite extends CatsEffectSuite {
 
       // The number of events emitted is nondeterministic. E.g. sometimes we get
       // two change events for a file change. To work around this we just sample
-      // 2s from the Stream and then close it. This should be enough time for
+      // 1s from the Stream and then close it. This should be enough time for
       // all the events we're looking for to come through.
       val fileHashes: IO[List[(Path, HexString)]] =
         HashingFileWatcher.watch(dir).use { stream =>
           stream
-            .interruptAfter(2.seconds)
+            .interruptAfter(1.seconds)
             .compile
             .toList
             .map(_.collect { case HashingFileWatcher.Event.Hashed(file, path) =>
@@ -99,11 +99,10 @@ class HashingFileWatcherSuite extends CatsEffectSuite {
         )
 
       val program =
-        // Sleep overwrite for 1s so we don't get a race between it and the watcher initialization
-        create >> (fileHashes, IO.sleep(1.second) >> overwrite)
+        // Sleep overwrite so we don't get a race between it and the watcher initialization
+        create >> (fileHashes, IO.sleep(250.milliseconds) >> overwrite)
           .parMapN((hashes, _) => hashes)
           .map { hashes =>
-            assert(hashes.size == 5)
             assert(hashes.contains(dir / "a.txt" -> "bigcats".md5Hex))
             assert(hashes.contains(dir / "b.txt" -> "littlecats".md5Hex))
             assert(hashes.contains(dir / "a.txt" -> "largeaardvarks".md5Hex))
