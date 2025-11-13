@@ -1,10 +1,8 @@
 package krop.asset
 
-import cats.syntax.all.*
 import fs2.Stream
 import fs2.io.file.Files
 import fs2.io.file.Path
-import fs2.hashing.Hash
 import munit.CatsEffectSuite
 import cats.effect.IO
 
@@ -28,8 +26,8 @@ class HashingFileWatcherSuite extends CatsEffectSuite {
             .take(2)
             .compile
             .toList
-            .map(_.collect { case a @ (path, h: HexString) =>
-              a.asInstanceOf[(Path, HexString)]
+            .map(_.collect { case HashingFileWatcher.Event.Hashed(file, path) =>
+              file -> path
             })
         }
 
