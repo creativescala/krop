@@ -36,7 +36,7 @@ ThisBuild / developers := List(
 lazy val scala3 = "3.6.4"
 
 ThisBuild / crossScalaVersions := List(scala3)
-ThisBuild / githubWorkflowJavaVersions := List(JavaSpec.temurin("11"))
+ThisBuild / githubWorkflowJavaVersions := List(JavaSpec.temurin("17"))
 ThisBuild / scalaVersion := crossScalaVersions.value.head
 ThisBuild / useSuperShell := true
 ThisBuild / semanticdbEnabled := true
