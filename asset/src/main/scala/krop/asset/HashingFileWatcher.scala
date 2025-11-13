@@ -55,9 +55,7 @@ object HashingFileWatcher {
     * found recursively within the directory, and then subsequent events will be
     * produced when files are created, modified, or deleted.
     */
-  def watch(
-      directory: Path
-  ): Resource[IO, Stream[IO, Event]] = {
+  def watch(directory: Path): Resource[IO, Stream[IO, Event]] = {
     val files = Files.forIO
 
     def maybeHash(path: Path): IO[Option[Event]] =
@@ -81,24 +79,22 @@ object HashingFileWatcher {
           )
       }
 
-    val watcher: Resource[IO, Stream[IO, Event]] =
-      Watcher
-        .default[IO]
-        .map(watcher =>
-          watcher
-            .events()
-            .evalMapFilter(event =>
-              event match {
-                case Watcher.Event.Created(path, _)  => maybeHash(path)
-                case Watcher.Event.Modified(path, _) => maybeHash(path)
-                case Watcher.Event.Deleted(path, _) =>
-                  IO.pure(Some(Event.Deleted(path)))
-                case other =>
-                  IO.pure(None)
-              }
-            )
+    val watcher: Stream[IO, Event] =
+      files
+        .watch(directory)
+        .evalMapFilter(event =>
+          event match {
+            case Watcher.Event.Created(path, _)  => maybeHash(path)
+            case Watcher.Event.Modified(path, _) => maybeHash(path)
+            case Watcher.Event.Deleted(path, _) =>
+              IO.pure(Some(Event.Deleted(path)))
+            case other =>
+              IO.pure(None)
+          }
         )
 
-    watcher.evalMap(watchStream => initialize.map(_ ++ watchStream))
+    initialize
+      .map(init => init.onComplete(watcher))
+      .toResource
   }
 }

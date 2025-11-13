@@ -31,9 +31,13 @@ object HexString {
   def unsafeApply(string: String): HexString = string
 
   def fromHash(hash: Hash): HexString = {
-    val array = Array.ofDim[Byte](hash.bytes.size)
-    hash.bytes.copyToArray(array)
+    val bytes = Array.ofDim[Byte](hash.bytes.size)
+    hash.bytes.copyToArray(bytes)
 
-    hexFormat.formatHex(array)
+    fromBytes(bytes)
+  }
+
+  def fromBytes(bytes: Array[Byte]): HexString = {
+    hexFormat.formatHex(bytes)
   }
 }
