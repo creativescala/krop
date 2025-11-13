@@ -22,6 +22,7 @@ import fs2.Stream
 import fs2.io.file.Files
 import fs2.io.file.Path
 import fs2.io.file.Watcher
+import scala.concurrent.duration.*
 
 /** A utility to watch a directory for changes and emit paths and hashes for
   * changed files.
@@ -55,7 +56,10 @@ object HashingFileWatcher {
     * found recursively within the directory, and then subsequent events will be
     * produced when files are created, modified, or deleted.
     */
-  def watch(directory: Path): Resource[IO, Stream[IO, Event]] = {
+  def watch(
+      directory: Path,
+      pollTimeout: FiniteDuration = 1.second
+  ): Resource[IO, Stream[IO, Event]] = {
     val files = Files.forIO
 
     def maybeHash(path: Path): IO[Option[Event]] =
@@ -80,8 +84,10 @@ object HashingFileWatcher {
       }
 
     val watcher: Stream[IO, Event] =
-      files
-        .watch(directory)
+      Stream
+        .resource(Watcher.default[IO])
+        .evalTap(_.watch(directory))
+        .flatMap(_.events(pollTimeout = pollTimeout))
         .evalMapFilter(event =>
           event match {
             case Watcher.Event.Created(path, _)  => maybeHash(path)
@@ -94,7 +100,7 @@ object HashingFileWatcher {
         )
 
     initialize
-      .map(init => init.onComplete(watcher))
+      .map(init => init ++ watcher)
       .toResource
   }
 }

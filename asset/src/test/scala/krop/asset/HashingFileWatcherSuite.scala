@@ -16,6 +16,7 @@
 
 package krop.asset
 
+import cats.effect.Deferred
 import cats.effect.IO
 import fs2.Stream
 import fs2.io.file.Files
@@ -77,36 +78,60 @@ class HashingFileWatcherSuite extends CatsEffectSuite {
       val create: IO[Unit] =
         makeFiles(dir, List("a.txt" -> "bigcats", "b.txt" -> "littlecats"))
 
-      // The number of events emitted is nondeterministic. E.g. sometimes we get
-      // two change events for a file change. To work around this we just sample
-      // 1s from the Stream and then close it. This should be enough time for
-      // all the events we're looking for to come through.
-      val fileHashes: IO[List[(Path, HexString)]] =
-        HashingFileWatcher.watch(dir).use { stream =>
-          stream
-            .interruptAfter(1.seconds)
-            .compile
-            .toList
-            .map(_.collect { case HashingFileWatcher.Event.Hashed(file, path) =>
-              file -> path
-            })
-        }
-
       val overwrite: IO[Unit] =
         makeFiles(
           dir,
           List("a.txt" -> "largeaardvarks", "b.txt" -> "petitecapybaras")
         )
 
+      val expected =
+        List(
+          (dir / "a.txt" -> "bigcats".md5Hex),
+          (dir / "b.txt" -> "littlecats".md5Hex),
+          (dir / "a.txt" -> "largeaardvarks".md5Hex),
+          (dir / "b.txt" -> "petitecapybaras".md5Hex)
+        )
+
+      // The number of events emitted is nondeterministic. E.g. sometimes we get
+      // two change events for a file change. To work around this we keep a
+      // running total of the events we're looking for (expected) and halt when
+      // we have found them all, or we timeout.
+      //
+      // MacOS uses a polling implementation, so for this test to run in a
+      // reasonable time on MacOS we need to poll somewhat rapidly. See
+      // https://bugs.openjdk.org/browse/JDK-7133447
+      val fileHashes: IO[List[(Path, HexString)]] =
+        for {
+          deferred <- Deferred[IO, Either[Throwable, Unit]]
+          expected <-
+            HashingFileWatcher.watch(dir, 200.milliseconds).use { stream =>
+              stream
+                .collect { case HashingFileWatcher.Event.Hashed(path, hash) =>
+                  path -> hash
+                }
+                .scan(expected)((expected, hash) =>
+                  expected.filterNot(_ == hash)
+                )
+                .evalMap(expected =>
+                  if expected.isEmpty then
+                    deferred
+                      .complete(Right(()))
+                      .as(expected)
+                  else IO.pure(expected)
+                )
+                .interruptWhen(Stream.sleep[IO](4.seconds).as(true))
+                .interruptWhen(deferred)
+                .compile
+                .lastOrError
+            }
+        } yield expected
+
       val program =
         // Sleep overwrite so we don't get a race between it and the watcher initialization
         create >> (fileHashes, IO.sleep(250.milliseconds) >> overwrite)
-          .parMapN((hashes, _) => hashes)
-          .map { hashes =>
-            assert(hashes.contains(dir / "a.txt" -> "bigcats".md5Hex))
-            assert(hashes.contains(dir / "b.txt" -> "littlecats".md5Hex))
-            assert(hashes.contains(dir / "a.txt" -> "largeaardvarks".md5Hex))
-            assert(hashes.contains(dir / "b.txt" -> "petitecapybaras".md5Hex))
+          .parMapN((expected, _) => expected)
+          .map { expected =>
+            assert(expected.isEmpty)
           }
 
       program
