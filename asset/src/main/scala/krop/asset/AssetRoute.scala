@@ -20,11 +20,11 @@ import cats.effect.IO
 import cats.effect.Resource
 import cats.effect.std.MapRef
 import fs2.*
-import fs2.hashing.*
 import fs2.io.file.Files
 import fs2.io.file.Path as Fs2Path
 import krop.BaseRuntime
 import krop.Key
+import krop.KropRuntime
 import krop.route.BaseRoute
 import krop.route.ClientRoute
 import krop.route.Param
@@ -33,9 +33,6 @@ import krop.route.Request
 import krop.route.Response
 import krop.route.ReversibleRoute
 import krop.route.RouteHandler
-import HashingFileWatcher.Event.{Hashed, Deleted}
-
-import java.util.HexFormat
 
 final class AssetRoute(base: Path[EmptyTuple, EmptyTuple], directory: Fs2Path)
     extends ReversibleRoute[Tuple1[Fs2Path], EmptyTuple],
@@ -52,7 +49,25 @@ final class AssetRoute(base: Path[EmptyTuple, EmptyTuple], directory: Fs2Path)
   val response: Response[Fs2Path, Array[Byte]] =
     Response.staticDirectory(directory)
 
-  // val key: Key[???] = Key.unsafe(s"Assets for $directory")
+  final class Asset(hasher: FileNameHasher) {
+    def apply(path: Fs2Path): IO[Fs2Path] =
+      hasher.hash(path)
+    def apply(path: String): IO[String] =
+      apply(Fs2Path(path)).map(_.toString)
+  }
+
+  private val key: Key[Asset] = Key.unsafe(s"Assets for ${directory.toString}")
+
+  def asset(path: Fs2Path)(using KropRuntime): Fs2Path =
+    key.get
+      .apply(path)
+      .unsafeRunSync()(using cats.effect.unsafe.implicits.global)
+
+  def asset(path: String)(using KropRuntime): String =
+    key.get
+      .apply(Fs2Path(path))
+      .map(_.toString)
+      .unsafeRunSync()(using cats.effect.unsafe.implicits.global)
 
   def build(runtime: BaseRuntime): Resource[IO, RouteHandler] = {
     val files = Files[IO]
@@ -80,6 +95,7 @@ final class AssetRoute(base: Path[EmptyTuple, EmptyTuple], directory: Fs2Path)
       events <- HashingFileWatcher.watch(directory)
       hasher = FileNameHasher(logger, events, map)
       _ <- hasher.update.background
+      assets = Asset(hasher)
     } yield ???
 
     // new RouteHandler {

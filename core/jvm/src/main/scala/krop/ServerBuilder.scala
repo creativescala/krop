@@ -17,11 +17,13 @@
 package krop
 
 import cats.effect.IO
+import cats.effect.Resource
 import com.comcast.ip4s.Host
 import com.comcast.ip4s.Port
 import com.comcast.ip4s.host
 import com.comcast.ip4s.port
 import org.http4s.ember.server.*
+import org.http4s.server.Server as Http4sServer
 import org.typelevel.log4cats.LoggerFactory
 import org.typelevel.log4cats.slf4j.Slf4jFactory
 
@@ -35,20 +37,22 @@ final class ServerBuilder(
   /** Build a [[krop.Server.Server]] from this description. */
   def build: Server = {
     val baseRuntime = JvmRuntime.base
-    val emberServer =
-      application.toHttpApp(baseRuntime).flatMap { withRuntime =>
-        import baseRuntime.given
-        val builder = EmberServerBuilder
+    import baseRuntime.given
+
+    val emberServer: Resource[IO, Http4sServer] =
+      for {
+        withRuntime <- application.toHttpApp(baseRuntime)
+        resources <- baseRuntime.buildResources
+        emberServer <- EmberServerBuilder
           .default[IO]
           .withPort(port)
           .withHost(host)
           .withHttp2
           .withHttpWebSocketApp { wsBuilder =>
-            withRuntime(baseRuntime.toKropRuntime(wsBuilder))
+            withRuntime(JvmKropRuntime(baseRuntime, resources, wsBuilder))
           }
-
-        builder.build
-      }
+          .build
+      } yield emberServer
 
     Server(emberServer)
   }

@@ -22,6 +22,7 @@ import fs2.Stream
 import fs2.io.file.Files
 import fs2.io.file.Path
 import fs2.io.file.Watcher
+
 import scala.concurrent.duration.*
 
 /** A utility to watch a directory for changes and emit paths and hashes for

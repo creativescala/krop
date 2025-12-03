@@ -18,25 +18,33 @@ package krop
 
 import cats.effect.IO
 import org.http4s.server.websocket.WebSocketBuilder
+import org.typelevel.log4cats.Logger
+import org.typelevel.log4cats.LoggerFactory
+
 import java.util.concurrent.atomic.AtomicInteger
 
 /** Provides platform and server specific services and utilities that are
   * available after the http4s server has started.
   */
-trait KropRuntime extends BaseRuntime {
+trait KropRuntime {
+  given loggerFactory: LoggerFactory[IO]
+  given logger: Logger[IO]
+
   def webSocketBuilder: WebSocketBuilder[IO]
+
+  def getResource[V](key: Key[V]): V
 }
 
 type WithRuntime[A] = KropRuntime => A
 
 final class Key[V] private (val id: Int, val description: String) {
-  def get(using runtime: KropRuntime): V = ???
-  // runtime.getResource(this)
+  def get(using runtime: KropRuntime): V =
+    runtime.getResource(this)
 
   override def hashCode(): Int = id
   override def equals(that: Any): Boolean =
-    if that.isInstanceOf[Key[V]]
-    then that.asInstanceOf[Key[V]].id == this.id
+    if that.isInstanceOf[Key[?]]
+    then that.asInstanceOf[Key[?]].id == this.id
     else false
 }
 object Key {
