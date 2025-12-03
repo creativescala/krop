@@ -19,6 +19,7 @@ package krop
 import cats.effect.IO
 import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.LoggerFactory
+import cats.effect.Resource
 
 /** Provides platform specific services and utilities that are available before
   * the http4s server has started.
@@ -26,4 +27,8 @@ import org.typelevel.log4cats.LoggerFactory
 trait BaseRuntime {
   given loggerFactory: LoggerFactory[IO]
   given logger: Logger[IO]
+
+  /** Add a Resource, the value of which will be available in the KropRuntime
+    * using the given key.
+    */
 }

@@ -18,6 +18,7 @@ package krop
 
 import cats.effect.IO
 import org.http4s.server.websocket.WebSocketBuilder
+import java.util.concurrent.atomic.AtomicInteger
 
 /** Provides platform and server specific services and utilities that are
   * available after the http4s server has started.
@@ -27,3 +28,25 @@ trait KropRuntime extends BaseRuntime {
 }
 
 type WithRuntime[A] = KropRuntime => A
+
+final class Key[V] private (val id: Int, val description: String) {
+  def get(using runtime: KropRuntime): V = ???
+  // runtime.getResource(this)
+
+  override def hashCode(): Int = id
+  override def equals(that: Any): Boolean =
+    if that.isInstanceOf[Key[V]]
+    then that.asInstanceOf[Key[V]].id == this.id
+    else false
+}
+object Key {
+  private val counter: AtomicInteger = AtomicInteger(0)
+
+  private def nextId(): Int = {
+    counter.getAndIncrement()
+  }
+
+  /** Creates a resource key without staging a resource. */
+  def unsafe[V](description: String): Key[V] =
+    Key(nextId(), description)
+}
