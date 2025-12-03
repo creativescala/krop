@@ -36,9 +36,9 @@ import org.http4s.Response as Http4sResponse
   *
   * A Handler is a description, which means it can build a
   * [[krop.route.RouteHandler]] that does the actual work. This is similar to
-  * how `IO` is a description of a program, that is only run when we call the
-  * appropriate methods. When the Handler builds the RouteHandler it can also
-  * create any resources that are needed to do its work.
+  * how `IO` is a description of a program, that is only run when we call a
+  * method like `unsafeRunSync`. When the Handler builds the RouteHandler it can
+  * also create any resources that are needed to do its work.
   *
   * @tparam I
   *   The type of all the values extracted from the request.
