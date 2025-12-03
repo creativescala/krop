@@ -23,10 +23,8 @@ import fs2.*
 import fs2.hashing.*
 import fs2.io.file.Files
 import fs2.io.file.Path as Fs2Path
-import fs2.io.file.Watcher
-import fs2.io.file.Watcher.Event.Created
-import fs2.io.file.Watcher.Event.Modified
 import krop.BaseRuntime
+import krop.Key
 import krop.route.BaseRoute
 import krop.route.ClientRoute
 import krop.route.Param
@@ -35,6 +33,7 @@ import krop.route.Request
 import krop.route.Response
 import krop.route.ReversibleRoute
 import krop.route.RouteHandler
+import HashingFileWatcher.Event.{Hashed, Deleted}
 
 import java.util.HexFormat
 
@@ -52,6 +51,8 @@ final class AssetRoute(base: Path[EmptyTuple, EmptyTuple], directory: Fs2Path)
 
   val response: Response[Fs2Path, Array[Byte]] =
     Response.staticDirectory(directory)
+
+  // val key: Key[???] = Key.unsafe(s"Assets for $directory")
 
   def build(runtime: BaseRuntime): Resource[IO, RouteHandler] = {
     val files = Files[IO]
@@ -75,40 +76,10 @@ final class AssetRoute(base: Path[EmptyTuple, EmptyTuple], directory: Fs2Path)
            )
          }).toResource
       // Table maps file name to hex encoded hash
-      table <- MapRef[IO, Fs2Path, String].toResource
-      _ <- files
-        .walk(directory)
-        .evalMap(path => logger.info(s"Initializing hash for $path").as(path))
-        .evalMap(path =>
-          AssetRoute
-            .hashToHexString(path)
-            .flatMap(hex => table(path).set(Some(hex)))
-        )
-        .compile
-        .drain
-        .toResource
-      watcher <- Watcher.default[IO]
-      watcherEvents <- watcher
-        .events()
-        .evalMap(event =>
-          event match {
-            case Created(path, _) =>
-              logger.info(s"Noticed $path has been created and hashing it.") >>
-                AssetRoute
-                  .hashToHexString(path)
-                  .flatMap(hex => table(path).set(Some(hex)))
-            case Modified(path, _) =>
-              logger.info(s"Noticed $path has been modified and hashing it.") >>
-                AssetRoute
-                  .hashToHexString(path)
-                  .flatMap(hex => table(path).set(Some(hex)))
-            case other =>
-              logger.info(s"Noticed file systeme event $other and ignoring it.")
-          }
-        )
-        .compile
-        .drain
-        .background
+      map <- MapRef[IO, Fs2Path, HexString].toResource
+      events <- HashingFileWatcher.watch(directory)
+      hasher = FileNameHasher(logger, events, map)
+      _ <- hasher.update.background
     } yield ???
 
     // new RouteHandler {
@@ -125,23 +96,5 @@ final class AssetRoute(base: Path[EmptyTuple, EmptyTuple], directory: Fs2Path)
     //             )
     //         )
     //   }
-  }
-}
-object AssetRoute {
-  private val hexFormat = HexFormat.of()
-
-  def hashToHexString(path: Fs2Path): IO[String] =
-    Files.forIO
-      .readAll(path)
-      .through(Hashing.forIO.hash(HashAlgorithm.MD5))
-      .compile
-      .lastOrError
-      .map(toHexString)
-
-  def toHexString(hash: Hash): String = {
-    val array = Array.ofDim[Byte](hash.bytes.size)
-    hash.bytes.copyToArray(array)
-
-    hexFormat.formatHex(array)
   }
 }

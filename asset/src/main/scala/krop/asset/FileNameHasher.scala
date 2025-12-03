@@ -9,7 +9,7 @@ import org.typelevel.log4cats.Logger
 /** Utility the maintains a map of Path to HexString, and provides operations to
   * hash a path, adding a HexString, and unhash a path, removing a HexString
   */
-class FileNameHasher(
+final class FileNameHasher(
     logger: Logger[IO],
     events: fs2.Stream[IO, HashingFileWatcher.Event],
     map: MapRef[IO, Fs2Path, Option[HexString]]
