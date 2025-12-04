@@ -23,8 +23,8 @@ import org.typelevel.log4cats.Logger
 
 import HashingFileWatcher.Event.{Hashed, Deleted}
 
-/** Utility the maintains a map of Path to HexString, and provides operations to
-  * hash a path, adding a HexString, and unhash a path, removing a HexString
+/** Maintains a map of Path to HexString, and provides operations to hash a
+  * path, adding a HexString, and unhash a path, removing a HexString.
   */
 final class FileNameHasher(
     logger: Logger[IO],
