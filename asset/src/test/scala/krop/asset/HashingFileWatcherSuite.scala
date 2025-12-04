@@ -61,12 +61,12 @@ class HashingFileWatcherSuite extends CatsEffectSuite {
         assert(fileHashes.size == 2)
         assert(
           fileHashes.contains(
-            dir / "a.txt" -> "80fe0e83da4321cca20e0cda8a5f86f8"
+            Path("a.txt") -> "80fe0e83da4321cca20e0cda8a5f86f8"
           )
         )
         assert(
           fileHashes.contains(
-            dir / "b.txt" -> "485e307791ace28ccad2df0cfeab31ad"
+            Path("b.txt") -> "485e307791ace28ccad2df0cfeab31ad"
           )
         )
       }
@@ -86,10 +86,10 @@ class HashingFileWatcherSuite extends CatsEffectSuite {
 
       val expected =
         List(
-          (dir / "a.txt" -> "bigcats".md5Hex),
-          (dir / "b.txt" -> "littlecats".md5Hex),
-          (dir / "a.txt" -> "largeaardvarks".md5Hex),
-          (dir / "b.txt" -> "petitecapybaras".md5Hex)
+          (Path("a.txt") -> "bigcats".md5Hex),
+          (Path("b.txt") -> "littlecats".md5Hex),
+          (Path("a.txt") -> "largeaardvarks".md5Hex),
+          (Path("b.txt") -> "petitecapybaras".md5Hex)
         )
 
       // The number of events emitted is nondeterministic. E.g. sometimes we get

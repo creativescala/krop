@@ -30,8 +30,8 @@ import scala.concurrent.duration.*
   */
 object HashingFileWatcher {
 
-  /** Events produced by the HashingFileWatcher. Paths are always absolute
-    * paths.
+  /** Events produced by the HashingFileWatcher. Paths are always relative to
+    * the watched path.
     */
   enum Event {
 
@@ -49,7 +49,7 @@ object HashingFileWatcher {
     case Deleted(file: Path)
   }
 
-  /** Produces a `Resource` that, when used, will construct an infinite a stream
+  /** Produces a `Resource` that, when used, will construct an infinite stream
     * of `Event` for the given directory. If the given path is not a directory
     * the `Resource` will fail with an `IllegalArgumentException`.
     *
@@ -63,9 +63,13 @@ object HashingFileWatcher {
   ): Resource[IO, Stream[IO, Event]] = {
     val files = Files.forIO
 
+    def relativize(path: Path): Path =
+      directory.relativize(path)
+
     def maybeHash(path: Path): IO[Option[Event]] =
       files.isRegularFile(path).flatMap { isFile =>
-        if isFile then path.md5Hex.map(hex => Some(Event.Hashed(path, hex)))
+        if isFile then
+          path.md5Hex.map(hex => Some(Event.Hashed(relativize(path), hex)))
         else IO.pure(None)
       }
 
@@ -75,7 +79,9 @@ object HashingFileWatcher {
           files
             .walk(directory)
             .evalFilter(path => files.isRegularFile(path))
-            .evalMap(path => path.md5Hex.map(hex => Event.Hashed(path, hex)))
+            .evalMap(path =>
+              path.md5Hex.map(hex => Event.Hashed(relativize(path), hex))
+            )
         else
           Stream.raiseError(
             IllegalArgumentException(
@@ -94,7 +100,7 @@ object HashingFileWatcher {
             case Watcher.Event.Created(path, _)  => maybeHash(path)
             case Watcher.Event.Modified(path, _) => maybeHash(path)
             case Watcher.Event.Deleted(path, _) =>
-              IO.pure(Some(Event.Deleted(path)))
+              IO.pure(Some(Event.Deleted(relativize(path))))
             case other =>
               IO.pure(None)
           }
