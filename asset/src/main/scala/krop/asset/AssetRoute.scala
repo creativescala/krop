@@ -32,6 +32,7 @@ import krop.route.Path
 import krop.route.Request
 import krop.route.Response
 import krop.route.ReversibleRoute
+import krop.route.Route
 import krop.route.RouteHandler
 
 final class AssetRoute(base: Path[EmptyTuple, EmptyTuple], directory: Fs2Path)
@@ -95,8 +96,12 @@ final class AssetRoute(base: Path[EmptyTuple, EmptyTuple], directory: Fs2Path)
       events <- HashingFileWatcher.watch(directory)
       hasher = FileNameHasher(logger, events, map)
       _ <- hasher.update.background
-      assets = Asset(hasher)
-    } yield ???
+      assets = Resource.pure[IO, Asset](Asset(hasher))
+      _ = runtime.stageResource(key, assets)
+      routeHandler <- Route(request, response)
+        .handle(path => hasher.unhash(path))
+        .build(runtime)
+    } yield routeHandler
 
     // new RouteHandler {
     //     def run[F[_, _]](request: Http4sRequest[IO])(using
