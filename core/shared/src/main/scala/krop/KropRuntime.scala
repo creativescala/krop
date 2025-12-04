@@ -35,8 +35,6 @@ trait KropRuntime {
   def getResource[V](key: Key[V]): V
 }
 
-type WithRuntime[A] = KropRuntime => A
-
 final class Key[V] private (val id: Int, val description: String) {
   def get(using runtime: KropRuntime): V =
     runtime.getResource(this)

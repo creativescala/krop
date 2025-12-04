@@ -18,6 +18,7 @@ package krop.route
 
 import cats.effect.IO
 import krop.KropRuntime
+import krop.WithRuntime
 import krop.raise.Raise
 import org.http4s.Request as Http4sRequest
 import org.http4s.Response as Http4sResponse
@@ -38,7 +39,7 @@ trait RouteHandler {
 object RouteHandler {
   def apply[E <: Tuple, R](
       route: InternalRoute[E, R],
-      handler: E => IO[R]
+      handler: WithRuntime[E => IO[R]]
   ): RouteHandler =
     new RouteHandler {
       def run[F[_, _]](request: Http4sRequest[IO])(using

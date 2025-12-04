@@ -49,7 +49,7 @@ final class ServerBuilder(
           .withHost(host)
           .withHttp2
           .withHttpWebSocketApp { wsBuilder =>
-            withRuntime(JvmKropRuntime(baseRuntime, resources, wsBuilder))
+            withRuntime(using JvmKropRuntime(baseRuntime, resources, wsBuilder))
           }
           .build
       } yield emberServer

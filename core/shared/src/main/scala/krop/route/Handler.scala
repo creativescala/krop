@@ -21,6 +21,7 @@ import cats.effect.IO
 import cats.effect.Resource
 import krop.Application
 import krop.BaseRuntime
+import krop.WithRuntime
 
 /** A [[krop.route.Handler]] describes how to build an endpoint that can parse a
   * request and produce a response. It combines a [[krop.request.Route]] with
@@ -79,7 +80,7 @@ object Handler {
     */
   private final class BasicHandler[E <: Tuple, R](
       val route: InternalRoute[E, R],
-      handler: E => IO[R]
+      handler: WithRuntime[E => IO[R]]
   ) extends Handler {
     def build(runtime: BaseRuntime): Resource[IO, RouteHandler] =
       Resource.eval(IO.pure(RouteHandler(route, handler)))
@@ -90,7 +91,7 @@ object Handler {
     */
   private final class ResourceHandler[E <: Tuple, R](
       val route: InternalRoute[E, R],
-      handler: Resource[IO, E => IO[R]]
+      handler: Resource[IO, WithRuntime[E => IO[R]]]
   ) extends Handler { self =>
     def build(runtime: BaseRuntime): Resource[IO, RouteHandler] =
       handler.map(h => RouteHandler(route, h))
@@ -101,7 +102,7 @@ object Handler {
     */
   def apply[E <: Tuple, R](
       route: InternalRoute[E, R],
-      handler: E => IO[R]
+      handler: WithRuntime[E => IO[R]]
   ): Handler = BasicHandler(route, handler)
 
   /** Construct a [[krop.route.Handler]] from a [[krop.route.Route]] and a
@@ -109,6 +110,6 @@ object Handler {
     */
   def apply[E <: Tuple, R](
       route: InternalRoute[E, R],
-      handler: Resource[IO, E => IO[R]]
+      handler: Resource[IO, WithRuntime[E => IO[R]]]
   ): Handler = ResourceHandler(route, handler)
 }

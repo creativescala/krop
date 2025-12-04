@@ -170,8 +170,7 @@ object NotFound {
             )
         }
 
-      routeHandlers.map { list => (runtime: KropRuntime) =>
-        given KropRuntime = runtime
+      routeHandlers.map { list => (runtime: KropRuntime) ?=>
         Kleisli { (req: Request[IO]) =>
           // We have at least one route, the Krop handlers we added ourselves
           val (handler, routeHandler) = list.head
@@ -237,8 +236,7 @@ object NotFound {
 
     val nope = IO.pure(Response.notFound)
 
-    resource.map { routeHandlers => (runtime: KropRuntime) =>
-      given KropRuntime = runtime
+    resource.map { routeHandlers => (runtime: KropRuntime) ?=>
       Kleisli((req: Request[IO]) =>
         def loop(idx: Int): IO[Response[IO]] =
           if idx >= routeHandlers.size then nope

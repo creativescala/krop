@@ -16,7 +16,9 @@
 
 package krop.route
 
+import krop.WithRuntime
 import cats.effect.IO
+import krop.KropRuntime
 
 /** Adds the handler API to an internal route.
   */
@@ -35,7 +37,7 @@ trait HandleableRoute[E <: Tuple, R] extends InternalRoute[E, R] {
     * modification.
     */
   def passthrough(using pb: PassthroughBuilder[E, R]): Handler =
-    Handler(this, pb.build)
+    Handler(this, runtime ?=> pb.build)
 }
 object HandleableRoute {
 
@@ -48,7 +50,12 @@ object HandleableRoute {
   ) {
     def apply(f: F): Handler = {
       val handle = ta.tuple(f)
-      Handler(route, i => IO.pure(handle(i)))
+      Handler(route, runtime ?=> i => IO.pure(handle(i)))
+    }
+
+    def apply(f: WithRuntime[F]): Handler = {
+      val handle = (runtime: KropRuntime) ?=> ta.tuple(f)
+      Handler(route, runtime ?=> i => IO.pure(handle(i)))
     }
   }
 
@@ -59,7 +66,10 @@ object HandleableRoute {
       route: HandleableRoute[E, R],
       ta: TupleApply.Aux[E, F, IO[R]]
   ) {
-    def apply(f: F): Handler = Handler(route, ta.tuple(f))
+    def apply(f: F): Handler =
+      Handler(route, runtime ?=> ta.tuple(f))
 
+    def apply(f: WithRuntime[F]): Handler =
+      Handler(route, runtime ?=> ta.tuple(f))
   }
 }
