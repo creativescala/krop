@@ -117,10 +117,7 @@ lazy val asset = project
   .in(file("asset"))
   .settings(
     commonSettings,
-    libraryDependencies ++= Seq(
-      Dependencies.directoryWatcher.value,
-      Dependencies.betterFiles.value
-    )
+    moduleName := "krop-asset"
   )
   .dependsOn(core.jvm)
 
