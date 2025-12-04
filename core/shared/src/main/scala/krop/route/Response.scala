@@ -40,6 +40,9 @@ enum Response[R, P] {
       runtime: KropRuntime
   ): IO[Http4sResponse[IO]] =
     this match {
+      case Contramap(f, response) =>
+        response.respond(request, f(value))
+
       case OrEmpty(success, failure) =>
         value match {
           case Some(a) => success.respond(request, a)
@@ -113,6 +116,9 @@ enum Response[R, P] {
         runtime.webSocketBuilder.build(send, receive)
     }
 
+  def contramap[A](f: A => R): Response[A, P] =
+    Contramap(f, this)
+
   /** Produce this `Response` if given `Some[A]`, otherwise produce a 404
     * `Response`.
     */
@@ -150,6 +156,8 @@ enum Response[R, P] {
   def withHeader(header: ToRaw, headers: ToRaw*): Response[R, P] =
     WithHeader(this, Headers(header.values ++ headers.flatMap(_.values)))
 
+  case Contramap[A, R, P](f: A => R, response: Response[R, P])
+      extends Response[A, P]
   case OrEmpty[R, P](success: Response[R, P], failure: Response[Unit, Unit])
       extends Response[Option[R], Option[P]]
   case OrElse[R1, P1, R2, P2](
