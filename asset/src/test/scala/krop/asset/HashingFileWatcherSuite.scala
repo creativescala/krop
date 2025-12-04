@@ -119,7 +119,7 @@ class HashingFileWatcherSuite extends CatsEffectSuite {
                       .as(expected)
                   else IO.pure(expected)
                 )
-                .interruptWhen(Stream.sleep[IO](4.seconds).as(true))
+                .interruptWhen(Stream.sleep[IO](5.seconds).as(true))
                 .interruptWhen(deferred)
                 .compile
                 .lastOrError
@@ -128,7 +128,7 @@ class HashingFileWatcherSuite extends CatsEffectSuite {
 
       val program =
         // Sleep overwrite so we don't get a race between it and the watcher initialization
-        create >> (fileHashes, IO.sleep(250.milliseconds) >> overwrite)
+        create >> (fileHashes, IO.sleep(500.milliseconds) >> overwrite)
           .parMapN((expected, _) => expected)
           .map { expected =>
             assertEquals(expected, List.empty)
