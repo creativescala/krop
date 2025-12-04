@@ -131,7 +131,7 @@ class HashingFileWatcherSuite extends CatsEffectSuite {
         create >> (fileHashes, IO.sleep(250.milliseconds) >> overwrite)
           .parMapN((expected, _) => expected)
           .map { expected =>
-            assert(expected.isEmpty)
+            assertEquals(expected, List.empty)
           }
 
       program
