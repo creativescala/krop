@@ -18,13 +18,10 @@ package krop.route
 
 import cats.effect.IO
 
-/** The internal view of a route, exposing the types that a handler works with.
+/** Adds the handler API to an internal route.
   */
-trait HandleableRoute[E <: Tuple, R] extends BaseRoute {
+trait HandleableRoute[E <: Tuple, R] extends InternalRoute[E, R] {
   import HandleableRoute.{HandlerIOBuilder, HandlerPureBuilder}
-
-  def request: Request[?, ?, ?, E]
-  def response: Response[R, ?]
 
   /** Handler incoming requests with the given function. */
   def handle(using ta: TupleApply[E, R]): HandlerPureBuilder[E, ta.Fun, R] =

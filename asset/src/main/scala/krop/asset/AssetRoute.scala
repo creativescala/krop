@@ -27,6 +27,8 @@ import krop.Key
 import krop.KropRuntime
 import krop.route.BaseRoute
 import krop.route.ClientRoute
+import krop.route.Handler
+import krop.route.InternalRoute
 import krop.route.Param
 import krop.route.Path
 import krop.route.Request
@@ -38,7 +40,8 @@ import krop.route.RouteHandler
 final class AssetRoute(base: Path[EmptyTuple, EmptyTuple], directory: Fs2Path)
     extends ReversibleRoute[Tuple1[Fs2Path], EmptyTuple],
       ClientRoute[Tuple1[Fs2Path], Array[Byte]],
-      BaseRoute {
+      InternalRoute[Tuple1[Fs2Path], Fs2Path],
+      Handler { self =>
   val request
       : Request[Tuple1[Fs2Path], Tuple1[Fs2Path], EmptyTuple, Tuple1[Fs2Path]] =
     Request.get(
@@ -49,6 +52,12 @@ final class AssetRoute(base: Path[EmptyTuple, EmptyTuple], directory: Fs2Path)
 
   val response: Response[Fs2Path, Array[Byte]] =
     Response.staticDirectory(directory)
+
+  val route: BaseRoute =
+    new BaseRoute {
+      def request = self.request
+      def response = self.response
+    }
 
   final class Asset(hasher: FileNameHasher) {
     def apply(path: Fs2Path): IO[Fs2Path] =
@@ -73,49 +82,36 @@ final class AssetRoute(base: Path[EmptyTuple, EmptyTuple], directory: Fs2Path)
   def build(runtime: BaseRuntime): Resource[IO, RouteHandler] = {
     val files = Files[IO]
 
-    for {
-      logger <- runtime.loggerFactory
-        .fromName(s"krop-asset-route($directory)")
-        .toResource
-      isDir <- files.isDirectory(directory).toResource
-      _ <-
-        (if isDir then
-           logger.info("Creating asset route for directory $directory")
-         else {
-           logger
-             .error(
-               s"Cannot create an asset route for $directory as this path is not a directory."
-             ) >> IO.raiseError(
-             IllegalArgumentException(
-               s"Cannot create an asset route for $directory as this path is not a directory."
+    val hasher: Resource[IO, FileNameHasher] =
+      for {
+        logger <- runtime.loggerFactory
+          .fromName(s"krop-asset-route($directory)")
+          .toResource
+        isDir <- files.isDirectory(directory).toResource
+        _ <-
+          (if isDir then
+             logger.info("Creating asset route for directory $directory")
+           else {
+             logger
+               .error(
+                 s"Cannot create an asset route for $directory as this path is not a directory."
+               ) >> IO.raiseError(
+               IllegalArgumentException(
+                 s"Cannot create an asset route for $directory as this path is not a directory."
+               )
              )
-           )
-         }).toResource
-      // Table maps file name to hex encoded hash
-      map <- MapRef[IO, Fs2Path, HexString].toResource
-      events <- HashingFileWatcher.watch(directory)
-      hasher = FileNameHasher(logger, events, map)
-      _ <- hasher.update.background
-      assets = Resource.pure[IO, Asset](Asset(hasher))
-      _ = runtime.stageResource(key, assets)
-      routeHandler <- Route(request, response)
-        .handle(path => hasher.unhash(path))
-        .build(runtime)
-    } yield routeHandler
+           }).toResource
+        // Table maps file name to hex encoded hash
+        map <- MapRef[IO, Fs2Path, HexString].toResource
+        events <- HashingFileWatcher.watch(directory)
+        hasher = FileNameHasher(logger, events, map)
+        _ <- hasher.update.background
+        assets = Resource.pure[IO, Asset](Asset(hasher))
+        _ = runtime.stageResource(key, assets)
+      } yield hasher
 
-    // new RouteHandler {
-    //     def run[F[_, _]](request: Http4sRequest[IO])(using
-    //         handle: Raise.Handler[F],
-    //         runtime: KropRuntime
-    //     ): IO[F[ParseFailure, Http4sResponse[IO]]] =
-    //       route.request
-    //         .parse(request)
-    //         .flatMap(extracted =>
-    //           Raise
-    //             .mapToIO(extracted)(in =>
-    //               handler(in).flatMap(out => route.response.respond(request, out))
-    //             )
-    //         )
-    //   }
+    hasher.flatMap(h =>
+      (Route(request, response).handle(path => h.unhash(path)).build(runtime))
+    )
   }
 }

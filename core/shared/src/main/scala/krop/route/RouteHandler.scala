@@ -35,3 +35,23 @@ trait RouteHandler {
       runtime: KropRuntime
   ): IO[F[ParseFailure, Http4sResponse[IO]]]
 }
+object RouteHandler {
+  def apply[E <: Tuple, R](
+      route: InternalRoute[E, R],
+      handler: E => IO[R]
+  ): RouteHandler =
+    new RouteHandler {
+      def run[F[_, _]](request: Http4sRequest[IO])(using
+          handle: Raise.Handler[F],
+          runtime: KropRuntime
+      ): IO[F[ParseFailure, Http4sResponse[IO]]] =
+        route.request
+          .parse(request)
+          .flatMap(extracted =>
+            Raise
+              .mapToIO(extracted)(in =>
+                handler(in).flatMap(out => route.response.respond(request, out))
+              )
+          )
+    }
+}

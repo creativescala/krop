@@ -21,10 +21,6 @@ import cats.effect.IO
 import cats.effect.Resource
 import krop.Application
 import krop.BaseRuntime
-import krop.KropRuntime
-import krop.raise.Raise
-import org.http4s.Request as Http4sRequest
-import org.http4s.Response as Http4sResponse
 
 /** A [[krop.route.Handler]] describes how to build an endpoint that can parse a
   * request and produce a response. It combines a [[krop.request.Route]] with
@@ -39,11 +35,6 @@ import org.http4s.Response as Http4sResponse
   * how `IO` is a description of a program, that is only run when we call a
   * method like `unsafeRunSync`. When the Handler builds the RouteHandler it can
   * also create any resources that are needed to do its work.
-  *
-  * @tparam I
-  *   The type of all the values extracted from the request.
-  * @tparam R
-  *   The type of the value used to build the [[krop.route.Response]].
   */
 trait Handler {
 
@@ -75,7 +66,7 @@ trait Handler {
 
     /** Convert this Handler in a [[kropu.route.RouteHandler]] that can process
       * an HTTP request and produce a HTTP response. The Handler can also create
-      * a resource, possibly registered on the provided [[krop.KropRuntime]],
+      * resources, possibly registered on the provided [[krop.KropRuntime]],
       * which will last for the life-time of the server.
       */
   def build(runtime: BaseRuntime): Resource[IO, RouteHandler]
@@ -87,32 +78,37 @@ object Handler {
     * and a handler function. It also a RouteHandler.
     */
   private final class BasicHandler[E <: Tuple, R](
-      val route: HandleableRoute[E, R],
+      val route: InternalRoute[E, R],
       handler: E => IO[R]
-  ) extends Handler,
-        RouteHandler { self =>
+  ) extends Handler {
     def build(runtime: BaseRuntime): Resource[IO, RouteHandler] =
-      Resource.eval(IO.pure(self))
+      Resource.eval(IO.pure(RouteHandler(route, handler)))
+  }
 
-    def run[F[_, _]](request: Http4sRequest[IO])(using
-        handle: Raise.Handler[F],
-        runtime: KropRuntime
-    ): IO[F[ParseFailure, Http4sResponse[IO]]] =
-      route.request
-        .parse(request)
-        .flatMap(extracted =>
-          Raise
-            .mapToIO(extracted)(in =>
-              handler(in).flatMap(out => route.response.respond(request, out))
-            )
-        )
+  /** Implementation of the case when a Handler is a container of a Route and a
+    * Resource generating the handler function.
+    */
+  private final class ResourceHandler[E <: Tuple, R](
+      val route: InternalRoute[E, R],
+      handler: Resource[IO, E => IO[R]]
+  ) extends Handler { self =>
+    def build(runtime: BaseRuntime): Resource[IO, RouteHandler] =
+      handler.map(h => RouteHandler(route, h))
   }
 
   /** Construct a [[krop.route.Handler]] from a [[krop.route.Route]] and a
     * handler function.
     */
-  def apply[I <: Tuple, R](
-      route: HandleableRoute[I, R],
-      handler: I => IO[R]
+  def apply[E <: Tuple, R](
+      route: InternalRoute[E, R],
+      handler: E => IO[R]
   ): Handler = BasicHandler(route, handler)
+
+  /** Construct a [[krop.route.Handler]] from a [[krop.route.Route]] and a
+    * Resource that will produce the handler function when used.
+    */
+  def apply[E <: Tuple, R](
+      route: InternalRoute[E, R],
+      handler: Resource[IO, E => IO[R]]
+  ): Handler = ResourceHandler(route, handler)
 }
