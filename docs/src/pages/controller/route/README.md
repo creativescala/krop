@@ -20,43 +20,22 @@ A @:api(krop.route.Handler) can handle an HTTP request and, if it accepts the re
 The `Route` type is fairly complex, though you can ignore this in most uses.
 
 ``` scala
-Route[P <: Tuple, Q <: Tuple, I <: Tuple, O <: Tuple, R]
+Route[C <: Tuple, Path <: Tuple, Query <: Tuple, E <: Tuple, R, P]
 ```
 
 The types have the following meanings:
 
-* `P` is the type of values extracted from the request's path by the @:api(krop.route.Path).
-* `Q` is the type of query parameters extracted by the @:api(krop.route.Path).
-* `I` is the type of all values extracted from the HTTP request.
-* `O` is the type of values to construct an HTTP request to this `Route`. This is often, but not always, the same as `I`.
-* `R` is the type of the value to construct an HTTP response.
+* `C` is the type of the values used to construct a request.
+* `Path` is the type of the parameters extracted from the @:api(krop.route.Path).
+* `Query` is the type of the query parameters extracted from the @:api(krop.route.Path).
+* `E` is the type of all the values extracted from the request.
+* `R` is the type of the value used to build the @:api(krop.route.Response).
+* `P` is the type of the value produced in the @:api(krop.route.Response).
 
 Most of these types are tuples because they accumulate values extracted from smaller components of the HTTP request.
 This will become clearer in the examples below.
 
-- `BaseRoute`
-  - Has a `Request` that ignores all type parameters
-
-Mixins
-- `BaseRoute`
-  - Not reversible and cannot build a client
-  - Not used for much; just a marker type
-- `ReversibleRoute`
-  - Exposes `Request` type parameters
-  - Can be reversed. Useful for asset routes
-- `ClientRoute`
-  - `Response` exposes the external view
-  - can build a client
-- `Handleable`
-  - `handle`, `handleIO` etc.
-  - exposes internal view
-- `Route`
-  - exposes internal and external view
-  - is `ClientRoute`
-  - is `ReversibleRoute`
-  - is `Handleable`
-
-There are two views of a `Route`: the view from the outside, of a HTTP client that may call a route and handle its response, and from the inside, of a handler that may deal with value extracted from a request and return values to encode in the response. We use the following types:
+It can be helpful to understand there are two views of a `Route`: the view from the outside, of a HTTP client that may call a route and handle its response, and from the inside, of a handler that may deal with value extracted from a request and return values to encode in the response. We use the following types:
 
 - `C`, for *consumes*, the type of values needs to construct a request to a route. Viewed from the outside.
 - `E`, for *extracts*, the type of values that are extracted from a request. Viewed from the inside.
