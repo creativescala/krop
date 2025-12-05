@@ -52,23 +52,6 @@ object Application {
   ): Application =
     Application(Handlers.empty, supervisor)
 
-  // /** Lift an [[org.http4s.HttpApp]] into an [[krop.Application]]. */
-  // def liftApp(app: HttpApp[IO]): Application =
-  //   Application(
-  //     Handlers.empty,
-  //     (handlers, runtime) => {
-  //       val r = handlers.toHttpRoutes(using runtime)
-  //       r.map(httpRoutes =>
-  //         Kleisli((req: Request[IO]) =>
-  //           httpRoutes.run(req).getOrElseF(app.run(req))
-  //         )
-  //       )
-  //     }
-  //   )
-
-  // def lift(f: Request[IO] => IO[Response[IO]]): Application =
-  //   Application.liftApp(HttpApp(f))
-
   /** The Application that returns 404 Not Found to all requests. See
     * [[krop.tool.NotFound]] for details on the implementation.
     */
