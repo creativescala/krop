@@ -74,11 +74,16 @@ final class AssetRoute(base: Path[EmptyTuple, EmptyTuple], directory: Fs2Path)
     * added hash for cache busting.
     *
     * The relative path parameter is the path on the filesystem where the asset
-    * is found. It must be relative to the directory this AssetRoute was
+    * is found. It must be relative to the `directory` this `AssetRoute` was
     * constructed with.
     *
     * The result is the path under which the asset is served. That is, it
-    * includes the pathTo of this AssetRoute's base.
+    * includes the `pathTo` of this `AssetRoute`'s `base`.
+    *
+    * This method is only safe to be called once this `AssetRoute` has been
+    * built (i.e. the `build` method has been called, and the resulting
+    * `Resource` has been used.) This will naturally occur if you use an
+    * `AssetRoute` in a Krop application.
     */
   def asset(path: String)(using KropRuntime): String =
     key.get
