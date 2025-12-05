@@ -16,9 +16,9 @@
 
 package krop.route
 
-import krop.WithRuntime
 import cats.effect.IO
 import krop.KropRuntime
+import krop.WithRuntime
 
 /** Adds the handler API to an internal route.
   */
