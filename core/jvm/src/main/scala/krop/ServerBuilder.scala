@@ -27,7 +27,7 @@ import org.http4s.server.Server as Http4sServer
 import org.typelevel.log4cats.LoggerFactory
 import org.typelevel.log4cats.slf4j.Slf4jFactory
 
-/** A description of how to create a [[krop.Server.Server]]. */
+/** A description of how to create a [[krop.Server]]. */
 final class ServerBuilder(
     val port: Port,
     val host: Host,
