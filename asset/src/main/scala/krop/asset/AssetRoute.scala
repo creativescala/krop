@@ -59,7 +59,7 @@ final class AssetRoute(base: Path[EmptyTuple, EmptyTuple], directory: Fs2Path)
       def response = self.response
     }
 
-  final class Asset(hasher: FileNameHasher) {
+  private final class Asset(hasher: FileNameHasher) {
     def apply(path: Fs2Path): IO[Fs2Path] =
       hasher.hash(path)
     def apply(path: String): IO[String] =
@@ -67,16 +67,23 @@ final class AssetRoute(base: Path[EmptyTuple, EmptyTuple], directory: Fs2Path)
   }
 
   private val key: Key[Asset] = Key.unsafe(s"Assets for ${directory.toString}")
+  private val basePath: String = base.pathTo(EmptyTuple)
 
-  def asset(path: Fs2Path)(using KropRuntime): Fs2Path =
-    key.get
-      .apply(path)
-      .unsafeRunSync()(using cats.effect.unsafe.implicits.global)
-
+  /** Given a relative filesystem path to an asset, return a relative path that
+    * is suitable for using as a hyperlink, containing the original file plus
+    * added hash for cache busting.
+    *
+    * The relative path parameter is the path on the filesystem where the asset
+    * is found. It must be relative to the directory this AssetRoute was
+    * constructed with.
+    *
+    * The result is the path under which the asset is served. That is, it
+    * includes the pathTo of this AssetRoute's base.
+    */
   def asset(path: String)(using KropRuntime): String =
     key.get
       .apply(Fs2Path(path))
-      .map(_.toString)
+      .map(p => basePath ++ p.toString)
       .unsafeRunSync()(using cats.effect.unsafe.implicits.global)
 
   def build(runtime: BaseRuntime): Resource[IO, RouteHandler] = {
@@ -114,4 +121,8 @@ final class AssetRoute(base: Path[EmptyTuple, EmptyTuple], directory: Fs2Path)
       (Route(request, response).handle(path => h.unhash(path)).build(runtime))
     )
   }
+}
+object AssetRoute {
+  def apply(base: Path[EmptyTuple, EmptyTuple], directory: String): AssetRoute =
+    AssetRoute(base, Fs2Path(directory))
 }
