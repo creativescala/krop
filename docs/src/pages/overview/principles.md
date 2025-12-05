@@ -30,7 +30,7 @@ We want to make it possible to build applications that feel amazing. Scala has a
 
 Server-centric applications are ones where the server provides the majority of the interaction, with a small bit of Javascript where necessary. This is the approach taken by [Phoenix LiveView](https://hexdocs.pm/phoenix_live_view/Phoenix.LiveView.html) and [Hotwired](https://hotwired.dev/). Krop will fully support this approach.
 
-Client-centric applications build the interactivity on the client. Part of Scala's secret sauce is our compiler: we can produce Javascript and WASM in addition to JVM bytecode and native code. We intend to leverage this to make it possible to create web applications running in the browser or on mobile with just Scala code. Longer-term we want to support local-firm applications. 
+Client-centric applications build the interactivity on the client. Part of Scala's secret sauce is our compiler: we can produce Javascript and WASM in addition to JVM bytecode and native code. We intend to leverage this to make it possible to create web applications running in the browser or on mobile with just Scala code. Longer-term we want to support local-first applications. 
 
 
 ## Be Functional 
