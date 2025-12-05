@@ -88,7 +88,7 @@ final class AssetRoute(base: Path[EmptyTuple, EmptyTuple], directory: Fs2Path)
   def asset(path: String)(using KropRuntime): String =
     key.get
       .apply(Fs2Path(path))
-      .map(p => basePath ++ p.toString)
+      .map(p => basePath ++ "/" ++ p.toString)
       .unsafeRunSync()(using cats.effect.unsafe.implicits.global)
 
   def build(runtime: BaseRuntime): Resource[IO, RouteHandler] = {
@@ -129,5 +129,5 @@ final class AssetRoute(base: Path[EmptyTuple, EmptyTuple], directory: Fs2Path)
 }
 object AssetRoute {
   def apply(base: Path[EmptyTuple, EmptyTuple], directory: String): AssetRoute =
-    AssetRoute(base, Fs2Path(directory))
+    new AssetRoute(base, Fs2Path(directory))
 }
