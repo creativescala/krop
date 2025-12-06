@@ -18,4 +18,11 @@ libraryDependencies += "org.creativescala" %% "krop-asset" % "@VERSION@"
 
 ## Asset Routes
 
-An @:api(krop.asset.AssetRoute) is constructed by giving it a @:api(krop.route.Path) under which to serve assets, and a `String` specifying a directory to monitor.
+An @:api(krop.asset.AssetRoute) is constructed by giving it a @:api(krop.route.Path) under which to serve assets, and a `String` specifying a directory to monitor. So, for example, if we want to serve assets under the path `/assets`, and those assets live under the directory `resources/myapp/assets` (relative the project root directory) we would create an `AssetRoute` as
+
+```scala
+import krop.all.*
+import krop.asset.AssetRoute
+
+val assets = AssetRoute(Path / "assets", "resources/myapp/assets")
+```
