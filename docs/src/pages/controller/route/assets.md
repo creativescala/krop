@@ -16,13 +16,35 @@ libraryDependencies += "org.creativescala" %% "krop-asset" % "@VERSION@"
 ```
 
 
-## Asset Routes
+## Creating an Asset Route
 
 An @:api(krop.asset.AssetRoute) is constructed by giving it a @:api(krop.route.Path) under which to serve assets, and a `String` specifying a directory to monitor. So, for example, if we want to serve assets under the path `/assets`, and those assets live under the directory `resources/myapp/assets` (relative the project root directory) we would create an `AssetRoute` as
 
-```scala
+```scala mdoc:silent
 import krop.all.*
 import krop.asset.AssetRoute
 
 val assets = AssetRoute(Path / "assets", "resources/myapp/assets")
 ```
+
+Note we need to `import krop.asset.AssetRoute`; this not part of the core library we import with `krop.all.*`.
+
+An asset route is also a handler, so we can add to our application in the usual way. Code like the following will do.
+
+```scala
+assets.orElse(theApplication)
+```
+
+
+## Linking to an Asset
+
+Call the `asset` method on an asset route when you want to link to an asset, for example in a template. Pass the method the path to the asset, relative to the directory you passed the asset route on construction.
+
+For example, if we have a file `resources/myapp/assets/css/myapp.css` we would call
+
+```scala 
+assets.asset("css/myapp.css")
+// res: String = /assets/css/myapp-1234.css
+```
+
+Notice the result includes the `Path` we created the asset route with. It also includes the value of the hash of the file (in the example replaced with `1234` for simplicity.) This value changes every time the file changes, and thus prevents the browser from caching and using a stale copy.
