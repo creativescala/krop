@@ -109,9 +109,10 @@ class HashingFileWatcherSuite extends CatsEffectSuite {
                 .collect { case HashingFileWatcher.Event.Hashed(path, hash) =>
                   path -> hash
                 }
-                .scan(expected)((expected, hash) =>
+                .scan(expected) { (expected, hash) =>
+                  println(s"looking for $expected and observed $hash")
                   expected.filterNot(_ == hash)
-                )
+                }
                 .evalMap(expected =>
                   if expected.isEmpty then
                     deferred
