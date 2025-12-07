@@ -47,4 +47,6 @@ assets.asset("css/myapp.css")
 // res: String = /assets/css/myapp-1234.css
 ```
 
-Notice the result includes the `Path` we created the asset route with. It also includes the value of the hash of the file (in the example replaced with `1234` for simplicity.) This value changes every time the file changes, and thus prevents the browser from caching and using a stale copy.
+Notice the result includes the `Path` we created the asset route with. It also includes the value of a hash of the file (in the example replaced with `1234` for simplicity.) This value changes every time the file changes, and thus prevents the browser from using a stale cached copy.
+
+The `asset` method requires a given `KropRuntime` value, which is available to all handlers when they handle a request.
