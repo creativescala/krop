@@ -29,7 +29,7 @@ val assets = AssetRoute(Path / "assets", "resources/myapp/assets")
 
 Note we need to `import krop.asset.AssetRoute`; this not part of the core library we import with `krop.all.*`.
 
-An asset route is also a handler, so we can add to our application in the usual way. Code like the following will do.
+An asset route is also a handler, which we add to our application in the usual way. Code like the following will do.
 
 ```scala
 assets.orElse(theApplication)
