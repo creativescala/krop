@@ -181,7 +181,7 @@ lazy val docs =
       libraryDependencies += Dependencies.circeGeneric.value
     )
     .enablePlugins(TypelevelSitePlugin)
-    .dependsOn(core.jvm, sqlite)
+    .dependsOn(core.jvm, asset, sqlite)
 
 lazy val unidocs = project
   .in(file("unidocs"))
