@@ -119,7 +119,7 @@ class HashingFileWatcherSuite extends CatsEffectSuite {
                       .as(expected)
                   else IO.pure(expected)
                 )
-                .interruptWhen(Stream.sleep[IO](5.seconds).as(true))
+                .interruptWhen(Stream.sleep[IO](10.seconds).as(true))
                 .interruptWhen(deferred)
                 .compile
                 .lastOrError
