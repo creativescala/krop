@@ -111,15 +111,15 @@ class HashingFileWatcherSuite extends CatsEffectSuite {
                   path -> hash
                 }
                 .scan(expected) { (expected, hash) =>
-                  println(s"looking for $expected and observed $hash")
+                  // println(s"looking for $expected and observed $hash")
                   expected.filterNot(_ == hash)
                 }
                 .evalMap(expected =>
                   if expected.isEmpty then
-                    IO.println("Caught them all") >>
-                      deferred
-                        .complete(Right(()))
-                        .as(List.empty)
+                    // IO.println("Caught them all") >>
+                    deferred
+                      .complete(Right(()))
+                      .as(List.empty)
                   else IO.pure(expected)
                 )
                 .interruptWhen(deferred)
