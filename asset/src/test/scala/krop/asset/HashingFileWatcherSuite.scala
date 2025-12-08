@@ -115,12 +115,18 @@ class HashingFileWatcherSuite extends CatsEffectSuite {
                 }
                 .evalMap(expected =>
                   if expected.isEmpty then
-                    deferred
-                      .complete(Right(()))
-                      .as(expected)
+                    IO.println("Caught them all") >>
+                      deferred
+                        .complete(Right(()))
+                        .as(expected)
                   else IO.pure(expected)
                 )
-                .interruptWhen(Stream.sleep[IO](10.seconds).as(true))
+                .interruptWhen(
+                  Stream
+                    .sleep[IO](10.seconds) >> Stream
+                    .eval(IO.println("time out"))
+                    .as(true)
+                )
                 .interruptWhen(deferred)
                 .compile
                 .lastOrError
