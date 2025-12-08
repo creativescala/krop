@@ -100,10 +100,11 @@ class HashingFileWatcherSuite extends CatsEffectSuite {
       // MacOS uses a polling implementation, so for this test to run in a
       // reasonable time on MacOS we need to poll somewhat rapidly. See
       // https://bugs.openjdk.org/browse/JDK-7133447
-      val fileHashes: IO[List[(Path, HexString)]] =
+      val program: IO[Unit] =
         for {
+          _ <- create
           deferred <- Deferred[IO, Either[Throwable, Unit]]
-          expected <-
+          watcher =
             HashingFileWatcher.watch(dir, 200.milliseconds).use { stream =>
               stream
                 .collect { case HashingFileWatcher.Event.Hashed(path, hash) =>
@@ -118,28 +119,19 @@ class HashingFileWatcherSuite extends CatsEffectSuite {
                     IO.println("Caught them all") >>
                       deferred
                         .complete(Right(()))
-                        .as(expected)
+                        .as(List.empty)
                   else IO.pure(expected)
-                )
-                .interruptWhen(
-                  Stream
-                    .sleep[IO](10.seconds) >> Stream
-                    .eval(IO.println("time out"))
-                    .as(true)
                 )
                 .interruptWhen(deferred)
                 .compile
-                .lastOrError
+                .drain
             }
-        } yield expected
-
-      val program =
-        // Sleep overwrite so we don't get a race between it and the watcher initialization
-        create >> (fileHashes, IO.sleep(500.milliseconds) >> overwrite)
-          .parMapN((expected, _) => expected)
-          .map { expected =>
-            assertEquals(expected, List.empty)
-          }
+          // Sleep overwrite so we don't get a race between it and the watcher initialization
+          writer = IO.sleep(250.milliseconds) >> overwrite
+          process = (watcher, writer).parTupled.as(true)
+          // Timeout after 10 seconds if we haven't seen all the events we're after
+          complete <- process.race(IO.sleep(10.seconds))
+        } yield assertEquals(complete, Left(true))
 
       program
     }
