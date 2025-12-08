@@ -20,18 +20,24 @@ import cats.data.EitherNec
 import cats.data.Kleisli
 import cats.data.NonEmptyChain
 import cats.effect.IO
+import cats.effect.Resource
 import cats.syntax.all.*
 import krop.Application
+import krop.BaseRuntime
 import krop.KropRuntime
 import krop.Mode
+import krop.WithRuntime
 import krop.raise.Raise
+import krop.route.BaseRoute
 import krop.route.Handler
 import krop.route.Handlers
 import krop.route.ParseFailure
-import krop.route.Route
+import krop.route.RouteHandler
 import org.http4s.*
 import org.http4s.dsl.io.*
 import org.http4s.headers.`Content-Type`
+
+import scala.collection.mutable
 
 /** This is a tool that displays useful information in development mode if no
   * route matches a request. In production mode it simply returns a 404 Not
@@ -42,7 +48,7 @@ object NotFound {
     s"${request.method} ${request.uri.path}"
 
   def routeTemplate(
-      route: Route[?, ?, ?, ?, ?],
+      route: BaseRoute,
       reason: ParseFailure
   ): String =
     s"""<li>
@@ -56,11 +62,14 @@ object NotFound {
   /** The development version of this tool, which returns useful information in
     * the case of an unmatched request.
     */
-  def development(handlers: Handlers, runtime: KropRuntime): HttpApp[IO] = {
+  def development(
+      handlers: Handlers,
+      runtime: BaseRuntime
+  ): Resource[IO, WithRuntime[HttpApp[IO]]] = {
     val kropHandlers = handlers.orElse(KropAssets.kropAssets.toHandlers)
 
     def description(
-        handlers: NonEmptyChain[(Handler[?, ?], ParseFailure)]
+        handlers: NonEmptyChain[(Handler, ParseFailure)]
     ) =
       handlers
         .map { case (handler, reason) => routeTemplate(handler.route, reason) }
@@ -69,7 +78,7 @@ object NotFound {
 
     def notFoundHtml(
         req: Request[IO],
-        handlers: NonEmptyChain[(Handler[?, ?], ParseFailure)]
+        handlers: NonEmptyChain[(Handler, ParseFailure)]
     ) =
       s"""
        |<!doctype html>
@@ -128,7 +137,7 @@ object NotFound {
 
     def notFound(
         req: Request[IO],
-        errors: NonEmptyChain[(Handler[?, ?], ParseFailure)]
+        errors: NonEmptyChain[(Handler, ParseFailure)]
     ) =
       org.http4s.dsl.io
         .NotFound(
@@ -146,44 +155,56 @@ object NotFound {
           `Content-Type`(MediaType.text.html)
         )
 
-    val app: HttpApp[IO] = {
-      type Annotated = (Handler[?, ?], ParseFailure)
+    val app: Resource[IO, WithRuntime[HttpApp[IO]]] = {
+      type Annotated = (Handler, ParseFailure)
       given Raise.Handler[Either] = Raise.toEither
-      given KropRuntime = runtime
 
-      Kleisli { (req: Request[IO]) =>
-        val hs = kropHandlers.handlers.toList
-        // We have at least one route, the Krop handlers we added ourselves
-        val firstHandler = hs.head
-        val results: IO[EitherNec[Annotated, Response[IO]]] =
-          firstHandler
-            .run(req)
-            .flatMap(either =>
-              hs.tail.foldLeftM(
-                either.leftMap(e => firstHandler -> e).toEitherNec
-              ) { (result, handler) =>
-                result match {
-                  case Left(errors) =>
-                    // If we have failed we accumulate all the failures to
-                    // display to the developer
-                    handler
-                      .run(req)
-                      .map(_.leftMap(e => errors :+ (handler -> e)))
-                  case Right(value) =>
-                    // If we have succeeded we keep the first success as our result
-                    IO.pure(Right(value))
+      val routeHandlers: Resource[IO, List[(Handler, RouteHandler)]] =
+        kropHandlers.handlers.foldRight(
+          Resource.eval(IO.pure(List.empty[(Handler, RouteHandler)]))
+        ) { (handler, accum) =>
+          handler
+            .build(runtime)
+            .flatMap(routeHandler =>
+              accum.map(list => (handler -> routeHandler) :: list)
+            )
+        }
+
+      routeHandlers.map { list => (runtime: KropRuntime) ?=>
+        Kleisli { (req: Request[IO]) =>
+          // We have at least one route, the Krop handlers we added ourselves
+          val (handler, routeHandler) = list.head
+          val results: IO[EitherNec[Annotated, Response[IO]]] =
+            routeHandler
+              .run(req)
+              .flatMap(either =>
+                list.tail.foldLeftM(
+                  either.leftMap(e => handler -> e).toEitherNec
+                ) { (result, pair) =>
+                  val (handle, routeHandler) = pair
+                  result match {
+                    case Left(errors) =>
+                      // If we have failed we accumulate all the failures to
+                      // display to the developer
+                      routeHandler
+                        .run(req)
+                        .map(_.leftMap(e => errors :+ (handler -> e)))
+                    case Right(value) =>
+                      // If we have succeeded we keep the first success as our result
+                      IO.pure(Right(value))
+                  }
                 }
+              )
+
+          results
+            .flatMap(either =>
+              either match {
+                case Left(errors)    => notFound(req, errors)
+                case Right(response) => IO.pure(response)
               }
             )
-
-        results
-          .flatMap(either =>
-            either match {
-              case Left(errors)    => notFound(req, errors)
-              case Right(response) => IO.pure(response)
-            }
-          )
-          .recoverWith(exn => internalError(req, exn))
+            .recoverWith(exn => internalError(req, exn))
+        }
       }
     }
 
@@ -193,9 +214,43 @@ object NotFound {
   /** The production version of this tool, which returns NotFound to every
     * request.
     */
-  def production(handlers: Handlers, runtime: KropRuntime): HttpApp[IO] = {
-    val routes = handlers.toHttpRoutes(using runtime)
-    Kleisli((req: Request[IO]) => routes.run(req).getOrElse(Response.notFound))
+  def production(
+      handlers: Handlers,
+      runtime: BaseRuntime
+  ): Resource[IO, WithRuntime[HttpApp[IO]]] = {
+    given Raise.Handler[Raise.ToOption] = Raise.toOption
+
+    // Sneaky mutable code for speed, where no-one can observe it.
+    val builder = mutable.ArrayBuilder.make[RouteHandler]
+
+    val resource: Resource[IO, Array[RouteHandler]] =
+      handlers.handlers
+        .foldLeft(
+          Resource.eval(IO.pure(builder))
+        ) { (accum, handler) =>
+          accum.flatMap(chain =>
+            handler.build(runtime).map(routeHandler => builder += routeHandler)
+          )
+        }
+        .map(builder => builder.result())
+
+    val nope = IO.pure(Response.notFound)
+
+    resource.map { routeHandlers => (runtime: KropRuntime) ?=>
+      Kleisli((req: Request[IO]) =>
+        def loop(idx: Int): IO[Response[IO]] =
+          if idx >= routeHandlers.size then nope
+          else {
+            val routeHandler = routeHandlers(idx)
+            routeHandler.run(req).flatMap { opt =>
+              if opt.isDefined then IO.pure(opt.get)
+              else loop(idx + 1)
+            }
+          }
+
+        loop(0)
+      )
+    }
   }
 
   /** The notFound Application tool. */

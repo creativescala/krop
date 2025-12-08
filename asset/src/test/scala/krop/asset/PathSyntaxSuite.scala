@@ -14,19 +14,21 @@
  * limitations under the License.
  */
 
-package krop.tool
+package krop.asset
 
-import krop.route.Handler
-import krop.route.Param
-import krop.route.Path
-import krop.route.Request
-import krop.route.Response
-import krop.route.Route
+import fs2.Stream
+import fs2.io.file.Files
+import munit.CatsEffectSuite
 
-object KropAssets {
-  val kropAssets: Handler =
-    Route(
-      Request.get(Path / "krop" / "assets" / Param.separatedString("/")),
-      Response.staticResource("/krop/assets/")
-    ).passthrough
+class PathSyntaxSuite extends CatsEffectSuite {
+  val files = Files.forIO
+
+  test("md5Hex returns correct value") {
+    files.tempFile.use { file =>
+      for {
+        _ <- Stream("bigcats").through(files.writeUtf8(file)).compile.drain
+        hash <- file.md5Hex
+      } yield assertEquals(hash.value, "80fe0e83da4321cca20e0cda8a5f86f8")
+    }
+  }
 }

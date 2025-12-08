@@ -14,19 +14,30 @@
  * limitations under the License.
  */
 
-package krop.tool
+package krop.asset
 
-import krop.route.Handler
-import krop.route.Param
-import krop.route.Path
-import krop.route.Request
-import krop.route.Response
-import krop.route.Route
+import fs2.hashing.Hash
 
-object KropAssets {
-  val kropAssets: Handler =
-    Route(
-      Request.get(Path / "krop" / "assets" / Param.separatedString("/")),
-      Response.staticResource("/krop/assets/")
-    ).passthrough
+import java.util.HexFormat
+
+/** A hexadecimal formatted String */
+opaque type HexString = String
+extension (hex: HexString) {
+  def value: String = hex
+}
+object HexString {
+  private val hexFormat = HexFormat.of()
+
+  def unsafeApply(string: String): HexString = string
+
+  def fromHash(hash: Hash): HexString = {
+    val bytes = Array.ofDim[Byte](hash.bytes.size)
+    hash.bytes.copyToArray(bytes)
+
+    fromBytes(bytes)
+  }
+
+  def fromBytes(bytes: Array[Byte]): HexString = {
+    hexFormat.formatHex(bytes)
+  }
 }

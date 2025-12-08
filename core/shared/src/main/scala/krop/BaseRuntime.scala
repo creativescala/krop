@@ -18,22 +18,19 @@ package krop
 
 import cats.effect.IO
 import cats.effect.Resource
-import cats.effect.unsafe.implicits.global
-import org.http4s.server.Server as Http4sServer
+import org.typelevel.log4cats.Logger
+import org.typelevel.log4cats.LoggerFactory
 
-/** A HTTP server that will serve requests when run. */
-final case class Server(server: Resource[IO, Http4sServer]) {
+/** Provides platform specific services and utilities that are available before
+  * the http4s server has started.
+  */
+trait BaseRuntime {
 
-  /** Convert this server to a Cats Effect IO for more control over how it is
-    * run.
+  given loggerFactory: LoggerFactory[IO]
+  given logger: Logger[IO]
+
+  /** Add a Resource, the value of which will be available in the KropRuntime
+    * using the given key.
     */
-  def toIO: IO[Unit] =
-    server.use(_ => IO.never)
-
-  /** Run this server, using the default Cats Effect thread pool. The server is
-    * run synchronously, so this method will only return when the server has
-    * finished.
-    */
-  def run(): Unit =
-    toIO.unsafeRunSync()
+  def stageResource[V](key: Key[V], value: Resource[IO, V]): Unit
 }

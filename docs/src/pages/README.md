@@ -2,6 +2,9 @@
 
 Krop is a Scala 3 web framework. Its goal is to make it delightful to build delightful web applications. It supports every kind of web application, from fast and scalable APIs to rich user experiences. It excels at projects where productivity and feature richness are a priority. See [our principles](overview/principles.md) for more.
 
+Krop requires at least JDK 17 to run.
+
+
 ## Getting Started
 
 The fastest way to start with Krop is using the template project, which is described in the [Quick Start](quick-start.md).

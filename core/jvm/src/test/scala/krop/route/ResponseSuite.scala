@@ -35,7 +35,7 @@ class ResponseSuite extends CatsEffectSuite {
 
     for {
       builder <- WebSocketBuilder[IO]
-      runtime = JvmRuntime(builder)
+      runtime = JvmRuntime.krop(builder)
       response <- staticResourceResponse
         .respond(request, "pico.min.css")(using runtime)
         .map(_.status.isSuccess)
@@ -49,7 +49,7 @@ class ResponseSuite extends CatsEffectSuite {
 
     for {
       builder <- WebSocketBuilder[IO]
-      runtime = JvmRuntime(builder)
+      runtime = JvmRuntime.krop(builder)
       response <- staticResourceResponse
         .respond(request, "bogus.css")(using runtime)
         .map(!_.status.isSuccess)
@@ -63,7 +63,7 @@ class ResponseSuite extends CatsEffectSuite {
 
     for {
       builder <- WebSocketBuilder[IO]
-      runtime = JvmRuntime(builder)
+      runtime = JvmRuntime.krop(builder)
       response <- Response
         .staticFile("project/plugins.sbt")
         .respond(request, ())(using runtime)

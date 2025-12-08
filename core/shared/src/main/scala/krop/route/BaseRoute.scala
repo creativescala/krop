@@ -14,19 +14,14 @@
  * limitations under the License.
  */
 
-package krop.tool
+package krop.route
 
-import krop.route.Handler
-import krop.route.Param
-import krop.route.Path
-import krop.route.Request
-import krop.route.Response
-import krop.route.Route
-
-object KropAssets {
-  val kropAssets: Handler =
-    Route(
-      Request.get(Path / "krop" / "assets" / Param.separatedString("/")),
-      Response.staticResource("/krop/assets/")
-    ).passthrough
+/** A BaseRoute indicates that something is a route, and has a Request and a
+  * Response. The types of the Request and Response are erased, so this is only
+  * useful for runtime introspection. Other types keep more information and are
+  * useful for other cases.
+  */
+trait BaseRoute {
+  def request: Request[?, ?, ?, ?]
+  def response: Response[?, ?]
 }

@@ -14,19 +14,14 @@
  * limitations under the License.
  */
 
-package krop.tool
+package krop.route
 
-import krop.route.Handler
-import krop.route.Param
-import krop.route.Path
-import krop.route.Request
-import krop.route.Response
-import krop.route.Route
-
-object KropAssets {
-  val kropAssets: Handler =
-    Route(
-      Request.get(Path / "krop" / "assets" / Param.separatedString("/")),
-      Response.staticResource("/krop/assets/")
-    ).passthrough
+/** The internal view of a route, exposing the types that a handler works with.
+  *
+  * Just exposes the types, so that other types that want to purely with the
+  * types without the API can do so.
+  */
+trait InternalRoute[E <: Tuple, R] extends BaseRoute {
+  def request: Request[?, ?, ?, E]
+  def response: Response[R, ?]
 }

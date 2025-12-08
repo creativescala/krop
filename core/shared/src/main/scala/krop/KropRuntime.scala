@@ -21,9 +21,38 @@ import org.http4s.server.websocket.WebSocketBuilder
 import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.LoggerFactory
 
-/** The runtime provides platform and server specific services and utilities */
+import java.util.concurrent.atomic.AtomicInteger
+
+/** Provides platform and server specific services and utilities that are
+  * available after the http4s server has started.
+  */
 trait KropRuntime {
   given loggerFactory: LoggerFactory[IO]
   given logger: Logger[IO]
+
   def webSocketBuilder: WebSocketBuilder[IO]
+
+  def getResource[V](key: Key[V]): V
+}
+
+final class Key[V] private (val id: Int, val description: String) {
+  def get(using runtime: KropRuntime): V =
+    runtime.getResource(this)
+
+  override def hashCode(): Int = id
+  override def equals(that: Any): Boolean =
+    if that.isInstanceOf[Key[?]]
+    then that.asInstanceOf[Key[?]].id == this.id
+    else false
+}
+object Key {
+  private val counter: AtomicInteger = AtomicInteger(0)
+
+  private def nextId(): Int = {
+    counter.getAndIncrement()
+  }
+
+  /** Creates a resource key without staging a resource. */
+  def unsafe[V](description: String): Key[V] =
+    Key(nextId(), description)
 }

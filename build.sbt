@@ -33,12 +33,10 @@ ThisBuild / developers := List(
   tlGitHubDev("noelwelsh", "Noel Welsh")
 )
 
-ThisBuild / sonatypeCredentialHost := xerial.sbt.Sonatype.sonatypeLegacy
-
 lazy val scala3 = "3.6.4"
 
 ThisBuild / crossScalaVersions := List(scala3)
-ThisBuild / githubWorkflowJavaVersions := List(JavaSpec.temurin("11"))
+ThisBuild / githubWorkflowJavaVersions := List(JavaSpec.temurin("17"))
 ThisBuild / scalaVersion := crossScalaVersions.value.head
 ThisBuild / useSuperShell := true
 ThisBuild / semanticdbEnabled := true
@@ -85,6 +83,7 @@ lazy val rootJvm =
   krop.jvm.aggregate(
     core.jvm,
     sqlite,
+    asset,
     examples,
     unidocs
   )
@@ -113,6 +112,14 @@ lazy val sqlite = project
     ),
     moduleName := "krop-sqlite"
   )
+
+lazy val asset = project
+  .in(file("asset"))
+  .settings(
+    commonSettings,
+    moduleName := "krop-asset"
+  )
+  .dependsOn(core.jvm)
 
 lazy val docs =
   project
@@ -174,7 +181,7 @@ lazy val docs =
       libraryDependencies += Dependencies.circeGeneric.value
     )
     .enablePlugins(TypelevelSitePlugin)
-    .dependsOn(core.jvm, sqlite)
+    .dependsOn(core.jvm, asset, sqlite)
 
 lazy val unidocs = project
   .in(file("unidocs"))

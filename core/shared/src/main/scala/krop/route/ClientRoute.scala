@@ -14,19 +14,6 @@
  * limitations under the License.
  */
 
-package krop.tool
+package krop.route
 
-import krop.route.Handler
-import krop.route.Param
-import krop.route.Path
-import krop.route.Request
-import krop.route.Response
-import krop.route.Route
-
-object KropAssets {
-  val kropAssets: Handler =
-    Route(
-      Request.get(Path / "krop" / "assets" / Param.separatedString("/")),
-      Response.staticResource("/krop/assets/")
-    ).passthrough
-}
+trait ClientRoute[C <: Tuple, P] { self: BaseRoute => }

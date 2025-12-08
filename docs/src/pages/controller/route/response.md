@@ -8,7 +8,7 @@ A @:api(krop.route.Response) describes how to create a HTTP response from a Scal
 For example, the following `Response` will produce an HTTP OK response with a `text/plain` entity.
 
 ```scala mdoc:silent
-val ok: Response[String] = Response.ok(Entity.text)
+val ok: Response[String, String] = Response.ok(Entity.text)
 ```
 
 The entity will be constructed from a `String` that is passed to the `respond` method on the `Response`.
@@ -22,7 +22,7 @@ Entities (response bodies) are handled in the same way as [requests](request.md)
 Use `Entity.unit` to indicate that your response has no entity. For example:
 
 ```scala mdoc:silent
-val noBody: Response[Unit] = Response.ok(Entity.unit)
+val noBody: Response[Unit, Unit] = Response.ok(Entity.unit)
 ```
 
 

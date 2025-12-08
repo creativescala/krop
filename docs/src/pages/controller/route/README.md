@@ -10,9 +10,9 @@ Routing handles the HTTP specific details of incoming requests and outgoing resp
 2. convert Scala values to an HTTP response; and
 3. reversing a route to create a link to the route or a client that calls the route.
 
-A @:api(krop.route.Route) describes how to convert an incoming request into Scala values, and how to turn Scala values in an outgoing response.
-A @:api(krop.route.Handler) is a `Route` that also includes the code to convert the values parsed from the request into the values that are used to create the response. In other words, a `Handler` includes business logic.
-A @:api(krop.route.Handlers) is a collection of `Handler`.
+A @:api(krop.route.Route) describes how to convert an incoming request into Scala values, and how to turn Scala values in an outgoing response. A route is purely a description. It doesn't do anything with a request, or produce a response, until it is converted to a @:api(krop.route.Handler).
+
+A @:api(krop.route.Handler) can handle an HTTP request and, if it accepts the request, produce a response. Handlers can also create resources that live for the lifetime of the web server, which allows for implementing caches and the like. A @:api(krop.route.Handlers) is a collection of `Handler`.
 
 
 ## The Route Type
@@ -20,19 +20,31 @@ A @:api(krop.route.Handlers) is a collection of `Handler`.
 The `Route` type is fairly complex, though you can ignore this in most uses.
 
 ``` scala
-Route[P <: Tuple, Q <: Tuple, I <: Tuple, O <: Tuple, R]
+Route[C <: Tuple, Path <: Tuple, Query <: Tuple, E <: Tuple, R, P]
 ```
 
 The types have the following meanings:
 
-* `P` is the type of values extracted from the request's path by the @:api(krop.route.Path).
-* `Q` is the type of query parameters extracted by the @:api(krop.route.Path).
-* `I` is the type of all values extracted from the HTTP request.
-* `O` is the type of values to construct an HTTP request to this `Route`. This is often, but not always, the same as `I`.
-* `R` is the type of the value to construct an HTTP response.
+* `C` is the type of the values used to construct a request.
+* `Path` is the type of the parameters extracted from the @:api(krop.route.Path).
+* `Query` is the type of the query parameters extracted from the @:api(krop.route.Path).
+* `E` is the type of all the values extracted from the request.
+* `R` is the type of the value used to build the @:api(krop.route.Response).
+* `P` is the type of the value produced in the @:api(krop.route.Response).
 
 Most of these types are tuples because they accumulate values extracted from smaller components of the HTTP request.
 This will become clearer in the examples below.
+
+It can be helpful to understand there are two views of a `Route`: the view from the outside, of a HTTP client that may call a route and handle its response, and from the inside, of a handler that may deal with value extracted from a request and return values to encode in the response. We use the following types:
+
+- `C`, for *consumes*, the type of values needs to construct a request to a route. Viewed from the outside.
+- `E`, for *extracts*, the type of values that are extracted from a request. Viewed from the inside.
+- `R`, for *returns*, the type of values need to construct a response. Viewed from the inside.
+- `P`, for *produces*, the type of values that are produced in a response to a route. Viewed from the outside.
+
+In many cases the outside and inside views are the same. E.g. `C == E` and `P == R`. If they differ is usually due to entity handling. For example, a route that serves static files may require a handler to return a path to a file, which produces a HTTP response containing a stream of bytes.
+
+It can be hard to keep the outside and inside type straight. When writing type signatures we think of a pipeline `Request => Handler => Response`, and keep the outside types on the outside and the inside type on the inside. So for a `Request` the outside types are to the left, and for a `Response` they are to the right.
 
 
 ## Constructing A Route

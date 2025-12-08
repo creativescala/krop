@@ -31,14 +31,18 @@ import org.http4s.Status
 import org.http4s.dsl.io.*
 import org.http4s.websocket.WebSocketFrame
 
-/** A [[krop.route.Response]] produces a [[org.http4s.Response]] given a value
-  * of type A and a [[org.http4s.Request]].
+/** A [[krop.route.Response]] returns a [[org.http4s.Response]] given a value of
+  * type R and a [[org.http4s.Request]]. The HTTP response produces a value of
+  * type P when decoded.
   */
-enum Response[A] {
-  def respond(request: Http4sRequest[IO], value: A)(using
+enum Response[R, P] {
+  def respond(request: Http4sRequest[IO], value: R)(using
       runtime: KropRuntime
   ): IO[Http4sResponse[IO]] =
     this match {
+      case Contramap(f, response) =>
+        response.respond(request, f(value))
+
       case OrEmpty(success, failure) =>
         value match {
           case Some(a) => success.respond(request, a)
@@ -112,16 +116,21 @@ enum Response[A] {
         runtime.webSocketBuilder.build(send, receive)
     }
 
+  def contramap[A](f: A => R): Response[A, P] =
+    Contramap(f, this)
+
   /** Produce this `Response` if given `Some[A]`, otherwise produce a 404
     * `Response`.
     */
-  def orNotFound: Response[Option[A]] =
+  def orNotFound: Response[Option[R], Option[P]] =
     OrEmpty(this, Response.status(Status.NotFound, Entity.unit))
 
   /** Produce this `Response` if given `Right[A]`, otherwise produce a 404
     * `Response` with entity given by `Left[B]`.
     */
-  def orNotFound[B](entity: Entity[?, B]): Response[Either[B, A]] =
+  def orNotFound[R2, P2](
+      entity: Entity[R2, P2]
+  ): Response[Either[R2, R], Either[P2, P]] =
     OrElse(this, Response.status(Status.NotFound, entity))
 
   /** Produce this `Response` if given `Right[A]`, otherwise produce that
@@ -130,7 +139,9 @@ enum Response[A] {
     * Usually used for error handling, where that `Response` is the error case.
     * For this reason we specify the successful `Right` case first.
     */
-  def orElse[B](that: Response[B]): Response[Either[B, A]] =
+  def orElse[R2, P2](
+      that: Response[R2, P2]
+  ): Response[Either[R2, R], Either[P2, P]] =
     OrElse(this, that)
 
   /** Add headers to this Response. The headers can be any form that
@@ -142,21 +153,27 @@ enum Response[A] {
     *   - A `Header.Raw`
     *   - A `Foldable` (`List`, `Option`, etc) of the above.
     */
-  def withHeader(header: ToRaw, headers: ToRaw*): Response[A] =
+  def withHeader(header: ToRaw, headers: ToRaw*): Response[R, P] =
     WithHeader(this, Headers(header.values ++ headers.flatMap(_.values)))
 
-  case OrEmpty[A](success: Response[A], failure: Response[Unit])
-      extends Response[Option[A]]
-  case OrElse[A, B](success: Response[A], failure: Response[B])
-      extends Response[Either[B, A]]
-  case StaticResource(pathPrefix: String) extends Response[String]
-  case StaticDirectory(pathPrefix: Fs2Path) extends Response[Fs2Path]
-  case StaticFile(path: Fs2Path) extends Response[Unit]
-  case StatusEntityEncoding(status: Status, entity: Entity[?, A])
-  case WithHeader(source: Response[A], header: Headers)
+  case Contramap[A, R, P](f: A => R, response: Response[R, P])
+      extends Response[A, P]
+  case OrEmpty[R, P](success: Response[R, P], failure: Response[Unit, Unit])
+      extends Response[Option[R], Option[P]]
+  case OrElse[R1, P1, R2, P2](
+      success: Response[R1, P1],
+      failure: Response[R2, P2]
+  ) extends Response[Either[R2, R1], Either[P2, P1]]
+  case StaticResource(pathPrefix: String) extends Response[String, Array[Byte]]
+  case StaticDirectory(pathPrefix: Fs2Path)
+      extends Response[Fs2Path, Array[Byte]]
+  case StaticFile(path: Fs2Path) extends Response[Unit, Array[Byte]]
+  case StatusEntityEncoding(status: Status, entity: Entity[R, P])
+  case WithHeader(source: Response[R, P], header: Headers)
   case WebSocket
       extends Response[
-        (Stream[IO, WebSocketFrame], Pipe[IO, WebSocketFrame, Unit])
+        (Stream[IO, WebSocketFrame], Pipe[IO, WebSocketFrame, Unit]),
+        Array[Byte]
       ]
 }
 object Response {
@@ -166,7 +183,7 @@ object Response {
     * "/krop/assets/". The `String` value is the rest of the resource name. E.g
     * "krop.css".
     */
-  def staticResource(pathPrefix: String): Response[String] =
+  def staticResource(pathPrefix: String): Response[String, Array[Byte]] =
     Response.StaticResource(pathPrefix)
 
   /** Respond with a file loaded from the filesystem. The `pathPrefix` is the
@@ -174,31 +191,33 @@ object Response {
     * "/etc/assets/". The `Path` value is the rest of the resource name. E.g
     * "krop.css".
     */
-  def staticDirectory(pathPrefix: Fs2Path): Response[Fs2Path] =
+  def staticDirectory(pathPrefix: Fs2Path): Response[Fs2Path, Array[Byte]] =
     Response.StaticDirectory(pathPrefix)
 
   /** Respond with a file loaded from the filesystem. The `path` is the location
     * of the file. E.g. "/etc/assets/index.html".
     */
-  def staticFile(path: String): Response[Unit] =
+  def staticFile(path: String): Response[Unit, Array[Byte]] =
     Response.StaticFile(fs2.io.file.Path(path))
 
-  def badRequest[A](entity: Entity[?, A]): Response[A] =
+  def badRequest[R, P](entity: Entity[R, P]): Response[R, P] =
     status(Status.BadRequest, entity)
 
-  def notFound[A](entity: Entity[?, A]): Response[A] =
+  def notFound[R, P](entity: Entity[R, P]): Response[R, P] =
     status(Status.NotFound, entity)
 
-  def ok[A](entity: Entity[?, A]): Response[A] =
+  def ok[R, P](entity: Entity[R, P]): Response[R, P] =
     status(Status.Ok, entity)
 
-  def internalServerError[A](entity: Entity[?, A]): Response[A] =
+  def internalServerError[R, P](entity: Entity[R, P]): Response[R, P] =
     status(Status.InternalServerError, entity)
 
-  def status[A](status: Status, entity: Entity[?, A]): Response[A] =
+  def status[R, P](status: Status, entity: Entity[R, P]): Response[R, P] =
     Response.StatusEntityEncoding(status, entity)
 
-  val websocket
-      : Response[(Stream[IO, WebSocketFrame], Pipe[IO, WebSocketFrame, Unit])] =
+  val websocket: Response[
+    (Stream[IO, WebSocketFrame], Pipe[IO, WebSocketFrame, Unit]),
+    Array[Byte]
+  ] =
     Response.WebSocket
 }
