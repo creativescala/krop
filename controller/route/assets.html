@@ -5,7 +5,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="generator" content="Laika 1.0.0" />
-    <title>Entities</title>
+    <title>Assets</title>
      
     <meta name="description" content="docs" />
     
@@ -69,10 +69,10 @@
                     <li class="level3 nav-node"><a href="index.html">Routing</a></li>
                     <li class="level4 nav-leaf"><a href="request.html">Request</a></li>
                     <li class="level4 nav-leaf"><a href="paths.html">Paths</a></li>
-                    <li class="level4 active nav-leaf"><a href="#">Entities</a></li>
+                    <li class="level4 nav-leaf"><a href="entities.html">Entities</a></li>
                     <li class="level4 nav-leaf"><a href="response.html">Response</a></li>
                     <li class="level4 nav-leaf"><a href="codecs.html">Codecs</a></li>
-                    <li class="level4 nav-leaf"><a href="assets.html">Assets</a></li>
+                    <li class="level4 active nav-leaf"><a href="#">Assets</a></li>
                     <li class="level3 nav-leaf"><a href="../handler.html">Handlers</a></li>
                     <li class="level2 nav-leaf"><a href="../../tools.html">Tools</a></li>
                     <li class="level2 nav-leaf"><a href="../../development.html">Developing Krop</a></li>
@@ -109,10 +109,10 @@
             <li class="level3 nav-node"><a href="index.html">Routing</a></li>
             <li class="level4 nav-leaf"><a href="request.html">Request</a></li>
             <li class="level4 nav-leaf"><a href="paths.html">Paths</a></li>
-            <li class="level4 active nav-leaf"><a href="#">Entities</a></li>
+            <li class="level4 nav-leaf"><a href="entities.html">Entities</a></li>
             <li class="level4 nav-leaf"><a href="response.html">Response</a></li>
             <li class="level4 nav-leaf"><a href="codecs.html">Codecs</a></li>
-            <li class="level4 nav-leaf"><a href="assets.html">Assets</a></li>
+            <li class="level4 active nav-leaf"><a href="#">Assets</a></li>
             <li class="level3 nav-leaf"><a href="../handler.html">Handlers</a></li>
             <li class="level2 nav-leaf"><a href="../../tools.html">Tools</a></li>
             <li class="level2 nav-leaf"><a href="../../development.html">Developing Krop</a></li>
@@ -121,39 +121,40 @@
       </nav>
       <div id="contentbar" class="mx-auto flex-1">
         <div class="max-w-prose mx-auto">
-          <div id="content"><h1 id="entities" class="title">Entities</h1>
-<p>In HTTP, the term &quot;entity&quot; refers to the body of a request. For example, a JSON request will have JSON data in the entity. An <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Entity.html">Entity</a> in Krop is responsible for converting an HTTP entity into a Scala type, and converting a Scala type into an HTTP entity. <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Entity.html">Entity</a> is therefore a type of <a href="codecs.html">codec</a>. </p>
-<p>As well an decoding and encoding data, an <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Entity.html">Entity</a> also specifies the <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Content-Type">Content-Type</a> is supports for decoding and encoding. It is usually the case that the decoding Content-Type is more permissive than the encoding Content-Type. For example <code>Entity.text</code> will decode <code>text/*</code> but encodes <code>text/plain</code>.</p>
-<p>The <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Entity.html">Entity</a> type is defined as <code>Entity[D, E]</code>, where <code>D</code> is the type of value that will be decoded from an HTTP request, and <code>E</code> is the type of values that will be encoded in a response. Most of the time <code>D</code> and <code>E</code> are the same, and the entity is called an <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/InvariantEntity.html">InvariantEntity</a>. Occassionally, however, they differ. For example, the <a href="https://github.com/com-lihaoyi/scalatags">ScalaTags</a> entity decodes a <code>String</code> but encodes ScalaTags&#39; data structure. This is because there is no parser from <code>String</code> to ScalaTags, so there is no way to parse an HTTP request with an HTML entity into ScalaTags.</p>
+          <div id="content"><h1 id="assets" class="title">Assets</h1>
+<p>Asset routes in Krop provide special support for serving assets. Assets are files, such as CSS stylesheets, that are part of your web application and not written in Scala. An asset route does two things:</p>
+<ol class="arabic">
+  <li>
+    <p>It monitors a directory of files, calculating a hash of each file in the directory and updating that hash whenever it changes.</p>
+  </li>
+  <li>
+    <p>It constructs names for asset files that include the hash of the file. The means each version of the file is served with a unique file name, preventing web browsers from caching and using out-dated versions of assets.</p>
+  </li>
+</ol>
 
-<h2 id="simple-entities" class="section">Simple Entities</h2>
-<p>Simple entities decode and encode Scala types without an intermediaries. You should check the <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Entity$.html">Entity</a> companion object for the full list of supported entities, but here are some of the most commonly used:</p>
-<ul>
-  <li><code>Entity.json</code> is an <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/InvariantEntity.html">InvariantEntity</a> for <a href="https://circe.github.io/circe/">Circe&#39;s</a> <code>JSON</code> type, decoding and encoding Content-Type <code>application/json</code>.</li>
-  <li><code>Entity.html</code> is an <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/InvariantEntity.html">InvariantEntity</a> for <code>String</code>, decoding and encoding Content-Type <code>text/html</code>.</li>
-  <li><code>Entity.scalatags</code> is an <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Entity.html">Entity</a> decoding <code>String</code> and encoding <a href="https://github.com/com-lihaoyi/scalatags">Scalatag&#39;s</a> <code>TypedTag[String]</code> type, with Content-Type <code>text/html</code>.</li>
-  <li><code>Entity.text</code> is an <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/InvariantEntity.html">InvariantEntity</a> for <code>String</code>, decoding Content-Type <code>text/*</code> and encoding Content-Type <code>text/plain</code>.</li>
-  <li><code>Entity.twirl</code> is an <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Entity.html">Entity</a> decoding <code>String</code> and encoding <a href="https://index.scala-lang.org/playframework/twirl">Twirl&#39;s</a> <code>Html</code> type, with Content-Type <code>text/html</code>.</li>
-</ul>
+<h2 id="using-assets" class="section">Using Assets</h2>
+<p>If you aren&#39;t using the <a href="../../quick-start.html">project template</a> you will need to add the following dependency to your <code>build.sbt</code>:</p>
+<pre><code class="nohighlight"><span class="identifier">libraryDependencies</span><span> += </span><span class="string-literal">&quot;org.creativescala&quot;</span><span> %% </span><span class="string-literal">&quot;krop-asset&quot;</span><span> % </span><span class="string-literal">&quot;0.9.4&quot;</span></code></pre>
 
-<h2 id="json" class="section">JSON</h2>
-<p>Krop, by default, uses <a href="https://circe.github.io/circe/">Circe</a> for JSON decoding and encoding. If you have a type <code>A</code> that you want to decode and encode as JSON, assuming you have created given instances of Circe&#39;s <code>Decoder</code> and <code>Encoder</code> type for <code>A</code>, creating an <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/InvariantEntity.html">InvariantEntity</a> is as simple as calling
-<code>Entity.jsonOf[A]</code>.</p>
-<p>Here&#39;s a quick example, using Circe&#39;s semi-automatic generic derivation to create the <code>Decoder</code> and <code>Encoder</code> types.</p>
-<pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">io</span><span>.</span><span class="identifier">circe</span><span>.{</span><span class="type-name">Decoder</span><span>, </span><span class="type-name">Encoder</span><span>}
-</span><span class="keyword">import</span><span> </span><span class="identifier">krop</span><span>.</span><span class="identifier">all</span><span>.*
+<h2 id="creating-an-asset-route" class="section">Creating an Asset Route</h2>
+<p>An <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/asset/AssetRoute.html">AssetRoute</a> is constructed by giving it a <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Path.html">Path</a> under which to serve assets, and a <code>String</code> specifying a directory to monitor. So, for example, if we want to serve assets under the path <code>/assets</code>, and those assets live under the directory <code>resources/myapp/assets</code> (relative the project root directory) we would create an <code>AssetRoute</code> as</p>
+<pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">krop</span><span>.</span><span class="identifier">all</span><span>.*
+</span><span class="keyword">import</span><span> </span><span class="identifier">krop</span><span>.</span><span class="identifier">asset</span><span>.</span><span class="type-name">AssetRoute</span><span>
 
-</span><span class="keyword">final</span><span> </span><span class="keyword">case</span><span> </span><span class="keyword">class</span><span> </span><span class="type-name">Cat</span><span>(</span><span class="identifier">name</span><span>: </span><span class="type-name">String</span><span>) </span><span class="identifier">derives</span><span> </span><span class="type-name">Decoder</span><span>, </span><span class="type-name">Encoder</span><span>
+</span><span class="keyword">val</span><span> </span><span class="identifier">assets</span><span> = </span><span class="type-name">AssetRoute</span><span>(</span><span class="type-name">Path</span><span> / </span><span class="string-literal">&quot;assets&quot;</span><span>, </span><span class="string-literal">&quot;resources/myapp/assets&quot;</span><span>)</span></code></pre>
+<p>Note we need to <code>import krop.asset.AssetRoute</code>; this not part of the core library we import with <code>krop.all.*</code>.</p>
+<p>An asset route is also a handler, which we add to our application in the usual way. Code like the following will do.</p>
+<pre><code class="nohighlight"><span class="identifier">assets</span><span>.</span><span class="identifier">orElse</span><span>(</span><span class="identifier">theApplication</span><span>)</span></code></pre>
 
-</span><span class="keyword">val</span><span> </span><span class="identifier">jsonEntity</span><span> = </span><span class="type-name">Entity</span><span>.</span><span class="identifier">jsonOf</span><span>[</span><span class="type-name">Cat</span><span>]</span></code></pre>
-
-<h2 id="forms" class="section">Forms</h2>
-<p>Decoding and encoding of form data delegates to a <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/FormCodec.html">FormCodec</a> given instance. The usual way to create such an instance if with generic derivation. Here is an example, showing both generic derivation of the <code>FormCodec</code> instance and creation of an <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Entity.html">Entity</a> using <code>Entity.formOf</code>.</p>
-<pre><code class="nohighlight"><span class="keyword">final</span><span> </span><span class="keyword">case</span><span> </span><span class="keyword">class</span><span> </span><span class="type-name">Dog</span><span>(</span><span class="identifier">name</span><span>: </span><span class="type-name">String</span><span>) </span><span class="identifier">derives</span><span> </span><span class="type-name">FormCodec</span><span>
-
-</span><span class="keyword">val</span><span> </span><span class="identifier">formEntity</span><span> = </span><span class="type-name">Entity</span><span>.</span><span class="identifier">formOf</span><span>[</span><span class="type-name">Dog</span><span>]</span></code></pre></div>
+<h2 id="linking-to-an-asset" class="section">Linking to an Asset</h2>
+<p>Call the <code>asset</code> method on an asset route when you want to link to an asset, for example in a template. Pass the method the path to the asset, relative to the directory you passed the asset route on construction.</p>
+<p>For example, if we have a file <code>resources/myapp/assets/css/myapp.css</code> we would call</p>
+<pre><code class="nohighlight"><span class="identifier">assets</span><span>.</span><span class="identifier">asset</span><span>(</span><span class="string-literal">&quot;css/myapp.css&quot;</span><span>)
+</span><span class="comment">// res: String = /assets/css/myapp-1234.css</span></code></pre>
+<p>Notice the result includes the <code>Path</code> we created the asset route with. It also includes the value of a hash of the file (in the example replaced with <code>1234</code> for simplicity.) This value changes every time the file changes, and thus prevents the browser from using a stale cached copy.</p>
+<p>The <code>asset</code> method requires a given <code>KropRuntime</code> value, which is available to all handlers when they handle a request.</p></div>
           <div class="flex flex-row justify-between">
-            <a class="pagenav" href="paths.html">←Paths</a> <a class="pagenav" href="response.html">Response→</a>
+            <a class="pagenav" href="codecs.html">←Codecs</a> <a class="pagenav" href="../handler.html">Handlers→</a>
           </div>
         </div>
         <footer>
@@ -169,9 +170,9 @@
         <div class="max-h-[calc(100vh-6rem)] overflow-y-auto">
           <p>On This Page</p>
           <ul class="nav-list">
-            <li class="level1 nav-leaf"><a href="#simple-entities">Simple Entities</a></li>
-            <li class="level1 nav-leaf"><a href="#json">JSON</a></li>
-            <li class="level1 nav-leaf"><a href="#forms">Forms</a></li>
+            <li class="level1 nav-leaf"><a href="#using-assets">Using Assets</a></li>
+            <li class="level1 nav-leaf"><a href="#creating-an-asset-route">Creating an Asset Route</a></li>
+            <li class="level1 nav-leaf"><a href="#linking-to-an-asset">Linking to an Asset</a></li>
           </ul>
         </div>
       </nav>

@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="">
+<html class="scroll-smooth"
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <meta charset="utf-8" />
@@ -41,39 +41,43 @@
           >
             Contents
           </button>
-          <div id="topbar-nav" popover>
-            <div id="topbar-nav-container">
+          <div id="topbar-nav" popover="auto">
+            <div id="topbar-nav-container" class="flex justify-items-center items-center h-dvh w-dvw">
               <div
-                class="p-4 mx-auto rounded-md bg-white border border-slate-900 relative"
+                class="p-4 mx-auto rounded-md bg-white border border-slate-900 max-h-4/5 w-4/5 overflow-y-auto overflow-x-auto flex flex-col items-end"
               >
                 <button
-                  class="absolute top-4 right-4 text-slate-900 hover:text-pink-800 focus:text-pink-800"
+                  class="text-slate-900 hover:text-pink-800 focus:text-pink-800"
                   popovertarget="topbar-nav"
                   popovertargetaction="hide"
                 >
                   ✕
                 </button>
-                <ul class="nav-list">
-                  <li class="level1 nav-node"><a href="../">Krop</a></li>
-                  <li class="level2 nav-leaf"><a href="../quick-start.html">Quick Start</a></li>
-                  <li class="level2 nav-node"><a href="../overview/">Overview</a></li>
-                  <li class="level3 nav-leaf"><a href="../overview/architecture.html">Architecture</a></li>
-                  <li class="level3 nav-leaf"><a href="../overview/principles.html">Principles</a></li>
-                  <li class="level2 nav-leaf"><a href="../application.html">Application</a></li>
-                  <li class="level2 nav-leaf"><a href="../server.html">Server</a></li>
-                  <li class="level2 active nav-node"><a href="#">Models</a></li>
-                  <li class="level3 nav-leaf"><a href="sqlite.html">SQLite</a></li>
-                  <li class="level2 nav-leaf"><a href="../views.html">View</a></li>
-                  <li class="level2 nav-node"><a href="../controller/">Controller</a></li>
-                  <li class="level3 nav-node"><a href="../controller/route/">Routing</a></li>
-                  <li class="level4 nav-leaf"><a href="../controller/route/request.html">Request</a></li>
-                  <li class="level4 nav-leaf"><a href="../controller/route/paths.html">Paths</a></li>
-                  <li class="level4 nav-leaf"><a href="../controller/route/entities.html">Entities</a></li>
-                  <li class="level4 nav-leaf"><a href="../controller/route/response.html">Response</a></li>
-                  <li class="level4 nav-leaf"><a href="../controller/route/codecs.html">Codecs</a></li>
-                  <li class="level3 nav-leaf"><a href="../controller/handler.html">Handlers</a></li>
-                  <li class="level2 nav-leaf"><a href="../tools.html">Tools</a></li>
-                </ul>
+                <div class="w-full">
+                  <ul class="nav-list">
+                    <li class="level1 nav-node"><a href="../">Krop</a></li>
+                    <li class="level2 nav-leaf"><a href="../quick-start.html">Quick Start</a></li>
+                    <li class="level2 nav-node"><a href="../overview/">Overview</a></li>
+                    <li class="level3 nav-leaf"><a href="../overview/architecture.html">Architecture</a></li>
+                    <li class="level3 nav-leaf"><a href="../overview/principles.html">Principles</a></li>
+                    <li class="level2 nav-leaf"><a href="../application.html">Application</a></li>
+                    <li class="level2 nav-leaf"><a href="../server.html">Server</a></li>
+                    <li class="level2 active nav-node"><a href="#">Models</a></li>
+                    <li class="level3 nav-leaf"><a href="sqlite.html">SQLite</a></li>
+                    <li class="level2 nav-leaf"><a href="../views.html">View</a></li>
+                    <li class="level2 nav-node"><a href="../controller/">Controller</a></li>
+                    <li class="level3 nav-node"><a href="../controller/route/">Routing</a></li>
+                    <li class="level4 nav-leaf"><a href="../controller/route/request.html">Request</a></li>
+                    <li class="level4 nav-leaf"><a href="../controller/route/paths.html">Paths</a></li>
+                    <li class="level4 nav-leaf"><a href="../controller/route/entities.html">Entities</a></li>
+                    <li class="level4 nav-leaf"><a href="../controller/route/response.html">Response</a></li>
+                    <li class="level4 nav-leaf"><a href="../controller/route/codecs.html">Codecs</a></li>
+                    <li class="level4 nav-leaf"><a href="../controller/route/assets.html">Assets</a></li>
+                    <li class="level3 nav-leaf"><a href="../controller/handler.html">Handlers</a></li>
+                    <li class="level2 nav-leaf"><a href="../tools.html">Tools</a></li>
+                    <li class="level2 nav-leaf"><a href="../development.html">Developing Krop</a></li>
+                  </ul>
+                </div>
               </div>
             </div>
           </div>
@@ -83,9 +87,13 @@
       </div>
     </header>
 
-    <main>
-      <nav id="sitebar">
-        <div class="fixed h-screen overflow-y-auto">
+    <main class="max-w-8xl mx-auto my-8 min-h-screen flex">
+      <!-- Left sticky table of contents -->
+      <nav
+        id="sitebar"
+        class="hidden lg:block min-w-64 max-w-md mr-8 sticky top-24 self-start flex-shrink-0"
+      >
+        <div class="max-h-[calc(100vh-6rem)] overflow-y-auto">
           <ul class="nav-list">
             <li class="level1 nav-node"><a href="../">Krop</a></li>
             <li class="level2 nav-leaf"><a href="../quick-start.html">Quick Start</a></li>
@@ -104,12 +112,14 @@
             <li class="level4 nav-leaf"><a href="../controller/route/entities.html">Entities</a></li>
             <li class="level4 nav-leaf"><a href="../controller/route/response.html">Response</a></li>
             <li class="level4 nav-leaf"><a href="../controller/route/codecs.html">Codecs</a></li>
+            <li class="level4 nav-leaf"><a href="../controller/route/assets.html">Assets</a></li>
             <li class="level3 nav-leaf"><a href="../controller/handler.html">Handlers</a></li>
             <li class="level2 nav-leaf"><a href="../tools.html">Tools</a></li>
+            <li class="level2 nav-leaf"><a href="../development.html">Developing Krop</a></li>
           </ul>
         </div>
       </nav>
-      <div id="contentbar">
+      <div id="contentbar" class="mx-auto flex-1">
         <div class="max-w-prose mx-auto">
           <div id="content"><h1 id="models" class="title">Models</h1>
 <p>Models are the representations of data in your application. You will usually have several different models:</p>
@@ -128,8 +138,12 @@
           <span class="hover:text-pink-900">💖</span>
         </footer>
       </div>
-      <nav id="pagebar">
-        <div class="fixed h-screen overflow-y-auto">
+      <!-- Right sticky page contents -->
+      <nav
+        id="pagebar"
+        class="hidden lg:block min-w-60 max-w-64 ml-8 sticky top-24 self-start flex-shrink-0"
+      >
+        <div class="max-h-[calc(100vh-6rem)] overflow-y-auto">
           <p>On This Page</p>
           <ul class="nav-list">
           </ul>

@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="">
+<html class="scroll-smooth"
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <meta charset="utf-8" />
@@ -41,39 +41,43 @@
           >
             Contents
           </button>
-          <div id="topbar-nav" popover>
-            <div id="topbar-nav-container">
+          <div id="topbar-nav" popover="auto">
+            <div id="topbar-nav-container" class="flex justify-items-center items-center h-dvh w-dvw">
               <div
-                class="p-4 mx-auto rounded-md bg-white border border-slate-900 relative"
+                class="p-4 mx-auto rounded-md bg-white border border-slate-900 max-h-4/5 w-4/5 overflow-y-auto overflow-x-auto flex flex-col items-end"
               >
                 <button
-                  class="absolute top-4 right-4 text-slate-900 hover:text-pink-800 focus:text-pink-800"
+                  class="text-slate-900 hover:text-pink-800 focus:text-pink-800"
                   popovertarget="topbar-nav"
                   popovertargetaction="hide"
                 >
                   ✕
                 </button>
-                <ul class="nav-list">
-                  <li class="level1 nav-node"><a href="../../">Krop</a></li>
-                  <li class="level2 nav-leaf"><a href="../../quick-start.html">Quick Start</a></li>
-                  <li class="level2 nav-node"><a href="../../overview/">Overview</a></li>
-                  <li class="level3 nav-leaf"><a href="../../overview/architecture.html">Architecture</a></li>
-                  <li class="level3 nav-leaf"><a href="../../overview/principles.html">Principles</a></li>
-                  <li class="level2 nav-leaf"><a href="../../application.html">Application</a></li>
-                  <li class="level2 nav-leaf"><a href="../../server.html">Server</a></li>
-                  <li class="level2 nav-node"><a href="../../model/">Models</a></li>
-                  <li class="level3 nav-leaf"><a href="../../model/sqlite.html">SQLite</a></li>
-                  <li class="level2 nav-leaf"><a href="../../views.html">View</a></li>
-                  <li class="level2 nav-node"><a href="../">Controller</a></li>
-                  <li class="level3 active nav-node"><a href="#">Routing</a></li>
-                  <li class="level4 nav-leaf"><a href="request.html">Request</a></li>
-                  <li class="level4 nav-leaf"><a href="paths.html">Paths</a></li>
-                  <li class="level4 nav-leaf"><a href="entities.html">Entities</a></li>
-                  <li class="level4 nav-leaf"><a href="response.html">Response</a></li>
-                  <li class="level4 nav-leaf"><a href="codecs.html">Codecs</a></li>
-                  <li class="level3 nav-leaf"><a href="../handler.html">Handlers</a></li>
-                  <li class="level2 nav-leaf"><a href="../../tools.html">Tools</a></li>
-                </ul>
+                <div class="w-full">
+                  <ul class="nav-list">
+                    <li class="level1 nav-node"><a href="../../">Krop</a></li>
+                    <li class="level2 nav-leaf"><a href="../../quick-start.html">Quick Start</a></li>
+                    <li class="level2 nav-node"><a href="../../overview/">Overview</a></li>
+                    <li class="level3 nav-leaf"><a href="../../overview/architecture.html">Architecture</a></li>
+                    <li class="level3 nav-leaf"><a href="../../overview/principles.html">Principles</a></li>
+                    <li class="level2 nav-leaf"><a href="../../application.html">Application</a></li>
+                    <li class="level2 nav-leaf"><a href="../../server.html">Server</a></li>
+                    <li class="level2 nav-node"><a href="../../model/">Models</a></li>
+                    <li class="level3 nav-leaf"><a href="../../model/sqlite.html">SQLite</a></li>
+                    <li class="level2 nav-leaf"><a href="../../views.html">View</a></li>
+                    <li class="level2 nav-node"><a href="../">Controller</a></li>
+                    <li class="level3 active nav-node"><a href="#">Routing</a></li>
+                    <li class="level4 nav-leaf"><a href="request.html">Request</a></li>
+                    <li class="level4 nav-leaf"><a href="paths.html">Paths</a></li>
+                    <li class="level4 nav-leaf"><a href="entities.html">Entities</a></li>
+                    <li class="level4 nav-leaf"><a href="response.html">Response</a></li>
+                    <li class="level4 nav-leaf"><a href="codecs.html">Codecs</a></li>
+                    <li class="level4 nav-leaf"><a href="assets.html">Assets</a></li>
+                    <li class="level3 nav-leaf"><a href="../handler.html">Handlers</a></li>
+                    <li class="level2 nav-leaf"><a href="../../tools.html">Tools</a></li>
+                    <li class="level2 nav-leaf"><a href="../../development.html">Developing Krop</a></li>
+                  </ul>
+                </div>
               </div>
             </div>
           </div>
@@ -83,9 +87,13 @@
       </div>
     </header>
 
-    <main>
-      <nav id="sitebar">
-        <div class="fixed h-screen overflow-y-auto">
+    <main class="max-w-8xl mx-auto my-8 min-h-screen flex">
+      <!-- Left sticky table of contents -->
+      <nav
+        id="sitebar"
+        class="hidden lg:block min-w-64 max-w-md mr-8 sticky top-24 self-start flex-shrink-0"
+      >
+        <div class="max-h-[calc(100vh-6rem)] overflow-y-auto">
           <ul class="nav-list">
             <li class="level1 nav-node"><a href="../../">Krop</a></li>
             <li class="level2 nav-leaf"><a href="../../quick-start.html">Quick Start</a></li>
@@ -104,12 +112,14 @@
             <li class="level4 nav-leaf"><a href="entities.html">Entities</a></li>
             <li class="level4 nav-leaf"><a href="response.html">Response</a></li>
             <li class="level4 nav-leaf"><a href="codecs.html">Codecs</a></li>
+            <li class="level4 nav-leaf"><a href="assets.html">Assets</a></li>
             <li class="level3 nav-leaf"><a href="../handler.html">Handlers</a></li>
             <li class="level2 nav-leaf"><a href="../../tools.html">Tools</a></li>
+            <li class="level2 nav-leaf"><a href="../../development.html">Developing Krop</a></li>
           </ul>
         </div>
       </nav>
-      <div id="contentbar">
+      <div id="contentbar" class="mx-auto flex-1">
         <div class="max-w-prose mx-auto">
           <div id="content"><h1 id="routing" class="title">Routing</h1>
 <p>Routing handles the HTTP specific details of incoming requests and outgoing responses. The main uses of routes are to:</p>
@@ -118,23 +128,32 @@
   <li>convert Scala values to an HTTP response; and</li>
   <li>reversing a route to create a link to the route or a client that calls the route.</li>
 </ol>
-<p>A <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Route.html">Route</a> describes how to convert an incoming request into Scala values, and how to turn Scala values in an outgoing response.
-A <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Handler.html">Handler</a> is a <code>Route</code> that also includes the code to convert the values parsed from the request into the values that are used to create the response. In other words, a <code>Handler</code> includes business logic.
-A <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Handlers.html">Handlers</a> is a collection of <code>Handler</code>.</p>
+<p>A <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Route.html">Route</a> describes how to convert an incoming request into Scala values, and how to turn Scala values in an outgoing response. A route is purely a description. It doesn&#39;t do anything with a request, or produce a response, until it is converted to a <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Handler.html">Handler</a>.</p>
+<p>A <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Handler.html">Handler</a> can handle an HTTP request and, if it accepts the request, produce a response. Handlers can also create resources that live for the lifetime of the web server, which allows for implementing caches and the like. A <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Handlers.html">Handlers</a> is a collection of <code>Handler</code>.</p>
 
 <h2 id="the-route-type" class="section">The Route Type</h2>
 <p>The <code>Route</code> type is fairly complex, though you can ignore this in most uses.</p>
-<pre><code class="nohighlight"><span class="type-name">Route</span><span>[</span><span class="type-name">P</span><span> &lt;: </span><span class="type-name">Tuple</span><span>, </span><span class="type-name">Q</span><span> &lt;: </span><span class="type-name">Tuple</span><span>, </span><span class="type-name">I</span><span> &lt;: </span><span class="type-name">Tuple</span><span>, </span><span class="type-name">O</span><span> &lt;: </span><span class="type-name">Tuple</span><span>, </span><span class="type-name">R</span><span>]</span></code></pre>
+<pre><code class="nohighlight"><span class="type-name">Route</span><span>[</span><span class="type-name">C</span><span> &lt;: </span><span class="type-name">Tuple</span><span>, </span><span class="type-name">Path</span><span> &lt;: </span><span class="type-name">Tuple</span><span>, </span><span class="type-name">Query</span><span> &lt;: </span><span class="type-name">Tuple</span><span>, </span><span class="type-name">E</span><span> &lt;: </span><span class="type-name">Tuple</span><span>, </span><span class="type-name">R</span><span>, </span><span class="type-name">P</span><span>]</span></code></pre>
 <p>The types have the following meanings:</p>
 <ul>
-  <li><code>P</code> is the type of values extracted from the request&#39;s path by the <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Path.html">Path</a>.</li>
-  <li><code>Q</code> is the type of query parameters extracted by the <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Path.html">Path</a>.</li>
-  <li><code>I</code> is the type of all values extracted from the HTTP request.</li>
-  <li><code>O</code> is the type of values to construct an HTTP request to this <code>Route</code>. This is often, but not always, the same as <code>I</code>.</li>
-  <li><code>R</code> is the type of the value to construct an HTTP response.</li>
+  <li><code>C</code> is the type of the values used to construct a request.</li>
+  <li><code>Path</code> is the type of the parameters extracted from the <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Path.html">Path</a>.</li>
+  <li><code>Query</code> is the type of the query parameters extracted from the <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Path.html">Path</a>.</li>
+  <li><code>E</code> is the type of all the values extracted from the request.</li>
+  <li><code>R</code> is the type of the value used to build the <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Response.html">Response</a>.</li>
+  <li><code>P</code> is the type of the value produced in the <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Response.html">Response</a>.</li>
 </ul>
 <p>Most of these types are tuples because they accumulate values extracted from smaller components of the HTTP request.
 This will become clearer in the examples below.</p>
+<p>It can be helpful to understand there are two views of a <code>Route</code>: the view from the outside, of a HTTP client that may call a route and handle its response, and from the inside, of a handler that may deal with value extracted from a request and return values to encode in the response. We use the following types:</p>
+<ul>
+  <li><code>C</code>, for <em>consumes</em>, the type of values needs to construct a request to a route. Viewed from the outside.</li>
+  <li><code>E</code>, for <em>extracts</em>, the type of values that are extracted from a request. Viewed from the inside.</li>
+  <li><code>R</code>, for <em>returns</em>, the type of values need to construct a response. Viewed from the inside.</li>
+  <li><code>P</code>, for <em>produces</em>, the type of values that are produced in a response to a route. Viewed from the outside.</li>
+</ul>
+<p>In many cases the outside and inside views are the same. E.g. <code>C == E</code> and <code>P == R</code>. If they differ is usually due to entity handling. For example, a route that serves static files may require a handler to return a path to a file, which produces a HTTP response containing a stream of bytes.</p>
+<p>It can be hard to keep the outside and inside type straight. When writing type signatures we think of a pipeline <code>Request =&gt; Handler =&gt; Response</code>, and keep the outside types on the outside and the inside type on the inside. So for a <code>Request</code> the outside types are to the left, and for a <code>Response</code> they are to the right.</p>
 
 <h2 id="constructing-a-route" class="section">Constructing A Route</h2>
 <p>A <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Route.html">Route</a> is constructed from two components:</p>
@@ -213,8 +232,12 @@ The route below has two parameters.</p>
           <span class="hover:text-pink-900">💖</span>
         </footer>
       </div>
-      <nav id="pagebar">
-        <div class="fixed h-screen overflow-y-auto">
+      <!-- Right sticky page contents -->
+      <nav
+        id="pagebar"
+        class="hidden lg:block min-w-60 max-w-64 ml-8 sticky top-24 self-start flex-shrink-0"
+      >
+        <div class="max-h-[calc(100vh-6rem)] overflow-y-auto">
           <p>On This Page</p>
           <ul class="nav-list">
             <li class="level1 nav-leaf"><a href="#the-route-type">The Route Type</a></li>

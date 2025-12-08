@@ -5,7 +5,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="generator" content="Laika 1.0.0" />
-    <title>View</title>
+    <title>Developing Krop</title>
      
     <meta name="description" content="docs" />
     
@@ -64,7 +64,7 @@
                     <li class="level2 nav-leaf"><a href="server.html">Server</a></li>
                     <li class="level2 nav-node"><a href="model/">Models</a></li>
                     <li class="level3 nav-leaf"><a href="model/sqlite.html">SQLite</a></li>
-                    <li class="level2 active nav-leaf"><a href="#">View</a></li>
+                    <li class="level2 nav-leaf"><a href="views.html">View</a></li>
                     <li class="level2 nav-node"><a href="controller/">Controller</a></li>
                     <li class="level3 nav-node"><a href="controller/route/">Routing</a></li>
                     <li class="level4 nav-leaf"><a href="controller/route/request.html">Request</a></li>
@@ -75,7 +75,7 @@
                     <li class="level4 nav-leaf"><a href="controller/route/assets.html">Assets</a></li>
                     <li class="level3 nav-leaf"><a href="controller/handler.html">Handlers</a></li>
                     <li class="level2 nav-leaf"><a href="tools.html">Tools</a></li>
-                    <li class="level2 nav-leaf"><a href="development.html">Developing Krop</a></li>
+                    <li class="level2 active nav-leaf"><a href="#">Developing Krop</a></li>
                   </ul>
                 </div>
               </div>
@@ -104,7 +104,7 @@
             <li class="level2 nav-leaf"><a href="server.html">Server</a></li>
             <li class="level2 nav-node"><a href="model/">Models</a></li>
             <li class="level3 nav-leaf"><a href="model/sqlite.html">SQLite</a></li>
-            <li class="level2 active nav-leaf"><a href="#">View</a></li>
+            <li class="level2 nav-leaf"><a href="views.html">View</a></li>
             <li class="level2 nav-node"><a href="controller/">Controller</a></li>
             <li class="level3 nav-node"><a href="controller/route/">Routing</a></li>
             <li class="level4 nav-leaf"><a href="controller/route/request.html">Request</a></li>
@@ -115,24 +115,29 @@
             <li class="level4 nav-leaf"><a href="controller/route/assets.html">Assets</a></li>
             <li class="level3 nav-leaf"><a href="controller/handler.html">Handlers</a></li>
             <li class="level2 nav-leaf"><a href="tools.html">Tools</a></li>
-            <li class="level2 nav-leaf"><a href="development.html">Developing Krop</a></li>
+            <li class="level2 active nav-leaf"><a href="#">Developing Krop</a></li>
           </ul>
         </div>
       </nav>
       <div id="contentbar" class="mx-auto flex-1">
         <div class="max-w-prose mx-auto">
-          <div id="content"><h1 id="view" class="title">View</h1>
-<p>Views are responsible for generating the user interface of your application. 
-A user interface could be HTML displayed in a web browser, JSON returned from an API endpoint, or code that runs client-side.
-As there are several different kinds of user interfaces there are several different systems for creating views.</p>
+          <div id="content"><h1 id="developing-krop" class="title">Developing Krop</h1>
+<p>This section contains notes on developing Krop.</p>
 
-<h2 id="static-files" class="section">Static Files</h2>
+<h2 id="testing-and-all-that" class="section">Testing And All That</h2>
+<p>Use the sbt <code>build</code> task to compile, test, format, etc.</p>
 
-<h2 id="templates" class="section">Templates</h2>
-<p>Krop uses <a href="https://www.playframework.com/documentation/3.0.x/ScalaTemplates">Twirl</a> for templates, which are views that are mostly text with a few pieces of programmatic content. Templates are ideal for generating HTML.</p>
-<p>By default templates are found in <code>backend/&lt;package&gt;/src/views/</code>.</p></div>
+<h2 id="builders" class="section">Builders</h2>
+<p>We have a lot of builder methods. The convention is a method starting with <code>with</code> will return a copy with an updated value. E.g. <code>serverBuilder.withPort(...)</code> returns a copy of a <code>ServerBuilder</code> with an updated value of port.</p>
+
+<h2 id="wrapping-http4s" class="section">Wrapping http4s</h2>
+<p>We wrap a lot of http4s (and Cats and Cats Effect to a lesser extent) to make things simpler to use. For example, we like to get rid of the <code>IO</code> parameters that litter many http4s types. We don&#39;t abstract over effect types (and it, arguably, yields no value to do so) so don&#39;t need this.</p>
+<p>Where we have a wrapper type, and it doesn&#39;t make sense to use an opaque type or a type alias, the value of the wrapped http4s type is, by convention, called <code>value</code>.</p>
+
+<h2 id="absolute-imports" class="section">Absolute Imports</h2>
+<p>We use absolute, not relative, imports. Relative imports require too much knowledge of the code base for the more casual reader.</p></div>
           <div class="flex flex-row justify-between">
-            <a class="pagenav" href="model/sqlite.html">←SQLite</a> <a class="pagenav" href="controller/">Controller→</a>
+            <a class="pagenav" href="tools.html">←Tools</a> 
           </div>
         </div>
         <footer>
@@ -148,8 +153,10 @@ As there are several different kinds of user interfaces there are several differ
         <div class="max-h-[calc(100vh-6rem)] overflow-y-auto">
           <p>On This Page</p>
           <ul class="nav-list">
-            <li class="level1 nav-leaf"><a href="#static-files">Static Files</a></li>
-            <li class="level1 nav-leaf"><a href="#templates">Templates</a></li>
+            <li class="level1 nav-leaf"><a href="#testing-and-all-that">Testing And All That</a></li>
+            <li class="level1 nav-leaf"><a href="#builders">Builders</a></li>
+            <li class="level1 nav-leaf"><a href="#wrapping-http4s">Wrapping http4s</a></li>
+            <li class="level1 nav-leaf"><a href="#absolute-imports">Absolute Imports</a></li>
           </ul>
         </div>
       </nav>

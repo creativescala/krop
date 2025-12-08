@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="">
+<html class="scroll-smooth"
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <meta charset="utf-8" />
@@ -41,39 +41,43 @@
           >
             Contents
           </button>
-          <div id="topbar-nav" popover>
-            <div id="topbar-nav-container">
+          <div id="topbar-nav" popover="auto">
+            <div id="topbar-nav-container" class="flex justify-items-center items-center h-dvh w-dvw">
               <div
-                class="p-4 mx-auto rounded-md bg-white border border-slate-900 relative"
+                class="p-4 mx-auto rounded-md bg-white border border-slate-900 max-h-4/5 w-4/5 overflow-y-auto overflow-x-auto flex flex-col items-end"
               >
                 <button
-                  class="absolute top-4 right-4 text-slate-900 hover:text-pink-800 focus:text-pink-800"
+                  class="text-slate-900 hover:text-pink-800 focus:text-pink-800"
                   popovertarget="topbar-nav"
                   popovertargetaction="hide"
                 >
                   ✕
                 </button>
-                <ul class="nav-list">
-                  <li class="level1 nav-node"><a href="../">Krop</a></li>
-                  <li class="level2 nav-leaf"><a href="../quick-start.html">Quick Start</a></li>
-                  <li class="level2 nav-node"><a href="../overview/">Overview</a></li>
-                  <li class="level3 nav-leaf"><a href="../overview/architecture.html">Architecture</a></li>
-                  <li class="level3 nav-leaf"><a href="../overview/principles.html">Principles</a></li>
-                  <li class="level2 nav-leaf"><a href="../application.html">Application</a></li>
-                  <li class="level2 nav-leaf"><a href="../server.html">Server</a></li>
-                  <li class="level2 nav-node"><a href="../model/">Models</a></li>
-                  <li class="level3 nav-leaf"><a href="../model/sqlite.html">SQLite</a></li>
-                  <li class="level2 nav-leaf"><a href="../views.html">View</a></li>
-                  <li class="level2 nav-node"><a href="index.html">Controller</a></li>
-                  <li class="level3 nav-node"><a href="route/">Routing</a></li>
-                  <li class="level4 nav-leaf"><a href="route/request.html">Request</a></li>
-                  <li class="level4 nav-leaf"><a href="route/paths.html">Paths</a></li>
-                  <li class="level4 nav-leaf"><a href="route/entities.html">Entities</a></li>
-                  <li class="level4 nav-leaf"><a href="route/response.html">Response</a></li>
-                  <li class="level4 nav-leaf"><a href="route/codecs.html">Codecs</a></li>
-                  <li class="level3 active nav-leaf"><a href="#">Handlers</a></li>
-                  <li class="level2 nav-leaf"><a href="../tools.html">Tools</a></li>
-                </ul>
+                <div class="w-full">
+                  <ul class="nav-list">
+                    <li class="level1 nav-node"><a href="../">Krop</a></li>
+                    <li class="level2 nav-leaf"><a href="../quick-start.html">Quick Start</a></li>
+                    <li class="level2 nav-node"><a href="../overview/">Overview</a></li>
+                    <li class="level3 nav-leaf"><a href="../overview/architecture.html">Architecture</a></li>
+                    <li class="level3 nav-leaf"><a href="../overview/principles.html">Principles</a></li>
+                    <li class="level2 nav-leaf"><a href="../application.html">Application</a></li>
+                    <li class="level2 nav-leaf"><a href="../server.html">Server</a></li>
+                    <li class="level2 nav-node"><a href="../model/">Models</a></li>
+                    <li class="level3 nav-leaf"><a href="../model/sqlite.html">SQLite</a></li>
+                    <li class="level2 nav-leaf"><a href="../views.html">View</a></li>
+                    <li class="level2 nav-node"><a href="index.html">Controller</a></li>
+                    <li class="level3 nav-node"><a href="route/">Routing</a></li>
+                    <li class="level4 nav-leaf"><a href="route/request.html">Request</a></li>
+                    <li class="level4 nav-leaf"><a href="route/paths.html">Paths</a></li>
+                    <li class="level4 nav-leaf"><a href="route/entities.html">Entities</a></li>
+                    <li class="level4 nav-leaf"><a href="route/response.html">Response</a></li>
+                    <li class="level4 nav-leaf"><a href="route/codecs.html">Codecs</a></li>
+                    <li class="level4 nav-leaf"><a href="route/assets.html">Assets</a></li>
+                    <li class="level3 active nav-leaf"><a href="#">Handlers</a></li>
+                    <li class="level2 nav-leaf"><a href="../tools.html">Tools</a></li>
+                    <li class="level2 nav-leaf"><a href="../development.html">Developing Krop</a></li>
+                  </ul>
+                </div>
               </div>
             </div>
           </div>
@@ -83,9 +87,13 @@
       </div>
     </header>
 
-    <main>
-      <nav id="sitebar">
-        <div class="fixed h-screen overflow-y-auto">
+    <main class="max-w-8xl mx-auto my-8 min-h-screen flex">
+      <!-- Left sticky table of contents -->
+      <nav
+        id="sitebar"
+        class="hidden lg:block min-w-64 max-w-md mr-8 sticky top-24 self-start flex-shrink-0"
+      >
+        <div class="max-h-[calc(100vh-6rem)] overflow-y-auto">
           <ul class="nav-list">
             <li class="level1 nav-node"><a href="../">Krop</a></li>
             <li class="level2 nav-leaf"><a href="../quick-start.html">Quick Start</a></li>
@@ -104,12 +112,14 @@
             <li class="level4 nav-leaf"><a href="route/entities.html">Entities</a></li>
             <li class="level4 nav-leaf"><a href="route/response.html">Response</a></li>
             <li class="level4 nav-leaf"><a href="route/codecs.html">Codecs</a></li>
+            <li class="level4 nav-leaf"><a href="route/assets.html">Assets</a></li>
             <li class="level3 active nav-leaf"><a href="#">Handlers</a></li>
             <li class="level2 nav-leaf"><a href="../tools.html">Tools</a></li>
+            <li class="level2 nav-leaf"><a href="../development.html">Developing Krop</a></li>
           </ul>
         </div>
       </nav>
-      <div id="contentbar">
+      <div id="contentbar" class="mx-auto flex-1">
         <div class="max-w-prose mx-auto">
           <div id="content"><h1 id="handlers" class="title">Handlers</h1>
 <p>A <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Route.html">Route</a> extracts Scala values from an HTTP request, and converts Scala values into an HTTP response. A <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Handler.html">Handler</a> adds the functionality that connects these two parts together, giving a complete controller that can be run as part of an application.</p>
@@ -135,7 +145,7 @@
 <pre><code class="nohighlight"><span class="keyword">val</span><span> </span><span class="identifier">request</span><span> = </span><span class="type-name">Request</span><span>.</span><span class="identifier">get</span><span>(</span><span class="type-name">Path</span><span> / </span><span class="type-name">Param</span><span>.</span><span class="identifier">int</span><span> / </span><span class="type-name">Param</span><span>.</span><span class="identifier">string</span><span>)
 </span><span class="comment">// request: RequestMethodPath[*:[Int, *:[String, EmptyTuple]], EmptyTuple] = RequestMethodPath(
 //   method = GET,
-//   path = krop.route.Path@3aa14a13
+//   path = krop.route.Path@42f0e6c6
 // )</span></code></pre>
 <p>This <code>Tuple2</code> arises because we extract two elements from the HTTP request&#39;s path: one <code>Int</code> and one <code>String</code>.
 However, when you come to use a handler with such a request, you can use a normal function with two arguments <em>not</em> a function that accepts a single <code>Tuple2</code>.</p>
@@ -143,7 +153,7 @@ However, when you come to use a handler with such a request, you can use a norma
   .</span><span class="identifier">handle</span><span>((</span><span class="identifier">int</span><span>, </span><span class="identifier">string</span><span>) =&gt; </span><span class="string-literal">s&quot;</span><span class="substitution">${int.toString}</span><span class="string-literal">: </span><span class="substitution">${string}</span><span class="string-literal">&quot;</span><span>)</span></code></pre>
 <p>The conversion between tuples and functions is done by given instances of <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/TupleApply.html">TupleApply</a>, which allows a function <code>(A, B, ..., N) =&gt; Z</code> to be applied to a tuple <code>(A, B, ..., N)</code></p></div>
           <div class="flex flex-row justify-between">
-            <a class="pagenav" href="route/codecs.html">←Codecs</a> <a class="pagenav" href="../tools.html">Tools→</a>
+            <a class="pagenav" href="route/assets.html">←Assets</a> <a class="pagenav" href="../tools.html">Tools→</a>
           </div>
         </div>
         <footer>
@@ -151,8 +161,12 @@ However, when you come to use a handler with such a request, you can use a norma
           <span class="hover:text-pink-900">💖</span>
         </footer>
       </div>
-      <nav id="pagebar">
-        <div class="fixed h-screen overflow-y-auto">
+      <!-- Right sticky page contents -->
+      <nav
+        id="pagebar"
+        class="hidden lg:block min-w-60 max-w-64 ml-8 sticky top-24 self-start flex-shrink-0"
+      >
+        <div class="max-h-[calc(100vh-6rem)] overflow-y-auto">
           <p>On This Page</p>
           <ul class="nav-list">
             <li class="level1 nav-leaf"><a href="#type-transformations-for-handlers">Type Transformations for Handlers</a></li>
