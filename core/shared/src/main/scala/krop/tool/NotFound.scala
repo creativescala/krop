@@ -188,7 +188,7 @@ object NotFound {
                       // display to the developer
                       routeHandler
                         .run(req)
-                        .map(_.leftMap(e => errors :+ (handler -> e)))
+                        .map(_.leftMap(e => errors :+ (handle -> e)))
                     case Right(value) =>
                       // If we have succeeded we keep the first success as our result
                       IO.pure(Right(value))
