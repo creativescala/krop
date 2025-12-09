@@ -127,7 +127,7 @@ Krop provides SQLite integration via the <a href="https://github.com/xerial/sqli
 
 <h2 id="using-sqlite" class="section">Using SQLite</h2>
 <p>Krop&#39;s integration lives in a separate artifact. To use it you&#39;ll need to add the following dependency to your <code>build.sbt</code>.</p>
-<pre><code class="nohighlight"><span class="identifier">libraryDependencies</span><span> += </span><span class="string-literal">&quot;org.creativescala&quot;</span><span> %% </span><span class="string-literal">&quot;krop-sqlite&quot;</span><span> % </span><span class="string-literal">&quot;0.9.4&quot;</span></code></pre>
+<pre><code class="nohighlight"><span class="identifier">libraryDependencies</span><span> += </span><span class="string-literal">&quot;org.creativescala&quot;</span><span> %% </span><span class="string-literal">&quot;krop-sqlite&quot;</span><span> % </span><span class="string-literal">&quot;0.10.0&quot;</span></code></pre>
 
 <h2 id="creating-a-database-connection" class="section">Creating a Database Connection</h2>
 <p>Connecting to a database is trivial, as SQLite only requires the name of the file that stores the database. If the file doesn&#39;t already exist it will be created. The code below shows how to connect to a database. This uses a default configuration that has been tuned to the needs of a typical web application.</p>

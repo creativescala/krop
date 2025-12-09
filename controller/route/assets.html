@@ -134,7 +134,7 @@
 
 <h2 id="using-assets" class="section">Using Assets</h2>
 <p>If you aren&#39;t using the <a href="../../quick-start.html">project template</a> you will need to add the following dependency to your <code>build.sbt</code>:</p>
-<pre><code class="nohighlight"><span class="identifier">libraryDependencies</span><span> += </span><span class="string-literal">&quot;org.creativescala&quot;</span><span> %% </span><span class="string-literal">&quot;krop-asset&quot;</span><span> % </span><span class="string-literal">&quot;0.9.4&quot;</span></code></pre>
+<pre><code class="nohighlight"><span class="identifier">libraryDependencies</span><span> += </span><span class="string-literal">&quot;org.creativescala&quot;</span><span> %% </span><span class="string-literal">&quot;krop-asset&quot;</span><span> % </span><span class="string-literal">&quot;0.10.0&quot;</span></code></pre>
 
 <h2 id="creating-an-asset-route" class="section">Creating an Asset Route</h2>
 <p>An <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/asset/AssetRoute.html">AssetRoute</a> is constructed by giving it a <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Path.html">Path</a> under which to serve assets, and a <code>String</code> specifying a directory to monitor. So, for example, if we want to serve assets under the path <code>/assets</code>, and those assets live under the directory <code>resources/myapp/assets</code> (relative the project root directory) we would create an <code>AssetRoute</code> as</p>
