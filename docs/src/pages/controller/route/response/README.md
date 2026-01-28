@@ -17,7 +17,7 @@ You usually won't do this yourself; it is handled by the `Route` the `Response` 
 
 ## Entities
 
-Entities (response bodies) are handled in the same way as [requests](request.md): by specifying an @:api(krop.route.Entity). In this case the `Entity` is responsible for encoding Scala values as data in the HTTP response.
+Entities (response bodies) are handled in the same way as [requests](../request.md): by specifying an @:api(krop.route.Entity). In this case the `Entity` is responsible for encoding Scala values as data in the HTTP response.
 
 Use `Entity.unit` to indicate that your response has no entity. For example:
 
@@ -60,7 +60,7 @@ val getUser =
   )
 ```
 
-For more complex cases you can use `orElse`, which allows you to handle an `Either[A, B]` and introduce custom error handling. The example below shows complex error handling combining `orElse` and `orNotFound`. A 404 Not Found is returned if the user id does not correspond to an existing user, and a 400 Bad Request is returned if the `Name` [entity](entities.md) is not valid.
+For more complex cases you can use `orElse`, which allows you to handle an `Either[A, B]` and introduce custom error handling. The example below shows complex error handling combining `orElse` and `orNotFound`. A 404 Not Found is returned if the user id does not correspond to an existing user, and a 400 Bad Request is returned if the `Name` [entity](../entities.md) is not valid.
 
 ```scala mdoc:silent
 import io.circe.{Decoder, Encoder}
