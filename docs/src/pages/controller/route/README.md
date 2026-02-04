@@ -78,7 +78,7 @@ route.handle(userId => s"You asked for user $userId")
 
 Notice that adding a handler produces a value with a different type, a @:api(krop.route.Handler).
 
-For more details see the separate pages for [Request](request.md), [Response](response.md) and [Handler](../handler.md).
+For more details see the separate pages for [Request](request.md), [Response](response/README.md) and [Handler](../handler.md).
 
 
 
