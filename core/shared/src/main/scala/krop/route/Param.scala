@@ -106,9 +106,9 @@ object Param {
   val seq: Param.All[Seq[String]] =
     Param.All(SeqStringCodec.seqString)
 
-  /** `Param` that convert path segments to Fs2Path`.
-    */
-  val fs2Path: Param[Fs2Path] =
+    /** `Param` that converts path segments to a `fs2.io.file.Path`.
+      */
+  val fs2Path: Param.All[Fs2Path] =
     Param
       .separatedString("/")
       .imap(Fs2Path.apply)(_.toString)

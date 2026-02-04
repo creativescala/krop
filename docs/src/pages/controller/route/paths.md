@@ -50,6 +50,29 @@ Path / "assets" / Param.seq
 
 will capture the remainder of the URI's path as a `Seq[String]`.
 
+The `Param.fs2Path` instance is possibly the most useful `Param` capturing all segments.
+As the name suggests it converts the captured segments in a `fs2.io.file.Path`, 
+which can then be used to find a file on the file system.
+The `fs2.io.file.Path` returned is a *relative* path.
+For example:
+
+```scala mdoc:silent
+Path / "assets" / Param.fs2Path
+```
+
+In use, we see the output is indeed a relative path.
+
+```scala mdoc
+import org.http4s.implicits.*
+
+val path = Path / "assets" / Param.fs2Path
+
+path.parseToOption(uri"http://example.org/assets/a/b/c.txt")
+```
+
+
+## Closed Paths
+
 A `Path` that matches all segments is called a closed path. Attempting to add an
 element to a closed path will result in an exception.
 
@@ -146,11 +169,11 @@ optional.decode(Map())
 
 There are a small number of predefined `Param` instances on the
 @:api(krop.route.Param$) companion object. Constructing your own instances can
-be done in several ways.
+be done in several ways, described below.
 
 The `imap` method transforms a `Param[A]` into a `Param[B]` by providing
 functions `A => B` and `B => A`. This example constructs a `Param[Int]` from the
-built-in `Param[String]`.
+built-in `Param[String]`, though in real code we should use the pre-defined `Param.int`.
 
 ```scala mdoc:silent
 val intParam = Param.string.imap(_.toInt)(_.toString)
@@ -201,32 +224,3 @@ intParam.name
 // Better, as the name has been changed appropriately.
 intParam.withName("<Int>").name
 ```
-### Convert path segments to a FS2 Path
-
-**fs2Path** utility in `Param` companion object is used to convert string path to a FS2 path
-It supports bidirectional mapping: URL → Fs2Path and Fs2Path → URL.
-
-**Flow Diagram:**
-
-````
-Request URL: /assets/images/icons/logo.svg
-    │
-    ▼
-Param.separatedString("/") → "images/icons/logo.svg"
-    │
-    ▼
-Fs2Path.apply → Fs2Path("images/icons/logo.svg")
-    │
-    ▼
-Route handler receives typed Fs2Path
-````
-
-**Usage in Route :**
-
-````scala
-  val staticDirectoryRoute =
-    Route(
-      Request.get(Path / "kroptest" / "assets" / AssetPath.fs2Path),
-      Response.StaticDirectory(Fs2Path("resources/kroptest/assets"))
-    ).passthrough
-````
