@@ -241,7 +241,28 @@ sub-path we could use the following.</p>
 </span><span>
 </span><span class="comment">// Better, as the name has been changed appropriately.
 </span><span class="identifier">intParam</span><span>.</span><span class="identifier">withName</span><span>(</span><span class="string-literal">&quot;&lt;Int&gt;&quot;</span><span>).</span><span class="identifier">name</span><span>
-</span><span class="comment">// res23: String = &quot;&lt;Int&gt;&quot;</span></code></pre></div>
+</span><span class="comment">// res23: String = &quot;&lt;Int&gt;&quot;</span></code></pre>
+
+<h3 id="convert-path-segments-to-a-fs2-path" class="section">Convert path segments to a FS2 Path</h3>
+<p><strong>fs2Path</strong> utility in <code>Param</code> companion object is used to convert string path to a FS2 path
+It supports bidirectional mapping: URL → Fs2Path and Fs2Path → URL.</p>
+<p><strong>Flow Diagram:</strong></p>
+<pre><code>Request URL: /assets/images/icons/logo.svg
+    │
+    ▼
+Param.separatedString(&quot;/&quot;) → &quot;images/icons/logo.svg&quot;
+    │
+    ▼
+Fs2Path.apply → Fs2Path(&quot;images/icons/logo.svg&quot;)
+    │
+    ▼
+Route handler receives typed Fs2Path</code></pre>
+<p><strong>Usage in Route :</strong></p>
+<pre><code class="nohighlight"><span>  </span><span class="keyword">val</span><span> </span><span class="identifier">staticDirectoryRoute</span><span> =
+    </span><span class="type-name">Route</span><span>(
+      </span><span class="type-name">Request</span><span>.</span><span class="identifier">get</span><span>(</span><span class="type-name">Path</span><span> / </span><span class="string-literal">&quot;kroptest&quot;</span><span> / </span><span class="string-literal">&quot;assets&quot;</span><span> / </span><span class="type-name">AssetPath</span><span>.</span><span class="identifier">fs2Path</span><span>),
+      </span><span class="type-name">Response</span><span>.</span><span class="type-name">StaticDirectory</span><span>(</span><span class="type-name">Fs2Path</span><span>(</span><span class="string-literal">&quot;resources/kroptest/assets&quot;</span><span>))
+    ).</span><span class="identifier">passthrough</span></code></pre></div>
           <div class="flex flex-row justify-between">
             <a class="pagenav" href="request.html">←Request</a> <a class="pagenav" href="entities.html">Entities→</a>
           </div>
@@ -265,6 +286,7 @@ sub-path we could use the following.</p>
             <li class="level2 nav-leaf"><a href="#query-parameter-semantics">Query Parameter Semantics</a></li>
             <li class="level1 nav-node"><a href="#params">Params</a></li>
             <li class="level2 nav-leaf"><a href="#param-names">Param Names</a></li>
+            <li class="level2 nav-leaf"><a href="#convert-path-segments-to-a-fs2-path">Convert path segments to a FS2 Path</a></li>
           </ul>
         </div>
       </nav>
