@@ -201,3 +201,32 @@ intParam.name
 // Better, as the name has been changed appropriately.
 intParam.withName("<Int>").name
 ```
+### Convert path segments to a FS2 Path
+
+**fs2Path** utility in `Param` companion object is used to convert string path to a FS2 path
+It supports bidirectional mapping: URL → Fs2Path and Fs2Path → URL.
+
+**Flow Diagram:**
+
+````
+Request URL: /assets/images/icons/logo.svg
+    │
+    ▼
+Param.separatedString("/") → "images/icons/logo.svg"
+    │
+    ▼
+Fs2Path.apply → Fs2Path("images/icons/logo.svg")
+    │
+    ▼
+Route handler receives typed Fs2Path
+````
+
+**Usage in Route :**
+
+````scala
+  val staticDirectoryRoute =
+    Route(
+      Request.get(Path / "kroptest" / "assets" / AssetPath.fs2Path),
+      Response.StaticDirectory(Fs2Path("resources/kroptest/assets"))
+    ).passthrough
+````
