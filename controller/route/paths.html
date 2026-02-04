@@ -145,6 +145,22 @@ to the end of the URI&#39;s path. For example</p>
 <code>Param.All</code> such as <code>Param.seq</code>. So</p>
 <pre><code class="nohighlight"><span class="type-name">Path</span><span> / </span><span class="string-literal">&quot;assets&quot;</span><span> / </span><span class="type-name">Param</span><span>.</span><span class="identifier">seq</span></code></pre>
 <p>will capture the remainder of the URI&#39;s path as a <code>Seq[String]</code>.</p>
+<p>The <code>Param.fs2Path</code> instance is possibly the most useful <code>Param</code> capturing all segments.
+As the name suggests it converts the captured segments in a <code>fs2.io.file.Path</code>, 
+which can then be used to find a file on the file system.
+The <code>fs2.io.file.Path</code> returned is a <em>relative</em> path.
+For example:</p>
+<pre><code class="nohighlight"><span class="type-name">Path</span><span> / </span><span class="string-literal">&quot;assets&quot;</span><span> / </span><span class="type-name">Param</span><span>.</span><span class="identifier">fs2Path</span></code></pre>
+<p>In use, we see the output is indeed a relative path.</p>
+<pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">http4s</span><span>.</span><span class="identifier">implicits</span><span>.*
+
+</span><span class="keyword">val</span><span> </span><span class="identifier">path</span><span> = </span><span class="type-name">Path</span><span> / </span><span class="string-literal">&quot;assets&quot;</span><span> / </span><span class="type-name">Param</span><span>.</span><span class="identifier">fs2Path</span><span>
+</span><span class="comment">// path: Path[*:[Path, EmptyTuple], EmptyTuple] = krop.route.Path@59b2ae4b
+</span><span>
+</span><span class="identifier">path</span><span>.</span><span class="identifier">parseToOption</span><span>(</span><span class="string-literal">uri&quot;http://example.org/assets/a/b/c.txt&quot;</span><span>)
+</span><span class="comment">// res5: Option[*:[Path, EmptyTuple]] = Some(Tuple1(a/b/c.txt))</span></code></pre>
+
+<h2 id="closed-paths" class="section">Closed Paths</h2>
 <p>A <code>Path</code> that matches all segments is called a closed path. Attempting to add an
 element to a closed path will result in an exception.</p>
 <pre><code class="nohighlight"><span class="type-name">Path</span><span> / </span><span class="type-name">Segment</span><span>.</span><span class="identifier">all</span><span> / </span><span class="string-literal">&quot;crash&quot;</span><span>
@@ -154,7 +170,7 @@ element to a closed path will result in an exception.</p>
 //   A closed path cannot have additional segments of parameters added to it.
 // 	at krop.route.Path.assertOpen(Path.scala:119)
 // 	at krop.route.Path.$div(Path.scala:88)
-// 	at repl.MdocSession$MdocApp.$init$$$anonfun$1(paths.md:41)</span></code></pre>
+// 	at repl.MdocSession$MdocApp.$init$$$anonfun$1(paths.md:62)</span></code></pre>
 
 <h2 id="capturing-query-parameters" class="section">Capturing Query Parameters</h2>
 <p>A <code>Path</code> can also match and capture query parameters. For instance, the following path captures the query parameter <code>id</code> as an <code>Int</code>.</p>
@@ -182,87 +198,66 @@ element to a closed path will result in an exception.</p>
 <pre><code class="nohighlight"><span class="keyword">val</span><span> </span><span class="identifier">required</span><span> = </span><span class="type-name">QueryParam</span><span>.</span><span class="identifier">one</span><span>[</span><span class="type-name">Int</span><span>](</span><span class="string-literal">&quot;id&quot;</span><span>)
 </span><span class="keyword">val</span><span> </span><span class="identifier">optional</span><span> = </span><span class="type-name">QueryParam</span><span>.</span><span class="identifier">optional</span><span>[</span><span class="type-name">Int</span><span>](</span><span class="string-literal">&quot;id&quot;</span><span>)</span></code></pre>
 <pre><code class="nohighlight"><span class="identifier">required</span><span>.</span><span class="identifier">decode</span><span>(</span><span class="type-name">Map</span><span>(</span><span class="string-literal">&quot;id&quot;</span><span> -&gt; </span><span class="type-name">List</span><span>(</span><span class="string-literal">&quot;1&quot;</span><span>)))
-</span><span class="comment">// res9: Either[QueryParseFailure, Int] = Right(1)
+</span><span class="comment">// res11: Either[QueryParseFailure, Int] = Right(1)
 </span><span class="identifier">optional</span><span>.</span><span class="identifier">decode</span><span>(</span><span class="type-name">Map</span><span>(</span><span class="string-literal">&quot;id&quot;</span><span> -&gt; </span><span class="type-name">List</span><span>(</span><span class="string-literal">&quot;1&quot;</span><span>)))
-</span><span class="comment">// res10: Either[QueryParseFailure, Option[Int]] = Right(Some(1))</span></code></pre>
+</span><span class="comment">// res12: Either[QueryParseFailure, Option[Int]] = Right(Some(1))</span></code></pre>
 <p>In the second case both required and optional query parameters fail.</p>
 <pre><code class="nohighlight"><span class="identifier">required</span><span>.</span><span class="identifier">decode</span><span>(</span><span class="type-name">Map</span><span>(</span><span class="string-literal">&quot;id&quot;</span><span> -&gt; </span><span class="type-name">List</span><span>(</span><span class="string-literal">&quot;abc&quot;</span><span>)))
-</span><span class="comment">// res11: Either[QueryParseFailure, Int] = Left(
+</span><span class="comment">// res13: Either[QueryParseFailure, Int] = Left(
 //   ValueParsingFailed(name = &quot;id&quot;, value = &quot;abc&quot;, description = &quot;&lt;Int&gt;&quot;)
 // )
 </span><span class="identifier">optional</span><span>.</span><span class="identifier">decode</span><span>(</span><span class="type-name">Map</span><span>(</span><span class="string-literal">&quot;id&quot;</span><span> -&gt; </span><span class="type-name">List</span><span>(</span><span class="string-literal">&quot;abc&quot;</span><span>)))
-</span><span class="comment">// res12: Either[QueryParseFailure, Option[Int]] = Left(
+</span><span class="comment">// res14: Either[QueryParseFailure, Option[Int]] = Left(
 //   ValueParsingFailed(name = &quot;id&quot;, value = &quot;abc&quot;, description = &quot;&lt;Int&gt;&quot;)
 // )</span></code></pre>
 <p>A required parameter will fail in the third case, but an optional parameter will succeed with <code>None</code>.</p>
 <pre><code class="nohighlight"><span class="identifier">required</span><span>.</span><span class="identifier">decode</span><span>(</span><span class="type-name">Map</span><span>(</span><span class="string-literal">&quot;id&quot;</span><span> -&gt; </span><span class="type-name">List</span><span>()))
-</span><span class="comment">// res13: Either[QueryParseFailure, Int] = Left(NoValuesForName(&quot;id&quot;))
+</span><span class="comment">// res15: Either[QueryParseFailure, Int] = Left(NoValuesForName(&quot;id&quot;))
 </span><span class="identifier">optional</span><span>.</span><span class="identifier">decode</span><span>(</span><span class="type-name">Map</span><span>(</span><span class="string-literal">&quot;id&quot;</span><span> -&gt; </span><span class="type-name">List</span><span>()))
-</span><span class="comment">// res14: Either[QueryParseFailure, Option[Int]] = Right(None)</span></code></pre>
+</span><span class="comment">// res16: Either[QueryParseFailure, Option[Int]] = Right(None)</span></code></pre>
 <p>Similarly, a required parameter will fail in the fourth case but an optional parameter will succeed with <code>None</code>.</p>
 <pre><code class="nohighlight"><span class="identifier">required</span><span>.</span><span class="identifier">decode</span><span>(</span><span class="type-name">Map</span><span>())
-</span><span class="comment">// res15: Either[QueryParseFailure, Int] = Left(NoParameterWithName(&quot;id&quot;))
+</span><span class="comment">// res17: Either[QueryParseFailure, Int] = Left(NoParameterWithName(&quot;id&quot;))
 </span><span class="identifier">optional</span><span>.</span><span class="identifier">decode</span><span>(</span><span class="type-name">Map</span><span>())
-</span><span class="comment">// res16: Either[QueryParseFailure, Option[Int]] = Right(None)</span></code></pre>
+</span><span class="comment">// res18: Either[QueryParseFailure, Option[Int]] = Right(None)</span></code></pre>
 
 <h2 id="params" class="section">Params</h2>
 <p>There are a small number of predefined <code>Param</code> instances on the
 <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Param$.html">Param</a> companion object. Constructing your own instances can
-be done in several ways.</p>
+be done in several ways, described below.</p>
 <p>The <code>imap</code> method transforms a <code>Param[A]</code> into a <code>Param[B]</code> by providing
 functions <code>A =&gt; B</code> and <code>B =&gt; A</code>. This example constructs a <code>Param[Int]</code> from the
-built-in <code>Param[String]</code>.</p>
+built-in <code>Param[String]</code>, though in real code we should use the pre-defined <code>Param.int</code>.</p>
 <pre><code class="nohighlight"><span class="keyword">val</span><span> </span><span class="identifier">intParam</span><span> = </span><span class="type-name">Param</span><span>.</span><span class="identifier">string</span><span>.</span><span class="identifier">imap</span><span>(</span><span class="identifier">_</span><span>.</span><span class="identifier">toInt</span><span>)(</span><span class="identifier">_</span><span>.</span><span class="identifier">toString</span><span>)</span></code></pre>
 <pre><code class="nohighlight"><span class="identifier">intParam</span><span>.</span><span class="identifier">decode</span><span>(</span><span class="string-literal">&quot;100&quot;</span><span>)
-</span><span class="comment">// res17: Either[DecodeFailure, Int] = Right(100)</span></code></pre>
+</span><span class="comment">// res19: Either[DecodeFailure, Int] = Right(100)</span></code></pre>
 <p>A <code>Param.One[A]</code> can be lifted to a <code>Param.All[Seq[A]]</code> that uses the given
 <code>Param.One</code> for every element in the <code>Seq</code>.</p>
 <pre><code class="nohighlight"><span class="keyword">val</span><span> </span><span class="identifier">intParams</span><span> = </span><span class="type-name">Param</span><span>.</span><span class="identifier">all</span><span>[</span><span class="type-name">Int</span><span>]</span></code></pre>
 <pre><code class="nohighlight"><span class="identifier">intParams</span><span>.</span><span class="identifier">encode</span><span>(</span><span class="type-name">Seq</span><span>(</span><span class="number-literal">1</span><span>, </span><span class="number-literal">2</span><span>, </span><span class="number-literal">3</span><span>))
-</span><span class="comment">// res18: Seq[String] = List(&quot;1&quot;, &quot;2&quot;, &quot;3&quot;)</span></code></pre>
+</span><span class="comment">// res20: Seq[String] = List(&quot;1&quot;, &quot;2&quot;, &quot;3&quot;)</span></code></pre>
 <p>The <code>separatedString</code> method can be used for a <code>Param.All</code> that constructs a <code>String</code>
 containing elements separated by a separator. For example, to accumulate a
 sub-path we could use the following.</p>
 <pre><code class="nohighlight"><span class="keyword">val</span><span> </span><span class="identifier">subPath</span><span> = </span><span class="type-name">Param</span><span>.</span><span class="identifier">separatedString</span><span>(</span><span class="string-literal">&quot;/&quot;</span><span>)</span></code></pre>
 <pre><code class="nohighlight"><span class="identifier">subPath</span><span>.</span><span class="identifier">decode</span><span>(</span><span class="type-name">Vector</span><span>(</span><span class="string-literal">&quot;assets&quot;</span><span>, </span><span class="string-literal">&quot;css&quot;</span><span>))
-</span><span class="comment">// res19: Either[DecodeFailure, String] = Right(&quot;assets/css&quot;)
+</span><span class="comment">// res21: Either[DecodeFailure, String] = Right(&quot;assets/css&quot;)
 </span><span class="identifier">subPath</span><span>.</span><span class="identifier">encode</span><span>(</span><span class="string-literal">&quot;assets/css&quot;</span><span>)
-</span><span class="comment">// res20: Seq[String] = ArraySeq(&quot;assets&quot;, &quot;css&quot;)</span></code></pre>
+</span><span class="comment">// res22: Seq[String] = ArraySeq(&quot;assets&quot;, &quot;css&quot;)</span></code></pre>
 <p>Finally, you can directly call the constructors for <code>Param.One</code> and <code>Param.All</code>.</p>
 
 <h3 id="param-names" class="section">Param Names</h3>
 <p><code>Params</code> have a <code>String</code> name. This is, by convention, some indication of the type written within angle brackets. For example <code>&quot;&lt;String&gt;&quot;</code> for a <code>Param[String]</code>.</p>
 <pre><code class="nohighlight"><span class="type-name">Param</span><span>.</span><span class="identifier">string</span><span>.</span><span class="identifier">name</span><span>
-</span><span class="comment">// res21: String = &quot;&lt;String&gt;&quot;</span></code></pre>
+</span><span class="comment">// res23: String = &quot;&lt;String&gt;&quot;</span></code></pre>
 <p>The name is mostly used in development mode, to output useful debugging information. You can change the name of a <code>Param</code> using the <code>withName</code> method. It&#39;s good practice to set the name whenever you create a new <code>Param</code>. For example, if deriving a new <code>Param</code> from an existing one you should consider changing the name.</p>
 <pre><code class="nohighlight"><span class="comment">// Bad, as the name doesn&#39;t reflect the underlying type.
 </span><span class="identifier">intParam</span><span>.</span><span class="identifier">name</span><span>
-</span><span class="comment">// res22: String = &quot;&lt;String&gt;&quot;
+</span><span class="comment">// res24: String = &quot;&lt;String&gt;&quot;
 </span><span>
 </span><span class="comment">// Better, as the name has been changed appropriately.
 </span><span class="identifier">intParam</span><span>.</span><span class="identifier">withName</span><span>(</span><span class="string-literal">&quot;&lt;Int&gt;&quot;</span><span>).</span><span class="identifier">name</span><span>
-</span><span class="comment">// res23: String = &quot;&lt;Int&gt;&quot;</span></code></pre>
-
-<h3 id="convert-path-segments-to-a-fs2-path" class="section">Convert path segments to a FS2 Path</h3>
-<p><strong>fs2Path</strong> utility in <code>Param</code> companion object is used to convert string path to a FS2 path
-It supports bidirectional mapping: URL → Fs2Path and Fs2Path → URL.</p>
-<p><strong>Flow Diagram:</strong></p>
-<pre><code>Request URL: /assets/images/icons/logo.svg
-    │
-    ▼
-Param.separatedString(&quot;/&quot;) → &quot;images/icons/logo.svg&quot;
-    │
-    ▼
-Fs2Path.apply → Fs2Path(&quot;images/icons/logo.svg&quot;)
-    │
-    ▼
-Route handler receives typed Fs2Path</code></pre>
-<p><strong>Usage in Route :</strong></p>
-<pre><code class="nohighlight"><span>  </span><span class="keyword">val</span><span> </span><span class="identifier">staticDirectoryRoute</span><span> =
-    </span><span class="type-name">Route</span><span>(
-      </span><span class="type-name">Request</span><span>.</span><span class="identifier">get</span><span>(</span><span class="type-name">Path</span><span> / </span><span class="string-literal">&quot;kroptest&quot;</span><span> / </span><span class="string-literal">&quot;assets&quot;</span><span> / </span><span class="type-name">AssetPath</span><span>.</span><span class="identifier">fs2Path</span><span>),
-      </span><span class="type-name">Response</span><span>.</span><span class="type-name">StaticDirectory</span><span>(</span><span class="type-name">Fs2Path</span><span>(</span><span class="string-literal">&quot;resources/kroptest/assets&quot;</span><span>))
-    ).</span><span class="identifier">passthrough</span></code></pre></div>
+</span><span class="comment">// res25: String = &quot;&lt;Int&gt;&quot;</span></code></pre></div>
           <div class="flex flex-row justify-between">
             <a class="pagenav" href="request.html">←Request</a> <a class="pagenav" href="entities.html">Entities→</a>
           </div>
@@ -282,11 +277,11 @@ Route handler receives typed Fs2Path</code></pre>
           <ul class="nav-list">
             <li class="level1 nav-leaf"><a href="#capturing-path-segments">Capturing Path Segments</a></li>
             <li class="level1 nav-leaf"><a href="#matching-all-segments">Matching All Segments</a></li>
+            <li class="level1 nav-leaf"><a href="#closed-paths">Closed Paths</a></li>
             <li class="level1 nav-node"><a href="#capturing-query-parameters">Capturing Query Parameters</a></li>
             <li class="level2 nav-leaf"><a href="#query-parameter-semantics">Query Parameter Semantics</a></li>
             <li class="level1 nav-node"><a href="#params">Params</a></li>
             <li class="level2 nav-leaf"><a href="#param-names">Param Names</a></li>
-            <li class="level2 nav-leaf"><a href="#convert-path-segments-to-a-fs2-path">Convert path segments to a FS2 Path</a></li>
           </ul>
         </div>
       </nav>
