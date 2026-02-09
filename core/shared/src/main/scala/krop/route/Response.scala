@@ -200,6 +200,18 @@ object Response {
   def staticFile(path: String): Response[Unit, Array[Byte]] =
     Response.StaticFile(fs2.io.file.Path(path))
 
+  /** Respond with a file loaded from the filesystem. The `path` is the fs2 path
+    * to the file.
+    */
+  def staticFile(path: Fs2Path): Response[Unit, Array[Byte]] =
+    Response.StaticFile(path)
+
+  /** Respond with a file loaded from the filesystem. The `path` is the Java NIO
+    * path to the file.
+    */
+  def staticFile(path: java.nio.file.Path): Response[Unit, Array[Byte]] =
+    Response.StaticFile(fs2.io.file.Path(path.toString))
+
   def badRequest[R, P](entity: Entity[R, P]): Response[R, P] =
     status(Status.BadRequest, entity)
 

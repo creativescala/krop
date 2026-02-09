@@ -57,7 +57,7 @@ class ResponseSuite extends CatsEffectSuite {
     } yield response
   }
 
-  test("static file response succeeds when file exists") {
+  test("static file response succeeds when file exists (String path)") {
     val request =
       Http4sRequest(method = Method.GET, uri = uri"http://example.org/")
 
@@ -66,6 +66,38 @@ class ResponseSuite extends CatsEffectSuite {
       runtime = JvmRuntime.krop(builder)
       response <- Response
         .staticFile("project/plugins.sbt")
+        .respond(request, ())(using runtime)
+        .map(_.status.isSuccess)
+        .assert
+    } yield response
+  }
+
+  test("static file response succeeds when file exists (Fs2Path)") {
+    val request =
+      Http4sRequest(method = Method.GET, uri = uri"http://example.org/")
+
+    for {
+      builder <- WebSocketBuilder[IO]
+      runtime = JvmRuntime.krop(builder)
+      path = fs2.io.file.Path("project/plugins.sbt")
+      response <- Response
+        .staticFile(path)
+        .respond(request, ())(using runtime)
+        .map(_.status.isSuccess)
+        .assert
+    } yield response
+  }
+
+  test("static file response succeeds when file exists (Java Path)") {
+    val request =
+      Http4sRequest(method = Method.GET, uri = uri"http://example.org/")
+
+    for {
+      builder <- WebSocketBuilder[IO]
+      runtime = JvmRuntime.krop(builder)
+      javaPath = java.nio.file.Paths.get("project/plugins.sbt")
+      response <- Response
+        .staticFile(javaPath)
         .respond(request, ())(using runtime)
         .map(_.status.isSuccess)
         .assert
