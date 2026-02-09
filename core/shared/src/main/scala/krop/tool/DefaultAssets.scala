@@ -18,7 +18,7 @@ package krop.tool
 
 import fs2.io.file.Path as Fs2Path
 import krop.route.Handler
-import krop.route.Param
+import krop.route.Param.fs2Path
 import krop.route.Path
 import krop.route.Request
 import krop.route.Response
@@ -27,11 +27,7 @@ import krop.route.Route
 object DefaultAssets {
   val assets: Handler =
     Route(
-      Request.get(
-        Path / "assets" / Param
-          .separatedString("/")
-          .imap(Fs2Path.apply)(_.toString)
-      ),
+      Request.get(Path / "assets" / fs2Path),
       Response.staticDirectory(Fs2Path("assets/"))
     ).passthrough
 }

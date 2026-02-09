@@ -1,0 +1,3 @@
+# NEXT
+
+- Add `Param.fs2Path` (by `@Babali42`)

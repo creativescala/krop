@@ -16,6 +16,8 @@
 
 package krop.route
 
+import fs2.io.file.Path as Fs2Path
+
 /** A [[package.Param]] is used to extract values from a URI's path or query
   * parameters.
   *
@@ -103,6 +105,13 @@ object Param {
     */
   val seq: Param.All[Seq[String]] =
     Param.All(SeqStringCodec.seqString)
+
+    /** `Param` that converts path segments to a `fs2.io.file.Path`.
+      */
+  val fs2Path: Param.All[Fs2Path] =
+    Param
+      .separatedString("/")
+      .imap(Fs2Path.apply)(_.toString)
 
   /** Constructs a [[Param]] that decodes input into a `String` by appending all
     * the input together with `separator` inbetween each element. Encodes data

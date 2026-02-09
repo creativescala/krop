@@ -16,6 +16,7 @@
 
 package krop.route
 
+import fs2.io.file.Path as Fs2Path
 import munit.FunSuite
 
 class ParamSuite extends FunSuite {
@@ -75,6 +76,14 @@ class ParamSuite extends FunSuite {
         Seq() -> Seq(),
         Seq("1") -> Seq(1),
         Seq("1", "2", "3") -> Seq(1, 2, 3)
+      )
+    )
+    paramAllDecodesValid(
+      Param.fs2Path,
+      Seq(
+        Seq() -> Fs2Path(""),
+        Seq("a") -> Fs2Path("a"),
+        Seq("a", "b", "c") -> Fs2Path("a/b/c")
       )
     )
   }
