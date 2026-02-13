@@ -155,7 +155,7 @@ For example:</p>
 <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">http4s</span><span>.</span><span class="identifier">implicits</span><span>.*
 
 </span><span class="keyword">val</span><span> </span><span class="identifier">path</span><span> = </span><span class="type-name">Path</span><span> / </span><span class="string-literal">&quot;assets&quot;</span><span> / </span><span class="type-name">Param</span><span>.</span><span class="identifier">fs2Path</span><span>
-</span><span class="comment">// path: Path[*:[Path, EmptyTuple], EmptyTuple] = krop.route.Path@59b2ae4b
+</span><span class="comment">// path: Path[*:[Path, EmptyTuple], EmptyTuple] = krop.route.Path@248e4e2a
 </span><span>
 </span><span class="identifier">path</span><span>.</span><span class="identifier">parseToOption</span><span>(</span><span class="string-literal">uri&quot;http://example.org/assets/a/b/c.txt&quot;</span><span>)
 </span><span class="comment">// res5: Option[*:[Path, EmptyTuple]] = Some(Tuple1(a/b/c.txt))</span></code></pre>
