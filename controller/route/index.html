@@ -70,9 +70,9 @@
                     <li class="level4 nav-leaf"><a href="request.html">Request</a></li>
                     <li class="level4 nav-leaf"><a href="paths.html">Paths</a></li>
                     <li class="level4 nav-leaf"><a href="entities.html">Entities</a></li>
-                    <li class="level4 nav-leaf"><a href="response.html">Response</a></li>
                     <li class="level4 nav-leaf"><a href="codecs.html">Codecs</a></li>
                     <li class="level4 nav-leaf"><a href="assets.html">Assets</a></li>
+                    <li class="level4 nav-leaf"><a href="response/">Response</a></li>
                     <li class="level3 nav-leaf"><a href="../handler.html">Handlers</a></li>
                     <li class="level2 nav-leaf"><a href="../../tools.html">Tools</a></li>
                     <li class="level2 nav-leaf"><a href="../../development.html">Developing Krop</a></li>
@@ -110,9 +110,9 @@
             <li class="level4 nav-leaf"><a href="request.html">Request</a></li>
             <li class="level4 nav-leaf"><a href="paths.html">Paths</a></li>
             <li class="level4 nav-leaf"><a href="entities.html">Entities</a></li>
-            <li class="level4 nav-leaf"><a href="response.html">Response</a></li>
             <li class="level4 nav-leaf"><a href="codecs.html">Codecs</a></li>
             <li class="level4 nav-leaf"><a href="assets.html">Assets</a></li>
+            <li class="level4 nav-leaf"><a href="response/">Response</a></li>
             <li class="level3 nav-leaf"><a href="../handler.html">Handlers</a></li>
             <li class="level2 nav-leaf"><a href="../../tools.html">Tools</a></li>
             <li class="level2 nav-leaf"><a href="../../development.html">Developing Krop</a></li>
@@ -176,7 +176,7 @@ Here is a small example.</p>
 <p>To actually use this route we need to add a handler. In this case a handler would be either a function with type <code>Int =&gt; String</code> or with type <code>Int =&gt; IO[String]</code>. Here&#39;s a very simple example using an <code>Int =&gt; String</code> handler.</p>
 <pre><code class="nohighlight"><span class="identifier">route</span><span>.</span><span class="identifier">handle</span><span>(</span><span class="identifier">userId</span><span> =&gt; </span><span class="string-literal">s&quot;You asked for user </span><span class="substitution">$userId</span><span class="string-literal">&quot;</span><span>)</span></code></pre>
 <p>Notice that adding a handler produces a value with a different type, a <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Handler.html">Handler</a>.</p>
-<p>For more details see the separate pages for <a href="request.html">Request</a>, <a href="response.html">Response</a> and <a href="../handler.html">Handler</a>.</p>
+<p>For more details see the separate pages for <a href="request.html">Request</a>, <a href="response/">Response</a> and <a href="../handler.html">Handler</a>.</p>
 
 <h2 id="reverse-routing" class="section">Reverse Routing</h2>
 <p>There are three forms of reverse routing:</p>
