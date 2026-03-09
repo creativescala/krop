@@ -234,21 +234,12 @@ object NotFound {
         }
         .map(builder => builder.result())
 
-    val nope = IO.pure(Response.notFound)
-
     resource.map { routeHandlers => (runtime: KropRuntime) ?=>
       Kleisli((req: Request[IO]) =>
-        def loop(idx: Int): IO[Response[IO]] =
-          if idx >= routeHandlers.size then nope
-          else {
-            val routeHandler = routeHandlers(idx)
-            routeHandler.run(req).flatMap { opt =>
-              if opt.isDefined then IO.pure(opt.get)
-              else loop(idx + 1)
-            }
-          }
-
-        loop(0)
+        routeHandlers
+          .toList
+          .collectFirstSomeM(_.run(req))
+          .map(_.getOrElse(Response.notFound))
       )
     }
   }
