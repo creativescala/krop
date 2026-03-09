@@ -16,7 +16,7 @@
 
 package krop.tool
 
-import cats.data.EitherNec
+import cats.Applicative
 import cats.data.Kleisli
 import cats.data.NonEmptyChain
 import cats.effect.IO
@@ -158,6 +158,7 @@ object NotFound {
     val app: Resource[IO, WithRuntime[HttpApp[IO]]] = {
       type Annotated = (Handler, ParseFailure)
       given Raise.Handler[Either] = Raise.toEither
+      given [E]: Applicative[[A] =>> IO[Either[E, A]]] = Applicative[IO].compose[[A] =>> Either[E, A]]
 
       val routeHandlers: Resource[IO, List[(Handler, RouteHandler)]] =
         kropHandlers.handlers.foldRight(
@@ -170,42 +171,25 @@ object NotFound {
             )
         }
 
-      routeHandlers.map { list => (runtime: KropRuntime) ?=>
+      routeHandlers.map { list => { (runtime: KropRuntime) ?=>
         Kleisli { (req: Request[IO]) =>
           // We have at least one route, the Krop handlers we added ourselves
-          val (handler, routeHandler) = list.head
-          val results: IO[EitherNec[Annotated, Response[IO]]] =
-            routeHandler
-              .run(req)
-              .flatMap(either =>
-                list.tail.foldLeftM(
-                  either.leftMap(e => handler -> e).toEitherNec
-                ) { (result, pair) =>
-                  val (handle, routeHandler) = pair
-                  result match {
-                    case Left(errors) =>
-                      // If we have failed we accumulate all the failures to
-                      // display to the developer
-                      routeHandler
-                        .run(req)
-                        .map(_.leftMap(e => errors :+ (handle -> e)))
-                    case Right(value) =>
-                      // If we have succeeded we keep the first success as our result
-                      IO.pure(Right(value))
-                  }
-                }
-              )
+          val ls = NonEmptyChain.fromSeq(list).get
+          val results =
+            ls.traverse[[A] =>> IO[Either[Response[IO], A]], Annotated] { case (handler, routeHandler) =>
+              routeHandler.run(req).map(_.swap).map(_.tupleLeft(handler))
+            }
 
           results
             .flatMap(either =>
               either match {
-                case Left(errors)    => notFound(req, errors)
-                case Right(response) => IO.pure(response)
+                case Right(errors)  => notFound(req, errors)
+                case Left(response) => IO.pure(response)
               }
             )
             .recoverWith(exn => internalError(req, exn))
         }
-      }
+      }}
     }
 
     app
