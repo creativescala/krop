@@ -160,15 +160,10 @@ object NotFound {
       given Raise.Handler[Either] = Raise.toEither
 
       val routeHandlers: Resource[IO, List[(Handler, RouteHandler)]] =
-        kropHandlers.handlers.foldRight(
-          Resource.eval(IO.pure(List.empty[(Handler, RouteHandler)]))
-        ) { (handler, accum) =>
-          handler
-            .build(runtime)
-            .flatMap(routeHandler =>
-              accum.map(list => (handler -> routeHandler) :: list)
-            )
-        }
+        kropHandlers
+          .handlers
+          .toList
+          .traverse(handler => handler.build(runtime).tupleLeft(handler))
 
       routeHandlers.map { list => (runtime: KropRuntime) ?=>
         Kleisli { (req: Request[IO]) =>
