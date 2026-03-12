@@ -29,7 +29,7 @@ import krop.route.BaseRoute
 import krop.route.ClientRoute
 import krop.route.Handler
 import krop.route.InternalRoute
-import krop.route.Param
+import krop.route.Params
 import krop.route.Path
 import krop.route.Request
 import krop.route.Response
@@ -45,7 +45,7 @@ final class AssetRoute(base: Path[EmptyTuple, EmptyTuple], directory: Fs2Path)
   val request
       : Request[Tuple1[Fs2Path], Tuple1[Fs2Path], EmptyTuple, Tuple1[Fs2Path]] =
     Request.get(
-      base / Param
+      base / Params
         .separatedString("/")
         .imap(str => Fs2Path(str))(path => path.toString)
     )

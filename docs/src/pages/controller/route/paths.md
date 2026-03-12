@@ -41,23 +41,22 @@ Path / "assets" / Segment.all
 
 will match `/assets/`, `/assets/example.css`, and `/assets/css/example.css`.
 
-To capture all segments to the end of the URI's path, use an instance of
-`Param.All` such as `Param.seq`. So
+To capture all segments to the end of the URI's path, use a @:api(krop.route.Params) instance such as `Params.seq`. So
 
 ```scala mdoc:silent
-Path / "assets" / Param.seq
+Path / "assets" / Params.seq
 ```
 
 will capture the remainder of the URI's path as a `Seq[String]`.
 
-The `Param.fs2Path` instance is possibly the most useful `Param` capturing all segments.
-As the name suggests it converts the captured segments in a `fs2.io.file.Path`, 
+The `Params.fs2Path` instance is possibly the most useful `Params` capturing all segments.
+As the name suggests it converts the captured segments in a `fs2.io.file.Path`,
 which can then be used to find a file on the file system.
 The `fs2.io.file.Path` returned is a *relative* path.
 For example:
 
 ```scala mdoc:silent
-Path / "assets" / Param.fs2Path
+Path / "assets" / Params.fs2Path
 ```
 
 In use, we see the output is indeed a relative path.
@@ -65,7 +64,7 @@ In use, we see the output is indeed a relative path.
 ```scala mdoc
 import org.http4s.implicits.*
 
-val path = Path / "assets" / Param.fs2Path
+val path = Path / "assets" / Params.fs2Path
 
 path.parseToOption(uri"http://example.org/assets/a/b/c.txt")
 ```
@@ -165,11 +164,13 @@ optional.decode(Map())
 ```
 
 
-## Params
+## Param and Params
 
+A `Param` extracts a single parameter from a path, while a `Params` extract multiple.
 There are a small number of predefined `Param` instances on the
-@:api(krop.route.Param$) companion object. Constructing your own instances can
-be done in several ways, described below.
+@:api(krop.route.Param$) companion object, and predefined `Params` instances on
+the @:api(krop.route.Params$) companion object. Constructing your own instances
+can be done in several ways, described below.
 
 The `imap` method transforms a `Param[A]` into a `Param[B]` by providing
 functions `A => B` and `B => A`. This example constructs a `Param[Int]` from the
@@ -182,34 +183,34 @@ val intParam = Param.string.imap(_.toInt)(_.toString)
 intParam.decode("100")
 ```
 
-A `Param.One[A]` can be lifted to a `Param.All[Seq[A]]` that uses the given
-`Param.One` for every element in the `Seq`.
+A `Param[A]` can be lifted to a `Params[Seq[A]]` that uses the given
+`Param` for every element in the `Seq`.
 
 ```scala mdoc:silent
-val intParams = Param.all[Int]
+val intParams = Params.all[Int]
 ```
 ```scala mdoc
 intParams.encode(Seq(1, 2, 3))
 ```
 
-The `separatedString` method can be used for a `Param.All` that constructs a `String`
+The `separatedString` method constructs a `Params[String]`
 containing elements separated by a separator. For example, to accumulate a
 sub-path we could use the following.
 
 ```scala mdoc:silent
-val subPath = Param.separatedString("/")
+val subPath = Params.separatedString("/")
 ```
 ```scala mdoc
 subPath.decode(Vector("assets", "css"))
 subPath.encode("assets/css")
 ```
 
-Finally, you can directly call the constructors for `Param.One` and `Param.All`.
+Finally, you can directly call the `Param` and `Params` constructors.
 
 
 ### Param Names
 
-`Params` have a `String` name. This is, by convention, some indication of the type written within angle brackets. For example `"<String>"` for a `Param[String]`.
+`Param` and `Params` have a `String` name. This is, by convention, some indication of the type written within angle brackets. For example `"<String>"` for a `Param[String]`.
 
 ```scala mdoc
 Param.string.name

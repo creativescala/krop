@@ -18,7 +18,7 @@ package krop.tool
 
 import fs2.io.file.Path as Fs2Path
 import krop.route.Handler
-import krop.route.Param.fs2Path
+import krop.route.Params.fs2Path
 import krop.route.Path
 import krop.route.Request
 import krop.route.Response

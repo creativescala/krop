@@ -18,8 +18,6 @@ package krop.route
 
 import krop.Types
 import krop.raise.Raise
-import krop.route.Param.All
-import krop.route.Param.One
 import org.http4s.Uri
 import org.http4s.Uri.Path as UriPath
 
@@ -57,20 +55,19 @@ import scala.collection.mutable
   *
   * will match `/assets/example.css` and `/assets/css/example.css`.
   *
-  * To capture all segments to the end of the URI's path, use an instance of
-  * `Param.All` such as `Param.vector`. So
+  * To capture all segments to the end of the URI's path, use [[Params]]. So
   *
   * ```
-  * Path.root / "assets" / Param.vector
+  * Path.root / "assets" / Params.seq
   * ```
   *
-  * will capture the remainder of the URI's path as a `Vector[String]`.
+  * will capture the remainder of the URI's path as a `Seq[String]`.
   *
   * A `Path` that matches all segments is called a closed path. Attempting to
   * add an element to a closed path will result in an exception.
   */
 final class Path[P <: Tuple, Q <: Tuple] private (
-    val segments: Vector[Segment | Param[?]],
+    val segments: Vector[Segment | Param[?] | Params[?]],
     // The number of segments that are of type Param and hence the length of the
     // Tuple P
     val paramCount: Int,
@@ -98,15 +95,16 @@ final class Path[P <: Tuple, Q <: Tuple] private (
     }
   }
 
-  /** Add a segment that extracts a parameter to this `Path`. */
+  /** Add a segment that extracts a single parameter to this `Path`. */
   def /[B](param: Param[B]): Path[Tuple.Append[P, B], Q] = {
     assertOpen()
-    param match {
-      case Param.One(_) =>
-        Path(segments :+ param, paramCount + 1, query, true)
-      case Param.All(_) =>
-        Path(segments :+ param, paramCount + 1, query, false)
-    }
+    Path(segments :+ param, paramCount + 1, query, true)
+  }
+
+  /** Add a segment that extracts all remaining parameters to this `Path`. */
+  def /[B](params: Params[B]): Path[Tuple.Append[P, B], Q] = {
+    assertOpen()
+    Path(segments :+ params, paramCount + 1, query, false)
   }
 
   def :?[B <: Tuple](query: Query[B]): Path[P, B] =
@@ -147,7 +145,7 @@ final class Path[P <: Tuple, Q <: Tuple] private (
     @tailrec
     def loop(
         idx: Int,
-        segments: Vector[Segment | Param[?]],
+        segments: Vector[Segment | Param[?] | Params[?]],
         builder: mutable.StringBuilder
     ): String = {
       if segments.isEmpty then builder.result()
@@ -159,12 +157,12 @@ final class Path[P <: Tuple, Q <: Tuple] private (
           case Segment.All => builder.addOne('/').result()
           case Segment.One(value) =>
             loop(idx, tl, builder.addOne('/').append(value))
-          case p: Param.All[a] =>
+          case p: Params[a] =>
             builder
               .addOne('/')
               .append(p.encode(paramsArray(idx).asInstanceOf[a]).mkString("/"))
               .result()
-          case p: Param.One[a] =>
+          case p: Param[a] =>
             loop(
               idx + 1,
               tl,
@@ -199,7 +197,7 @@ final class Path[P <: Tuple, Q <: Tuple] private (
       uri: Uri
   )(using raise: Raise[ParseFailure]): Types.TupleConcat[P, Q] = {
     def loop(
-        matchSegments: Vector[Segment | Param[?]],
+        matchSegments: Vector[Segment | Param[?] | Params[?]],
         pathSegments: Vector[UriPath.Segment]
     ): Tuple =
       if matchSegments.isEmpty then {
@@ -221,7 +219,7 @@ final class Path[P <: Tuple, Q <: Tuple] private (
 
           case Segment.All => EmptyTuple
 
-          case p: Param.One[a] =>
+          case p: Param[a] =>
             if pathSegments.isEmpty then
               Path.failure.raise(Path.failure.noMorePathSegments)
             else
@@ -232,7 +230,7 @@ final class Path[P <: Tuple, Q <: Tuple] private (
                   value *: loop(matchSegments.tail, pathSegments.tail)
               }
 
-          case p: Param.All[a] =>
+          case p: Params[a] =>
             p.decode(pathSegments.map(_.decoded())) match {
               case Left(err) =>
                 Path.failure.raise(Path.failure.paramMismatch(err))
@@ -272,7 +270,7 @@ final class Path[P <: Tuple, Q <: Tuple] private (
     @tailrec
     def loop(
         idx: Int,
-        segments: Vector[Segment | Param[?]],
+        segments: Vector[Segment | Param[?] | Params[?]],
         path: Uri.Path
     ): Uri.Path = {
       if segments.isEmpty then path
@@ -284,11 +282,11 @@ final class Path[P <: Tuple, Q <: Tuple] private (
           case Segment.All => path.addEndsWithSlash
           case Segment.One(value) =>
             loop(idx, tl, path.addSegment(value))
-          case p: Param.All[a] =>
+          case p: Params[a] =>
             path.addSegments(
               p.encode(pArr(idx).asInstanceOf[a]).map(Uri.Path.Segment.apply)
             )
-          case p: Param.One[a] =>
+          case p: Param[a] =>
             loop(
               idx + 1,
               tl,
@@ -308,8 +306,9 @@ final class Path[P <: Tuple, Q <: Tuple] private (
   def describe: String = {
     val p = segments
       .map {
-        case s: Segment  => s.describe
-        case p: Param[?] => p.name
+        case s: Segment   => s.describe
+        case p: Param[?]  => p.name
+        case p: Params[?] => p.name
       }
       .mkString("/", "/", "")
 
@@ -335,11 +334,13 @@ object Path {
   def /(segment: Segment): Path[EmptyTuple, EmptyTuple] =
     root / segment
 
-  /** Create a `Path` that matches the given segment and extracts it as a
-    * parameter.
-    */
+  /** Create a `Path` that matches a segment and extracts it as a parameter. */
   def /[A](param: Param[A]): Path[Tuple1[A], EmptyTuple] =
     root / param
+
+  /** Create a `Path` that extracts all remaining segments as a parameter. */
+  def /[A](params: Params[A]): Path[Tuple1[A], EmptyTuple] =
+    root / params
 
   /** This contains detailed descriptions of why a Path can fail, and utilites
     * to construct a `ParseFailure` instances and raise them.
@@ -355,7 +356,7 @@ object Path {
         """The URI this Path was matching against still contains segments. However
           |this Path does not match any more segments. To match and ignore all the
           |remaining segments use Segment.all. The match and capture all remaining
-          |segments use Param.seq or another variant that captures all
+          |segments use Params.seq or another variant that captures all
           |segments.""".stripMargin
       )
 
