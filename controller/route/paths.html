@@ -142,11 +142,11 @@ value available to the request handler.</p>
 <h2 id="matching-all-segments" class="section">Matching All Segments</h2>
 <p>A <code>Path</code> will fail to match if the URI&#39;s path has more segments than the
 <code>Path</code> matches. So <code>Path / &quot;user&quot; / &quot;create&quot;</code> will not match
-<code>/user/create/1234</code>. Use <code>Segment.all</code> to match and ignore all the segments
+<code>/user/create/1234</code>. Use <code>Segments</code> to match and ignore all the segments
 to the end of the URI&#39;s path. For example</p>
-<pre><code class="nohighlight"><span class="type-name">Path</span><span> / </span><span class="string-literal">&quot;assets&quot;</span><span> / </span><span class="type-name">Segment</span><span>.</span><span class="identifier">all</span></code></pre>
+<pre><code class="nohighlight"><span class="type-name">Path</span><span> / </span><span class="string-literal">&quot;assets&quot;</span><span> / </span><span class="type-name">Segments</span></code></pre>
 <p>will match <code>/assets/</code>, <code>/assets/example.css</code>, and <code>/assets/css/example.css</code>.</p>
-<p>To capture all segments to the end of the URI&#39;s path, use a <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Params.html">Params</a> instance such as <code>Params.seq</code>. So</p>
+<p>To capture all segments to the end of the URI&#39;s path use a <a class="api" href="https://javadoc.io/doc/org.creativescala/krop-docs_3/latest/krop/route/Params.html">Params</a> instance such as <code>Params.seq</code>. So</p>
 <pre><code class="nohighlight"><span class="type-name">Path</span><span> / </span><span class="string-literal">&quot;assets&quot;</span><span> / </span><span class="type-name">Params</span><span>.</span><span class="identifier">seq</span></code></pre>
 <p>will capture the remainder of the URI&#39;s path as a <code>Seq[String]</code>.</p>
 <p>The <code>Params.fs2Path</code> instance is possibly the most useful <code>Params</code> capturing all segments.
@@ -159,22 +159,13 @@ For example:</p>
 <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">http4s</span><span>.</span><span class="identifier">implicits</span><span>.*
 
 </span><span class="keyword">val</span><span> </span><span class="identifier">path</span><span> = </span><span class="type-name">Path</span><span> / </span><span class="string-literal">&quot;assets&quot;</span><span> / </span><span class="type-name">Params</span><span>.</span><span class="identifier">fs2Path</span><span>
-</span><span class="comment">// path: Path[*:[Path, EmptyTuple], EmptyTuple] = krop.route.Path@4e041f3f
+</span><span class="comment">// path: Path[*:[Path, EmptyTuple], EmptyTuple, Closed] = krop.route.Path@7e3919d7
 </span><span>
 </span><span class="identifier">path</span><span>.</span><span class="identifier">parseToOption</span><span>(</span><span class="string-literal">uri&quot;http://example.org/assets/a/b/c.txt&quot;</span><span>)
 </span><span class="comment">// res5: Option[*:[Path, EmptyTuple]] = Some(Tuple1(a/b/c.txt))</span></code></pre>
 
 <h2 id="closed-paths" class="section">Closed Paths</h2>
-<p>A <code>Path</code> that matches all segments is called a closed path. Attempting to add an
-element to a closed path will result in an exception.</p>
-<pre><code class="nohighlight"><span class="type-name">Path</span><span> / </span><span class="type-name">Segment</span><span>.</span><span class="identifier">all</span><span> / </span><span class="string-literal">&quot;crash&quot;</span><span>
-</span><span class="comment">// java.lang.IllegalStateException: Cannot add a segment or parameter to a closed path.
-// 
-//   A path is closed when it has a segment or parameter that matches all remaining elements.
-//   A closed path cannot have additional segments of parameters added to it.
-// 	at krop.route.Path.assertOpen(Path.scala:117)
-// 	at krop.route.Path.$div(Path.scala:85)
-// 	at repl.MdocSession$MdocApp.$init$$$anonfun$1(paths.md:62)</span></code></pre>
+<p>A <code>Path</code> that matches all segments is called a closed path. Once closed, you cannot add any further elements.</p>
 
 <h2 id="capturing-query-parameters" class="section">Capturing Query Parameters</h2>
 <p>A <code>Path</code> can also match and capture query parameters. For instance, the following path captures the query parameter <code>id</code> as an <code>Int</code>.</p>
