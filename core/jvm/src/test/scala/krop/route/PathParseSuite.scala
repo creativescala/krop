@@ -23,7 +23,7 @@ import org.http4s.implicits.*
 class PathParseSuite extends FunSuite {
   val nonCapturingPath = Path / "user" / "create"
   val nonCapturingAllPath = Path / "assets" / "html" / Segment.all
-  val capturingAllPath = Path / "assets" / "html" / Param.seq
+  val capturingAllPath = Path / "assets" / "html" / Params.seq
   val simplePath = Path / "user" / Param.int.withName("<userId>") / "view"
   val simpleQueryPath = Path / "user" / Param.int :? Query[String]("mode")
   val multipleQueryPath =
