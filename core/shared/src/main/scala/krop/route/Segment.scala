@@ -16,20 +16,16 @@
 
 package krop.route
 
-/** Matches but does not capture a segment in a URI's path. */
-enum Segment {
-  case All
-  case One(value: String)
+/** Matches but does not capture a single literal segment in a URI's path. */
+final case class Segment(value: String) {
 
-  /** Gets a human readable description of this Segement */
-  def describe: String =
-    this match {
-      case All        => "rest*"
-      case One(value) => value
-    }
-
+  /** Gets a human readable description of this [[Segment]]. */
+  def describe: String = value
 }
-object Segment {
-  val all = Segment.All
-  def part(value: String): Segment = Segment.One(value)
+
+/** Matches but does not capture all remaining segments in a URI's path. */
+case object Segments {
+
+  /** Gets a human readable description of [[Segments]]. */
+  def describe: String = "rest*"
 }

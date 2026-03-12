@@ -22,7 +22,7 @@ import org.http4s.implicits.*
 
 class PathParseSuite extends FunSuite {
   val nonCapturingPath = Path / "user" / "create"
-  val nonCapturingAllPath = Path / "assets" / "html" / Segment.all
+  val nonCapturingAllPath = Path / "assets" / "html" / Segments
   val capturingAllPath = Path / "assets" / "html" / Params.seq
   val simplePath = Path / "user" / Param.int.withName("<userId>") / "view"
   val simpleQueryPath = Path / "user" / Param.int :? Query[String]("mode")
@@ -125,10 +125,9 @@ class PathParseSuite extends FunSuite {
     )
   }
 
-  test("Closed path raises exception when adding additional segments") {
-    intercept[IllegalStateException](nonCapturingAllPath / "crash")
-    intercept[IllegalStateException](capturingAllPath / "crash")
-  }
+  // Closed paths cannot have additional segments added. This is now enforced
+  // at compile time by the Path.Open / Path.Closed phantom types, so there is
+  // no runtime test here.
 
   test("Path.pathTo produces expected path") {
     assertEquals(nonCapturingPath.pathTo(EmptyTuple), "/user/create")

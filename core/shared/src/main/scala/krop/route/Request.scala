@@ -157,7 +157,7 @@ object Request {
 
   final case class RequestMethodPath[P <: Tuple, Q <: Tuple](
       method: Method,
-      path: Path[P, Q]
+      path: Path[P, Q, ?]
   ) extends Request[
         TupleConcat[P, Q],
         P,
@@ -203,8 +203,8 @@ object Request {
       RequestMethodPath(method, path)
 
     /** Change the `Path` that this `Request` matches to the given path. */
-    def withPath[P2 <: Tuple, Q2 <: Tuple](
-        path: Path[P2, Q2]
+    def withPath[P2 <: Tuple, Q2 <: Tuple, S](
+        path: Path[P2, Q2, S]
     ): RequestMethodPath[P2, Q2] =
       RequestMethodPath(method, path)
 
@@ -507,54 +507,54 @@ object Request {
       RequestEntity(headers, entity)
   }
 
-  def connect[P <: Tuple, Q <: Tuple](
-      path: Path[P, Q]
+  def connect[P <: Tuple, Q <: Tuple, S](
+      path: Path[P, Q, S]
   ): RequestMethodPath[P, Q] =
     Request.method(Method.CONNECT, path)
 
-  def delete[P <: Tuple, Q <: Tuple](
-      path: Path[P, Q]
+  def delete[P <: Tuple, Q <: Tuple, S](
+      path: Path[P, Q, S]
   ): RequestMethodPath[P, Q] =
     Request.method(Method.DELETE, path)
 
-  def get[P <: Tuple, Q <: Tuple](
-      path: Path[P, Q]
+  def get[P <: Tuple, Q <: Tuple, S](
+      path: Path[P, Q, S]
   ): RequestMethodPath[P, Q] =
     Request.method(Method.GET, path)
 
-  def head[P <: Tuple, Q <: Tuple](
-      path: Path[P, Q]
+  def head[P <: Tuple, Q <: Tuple, S](
+      path: Path[P, Q, S]
   ): RequestMethodPath[P, Q] =
     Request.method(Method.HEAD, path)
 
-  def options[P <: Tuple, Q <: Tuple](
-      path: Path[P, Q]
+  def options[P <: Tuple, Q <: Tuple, S](
+      path: Path[P, Q, S]
   ): RequestMethodPath[P, Q] =
     Request.method(Method.OPTIONS, path)
 
-  def patch[P <: Tuple, Q <: Tuple](
-      path: Path[P, Q]
+  def patch[P <: Tuple, Q <: Tuple, S](
+      path: Path[P, Q, S]
   ): RequestMethodPath[P, Q] =
     Request.method(Method.PATCH, path)
 
-  def post[P <: Tuple, Q <: Tuple](
-      path: Path[P, Q]
+  def post[P <: Tuple, Q <: Tuple, S](
+      path: Path[P, Q, S]
   ): RequestMethodPath[P, Q] =
     Request.method(Method.POST, path)
 
-  def put[P <: Tuple, Q <: Tuple](
-      path: Path[P, Q]
+  def put[P <: Tuple, Q <: Tuple, S](
+      path: Path[P, Q, S]
   ): RequestMethodPath[P, Q] =
     Request.method(Method.PUT, path)
 
-  def trace[P <: Tuple, Q <: Tuple](
-      path: Path[P, Q]
+  def trace[P <: Tuple, Q <: Tuple, S](
+      path: Path[P, Q, S]
   ): RequestMethodPath[P, Q] =
     Request.method(Method.TRACE, path)
 
-  def method[P <: Tuple, Q <: Tuple](
+  def method[P <: Tuple, Q <: Tuple, S](
       method: Method,
-      path: Path[P, Q]
+      path: Path[P, Q, S]
   ): RequestMethodPath[P, Q] =
     RequestMethodPath(method, path)
 

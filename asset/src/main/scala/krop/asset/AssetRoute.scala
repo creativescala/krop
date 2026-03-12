@@ -37,8 +37,10 @@ import krop.route.ReversibleRoute
 import krop.route.Route
 import krop.route.RouteHandler
 
-final class AssetRoute(base: Path[EmptyTuple, EmptyTuple], directory: Fs2Path)
-    extends ReversibleRoute[Tuple1[Fs2Path], EmptyTuple],
+final class AssetRoute(
+    base: Path[EmptyTuple, EmptyTuple, Path.Open],
+    directory: Fs2Path
+) extends ReversibleRoute[Tuple1[Fs2Path], EmptyTuple],
       ClientRoute[Tuple1[Fs2Path], Array[Byte]],
       InternalRoute[Tuple1[Fs2Path], Fs2Path],
       Handler { self =>
@@ -128,6 +130,9 @@ final class AssetRoute(base: Path[EmptyTuple, EmptyTuple], directory: Fs2Path)
   }
 }
 object AssetRoute {
-  def apply(base: Path[EmptyTuple, EmptyTuple], directory: String): AssetRoute =
+  def apply(
+      base: Path[EmptyTuple, EmptyTuple, Path.Open],
+      directory: String
+  ): AssetRoute =
     new AssetRoute(base, Fs2Path(directory))
 }

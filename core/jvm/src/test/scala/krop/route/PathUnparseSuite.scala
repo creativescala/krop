@@ -22,7 +22,7 @@ import org.http4s.Uri
 class PathUnparseSuite extends FunSuite {
   val rootPath = Path.root
   val nonCapturingPath = Path / "user" / "create"
-  val nonCapturingAllPath = Path / "assets" / "html" / Segment.all
+  val nonCapturingAllPath = Path / "assets" / "html" / Segments
   val capturingAllPath = Path / "assets" / "html" / Params.seq
   val simplePath = Path / "user" / Param.int.withName("<userId>") / "view"
   val pathWithQuery = Path / "user" / "view" :? Query[Int]("id")

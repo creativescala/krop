@@ -32,16 +32,16 @@ value available to the request handler.
 
 A `Path` will fail to match if the URI's path has more segments than the
 `Path` matches. So `Path / "user" / "create"` will not match
-`/user/create/1234`. Use `Segment.all` to match and ignore all the segments
+`/user/create/1234`. Use `Segments` to match and ignore all the segments
 to the end of the URI's path. For example
 
 ```scala mdoc:silent
-Path / "assets" / Segment.all
+Path / "assets" / Segments
 ```
 
 will match `/assets/`, `/assets/example.css`, and `/assets/css/example.css`.
 
-To capture all segments to the end of the URI's path, use a @:api(krop.route.Params) instance such as `Params.seq`. So
+To capture all segments to the end of the URI's path use a @:api(krop.route.Params) instance such as `Params.seq`. So
 
 ```scala mdoc:silent
 Path / "assets" / Params.seq
@@ -72,12 +72,7 @@ path.parseToOption(uri"http://example.org/assets/a/b/c.txt")
 
 ## Closed Paths
 
-A `Path` that matches all segments is called a closed path. Attempting to add an
-element to a closed path will result in an exception.
-
-```scala mdoc:crash
-Path / Segment.all / "crash"
-```
+A `Path` that matches all segments is called a closed path. Once closed, you cannot add any further elements.
 
 
 ## Capturing Query Parameters
