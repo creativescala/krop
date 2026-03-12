@@ -34,6 +34,7 @@ object all {
   export krop.route.Param
   export krop.route.Params
   export krop.route.Segment
+  export krop.route.Segments
 
   export krop.tool.DefaultAssets
 
