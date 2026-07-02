@@ -1,7 +1,4 @@
 import sbt.*
-import org.scalajs.sbtplugin.ScalaJSPlugin
-import org.scalajs.sbtplugin.ScalaJSPlugin.autoImport.*
-import org.portablescala.sbtplatformdeps.PlatformDepsPlugin.autoImport.*
 
 object Dependencies {
   // Library Versions
@@ -29,27 +26,27 @@ object Dependencies {
 
   // Libraries
   val catsEffect =
-    Def.setting("org.typelevel" %%% "cats-effect" % catsEffectVersion)
-  val catsCore = Def.setting("org.typelevel" %%% "cats-core" % catsVersion)
+    Def.setting("org.typelevel" %% "cats-effect" % catsEffectVersion)
+  val catsCore = Def.setting("org.typelevel" %% "cats-core" % catsVersion)
 
   val declineEffect =
     Def.setting("com.monovore" %% "decline-effect" % declineVersion)
 
-  val fs2Core = Def.setting("co.fs2" %%% "fs2-core" % fs2Version)
+  val fs2Core = Def.setting("co.fs2" %% "fs2-core" % fs2Version)
 
   val log4cats =
-    Def.setting("org.typelevel" %%% "log4cats-core" % log4catsVersion)
+    Def.setting("org.typelevel" %% "log4cats-core" % log4catsVersion)
   val log4catsSlf4j =
-    Def.setting("org.typelevel" %%% "log4cats-slf4j" % log4catsVersion)
+    Def.setting("org.typelevel" %% "log4cats-slf4j" % log4catsVersion)
   val logback =
     Def.setting("ch.qos.logback" % "logback-classic" % logbackVersion % Runtime)
 
   val http4sClient =
-    Def.setting("org.http4s" %%% "http4s-ember-client" % http4sVersion)
+    Def.setting("org.http4s" %% "http4s-ember-client" % http4sVersion)
   val http4sServer =
-    Def.setting("org.http4s" %%% "http4s-ember-server" % http4sVersion)
-  val http4sDsl = Def.setting("org.http4s" %%% "http4s-dsl" % http4sVersion)
-  val http4sCirce = Def.setting("org.http4s" %%% "http4s-circe" % http4sVersion)
+    Def.setting("org.http4s" %% "http4s-ember-server" % http4sVersion)
+  val http4sDsl = Def.setting("org.http4s" %% "http4s-dsl" % http4sVersion)
+  val http4sCirce = Def.setting("org.http4s" %% "http4s-circe" % http4sVersion)
   val circeGeneric =
     Def.setting("io.circe" %% "circe-generic" % circeGenericVersion)
 
@@ -57,13 +54,13 @@ object Dependencies {
   val magnum = Def.setting("com.augustnagro" %% "magnum" % magnumVersion)
 
   val twirl =
-    Def.setting("org.playframework.twirl" %%% "twirl-api" % twirlVersion)
-  val scalaTags = Def.setting("com.lihaoyi" %%% "scalatags" % scalaTagsVersion)
+    Def.setting("org.playframework.twirl" %% "twirl-api" % twirlVersion)
+  val scalaTags = Def.setting("com.lihaoyi" %% "scalatags" % scalaTagsVersion)
 
-  val munit = Def.setting("org.scalameta" %%% "munit" % munitVersion % "test")
+  val munit = Def.setting("org.scalameta" %% "munit" % munitVersion % "test")
   val munitCats =
     Def.setting(
-      "org.typelevel" %%% "munit-cats-effect" % munitCatsVersion % "test"
+      "org.typelevel" %% "munit-cats-effect" % munitCatsVersion % "test"
     )
 
   val directoryWatcher = Def.setting(
