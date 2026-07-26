@@ -202,7 +202,7 @@ lazy val examples = project
   )
   .settings(
     commonSettings,
-    // To avoid warn "unused import" for krop/examples/htmx/views/???.scala.html files
+    // To avoid warn "unused import" for krop/examples/htmx/views/*.scala.html files
     scalacOptions += "-Wconf:src=.*/views/html/.*:silent",
     moduleName := "krop-examples",
     mimaPreviousArtifacts := Set.empty,

@@ -22,7 +22,7 @@ import krop.examples.htmx.server.SimpleAuthService.UserInfo
 
 import java.util.UUID
 
-// Just for a demonstration
+/** !!!Just for the demonstration!!! */
 trait SimpleAuthService[F[_]]:
   def findUser(token: String): F[Option[UserInfo]]
 
