@@ -1,3 +1,6 @@
 # NEXT
 
+# 0.10.2: 26-Jul-2026
+
+- Many miscellaneous small fixes
 - Add `Param.fs2Path` (by `@Babali42`)
