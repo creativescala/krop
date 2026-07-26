@@ -33,7 +33,7 @@ ThisBuild / developers := List(
   tlGitHubDev("noelwelsh", "Noel Welsh")
 )
 
-lazy val scala3 = "3.6.4"
+lazy val scala3 = "3.8.4"
 
 ThisBuild / crossScalaVersions := List(scala3)
 ThisBuild / githubWorkflowJavaVersions := List(JavaSpec.temurin("17"))
@@ -166,6 +166,7 @@ lazy val docs =
             "Source"
           )
         )
+        .withMainNavigationDepth(5)
         .build,
       laikaExtensions ++= Seq(
         laika.format.Markdown.GitHubFlavor,
