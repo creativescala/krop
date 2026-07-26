@@ -21,7 +21,8 @@ import cats.effect.std.MapRef
 import fs2.io.file.Path as Fs2Path
 import org.typelevel.log4cats.Logger
 
-import HashingFileWatcher.Event.{Hashed, Deleted}
+import HashingFileWatcher.Event.Hashed
+import HashingFileWatcher.Event.Deleted
 
 /** Maintains a map of Path to HexString, and provides operations to hash a
   * path, adding a HexString, and unhash a path, removing a HexString.

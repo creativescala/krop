@@ -16,10 +16,12 @@
 
 package krop.examples.htmx.handlers
 
-import org.http4s.headers.Cookie
+import krop.all.*
+import krop.examples.htmx.routes.Routes
+import krop.examples.htmx.views.html
 
-object Parser:
-  extension (cookie: Cookie)
-    def getToken: Option[String] =
-      cookie.values.collectFirst:
-        case rq if rq.name == "token" => rq.content
+object RegisterHandler:
+  val handler: Handler =
+    Routes.register.handle { () =>
+      html.register(None).toString
+    }

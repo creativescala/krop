@@ -202,6 +202,8 @@ lazy val examples = project
   )
   .settings(
     commonSettings,
+    // To avoid warn "unused import" for krop/examples/htmx/views/???.scala.html files
+    scalacOptions += "-Wconf:src=.*/views/html/.*:silent",
     moduleName := "krop-examples",
     mimaPreviousArtifacts := Set.empty,
     // This sets Krop into development mode, which gives useful tools for
