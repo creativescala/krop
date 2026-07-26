@@ -1,8 +1,34 @@
-# Htmx
+# Htmx: Building an Authorization Application
 
-## Create models
+This example demonstrates how to build a complete authorization application using Krop with [HTMX][htmx] for dynamic interactions. 
+The application implements user registration, login, logout, and session management — 
+all while following Krop's principles of type safety and composability. 
+It also showcases a task management interface with tabbed navigation as an example of authenticated content.
 
-```scala 3
+## Overview
+
+The application provides a full user authentication flow:
+
+- **Login page** – Users can sign in with their credentials
+  ![Start page](images/login.png)
+- **Registration page** – New users can create an account
+  ![Registration page](images/registration.png)
+- **Authenticated dashboard** – After login, users see a personalized welcome page with task management tabs
+  ![After logging](images/after_logging.png)
+- **Session management** – User tokens are stored in cookies for persistent sessions
+- **Secure logout** – Users can safely end their session
+
+## Code Structure
+
+The example is organized into several logical components that work together seamlessly:
+
+### Models
+
+The `LoginRequest` case class defines the data structure for authentication requests, 
+using Circe's derivation support for JSON encoding and decoding. 
+This model is shared across the registration and login flows.
+
+```scala
 package krop.examples.htmx.models
 
 import io.circe.*
@@ -14,9 +40,23 @@ final case class LoginRequest(
       Encoder
 ```
 
-## Create routes
+### Routes
 
-```scala 3
+The `Routes` object defines all the application's endpoints using Krop's routing DSL. Each route specifies:
+
+- The HTTP method (GET, POST)
+- The URL path pattern
+- Request extraction (headers, body parsing)
+- Response handling with appropriate status codes
+
+The routes support:
+
+- Static pages (`/`, `/home`, `/register`)
+- Authentication actions (`/auth/login`, `/auth/logout`)
+- User creation (`/new_user`)
+- Static asset serving (`/asset/*`)
+
+```scala
 package krop.examples.htmx.routes
 
 import krop.all.*
@@ -81,9 +121,14 @@ object Routes:
 end Routes
 ```
 
-## Create views
+### Views
 
-### base.scala.html
+The application uses Twirl templates for server-side rendering. The view layer is organized as:
+
+#### base.scala.html
+
+**`base.scala.html`** – The main layout template that includes the HTMX script, common styles, and navigation structure.
+It uses `hx-get` and `hx-target` attributes to enable HTMX's dynamic page updates without full reloads.
 
 ```html
 @(title: String, content: Html)
@@ -117,81 +162,93 @@ end Routes
 </html>
 ```
 
-### login.scala.html
+#### login.scala.html
+
+**`login.scala.html`** – The login form with username and password fields. 
+Error messages are displayed conditionally, and the form uses a JavaScript `onclick` handler to submit via fetch.
 
 ```html
 @(errorMessage: Option[String])
 <div id="app" class="app-container-narrow">
-<h2>Login</h2>
+    <h2>Login</h2>
 
-<form id="loginForm">
-  <div class="form-group">
-    <label for="loginUsername">Username:</label>
-    <input id="loginUsername" name="username" type="text" required />
-  </div>
-  <div class="form-group">
-    <label for="loginPassword">Password:</label>
-    <input id="loginPassword" name="password" type="password" required />
-  </div>
-  <button type="button" onclick="loginUser()">Login</button>
-</form>
+    <form id="loginForm">
+        <div class="form-group">
+            <label for="loginUsername">Username:</label>
+            <input id="loginUsername" name="username" type="text" required />
+        </div>
+        <div class="form-group">
+            <label for="loginPassword">Password:</label>
+            <input id="loginPassword" name="password" type="password" required />
+        </div>
+        <button type="button" onclick="loginUser()">Login</button>
+    </form>
 
-<div id="messageBlock">
-  @errorMessage.map { msg =>
-    <div class="error">@msg</div>
-  }
-</div>
+    <div id="messageBlock">
+        @errorMessage.map { msg =>
+        <div class="error">@msg</div>
+        }
+    </div>
 
-<p>
-  Don't have an account?
-  <a
-          onclick="htmx.process(this); this.click();"
-          hx-get="/register"
-          hx-target="#app"
-          hx-swap="outerHTML"
-  >Register</a>
-</p>
+    <p>
+        Don't have an account?
+        <a
+                onclick="htmx.process(this); this.click();"
+                hx-get="/register"
+                hx-target="#app"
+                hx-swap="outerHTML"
+        >Register</a>
+    </p>
 </div>
 ```
 
-### register.scala.html
+#### register.scala.html
+
+**`register.scala.html`** – The registration form, similar to the login page but for new user creation.
 
 ```html
 @(errorMessage: Option[String])
 <div id="app" class="app-container-narrow">
-<h2>Registration</h2>
+    <h2>Registration</h2>
 
-<form id="registerForm">
-    <div class="form-group">
-        <label for="username">Username:</label>
-        <input id="username" name="username" type="text" required />
+    <form id="registerForm">
+        <div class="form-group">
+            <label for="username">Username:</label>
+            <input id="username" name="username" type="text" required />
+        </div>
+        <div class="form-group">
+            <label for="password">Password:</label>
+            <input id="password" name="password" type="password" required />
+        </div>
+        <button type="button" onclick="registerUser()">Register</button>
+    </form>
+
+    <div id="messageBlock">
+        @errorMessage.map { msg =>
+        <div class="error">@msg</div>
+        }
     </div>
-    <div class="form-group">
-        <label for="password">Password:</label>
-        <input id="password" name="password" type="password" required />
-    </div>
-    <button type="button" onclick="registerUser()">Register</button>
-</form>
 
-<div id="messageBlock">
-  @errorMessage.map { msg =>
-    <div class="error">@msg</div>
-  }
-</div>
-
-<p>
-    Have an account?
-    <a
-      onclick="htmx.process(this); this.click();"
-      hx-get="/home"
-      hx-target="#app"
-      hx-swap="outerHTML"
-    >Login</a>
-</p>
+    <p>
+        Have an account?
+        <a
+                onclick="htmx.process(this); this.click();"
+                hx-get="/home"
+                hx-target="#app"
+                hx-swap="outerHTML"
+        >Login</a>
+    </p>
 </div>
 ```
 
-### welcome.scala.html
+#### welcome.scala.html
+
+**`welcome.scala.html`** – The authenticated user dashboard. This template:
+
+- Displays the user's name and logout button
+- Implements three tabbed sections: "In progress", "Planned", and "Knowledge base"
+- Shows example tasks in each tab
+- Includes `data-token` attribute for JavaScript to extract and store the session token
 
 ```html
 @(username: String, token: String)
@@ -230,114 +287,15 @@ end Routes
             </div>
 
             <div id="tab-in-progress" class="tab-content active">
-                <div class="tab-actions">
-                    <button
-                            class="create-task-btn"
-                            onclick="htmx.process(this); this.click();"
-                            hx-get="/task/create?tab=in-progress"
-                            hx-target="#app"
-                            hx-swap="outerHTML"
-                    >
-                        + Create task
-                    </button>
-                </div>
-                <div class="tasks-grid">
-                    <div class="task-card">
-                        <div class="task-icon">📚</div>
-                        <div class="task-info">
-                            <div class="task-title">Read "Creative Scala"</div>
-                            <div class="task-meta">Noel Welsh • Progress: 60%</div>
-                        </div>
-                    </div>
-                    <div class="task-card">
-                        <div class="task-icon">📝</div>
-                        <div class="task-info">
-                            <div class="task-title">Write an article about Krop</div>
-                            <div class="task-meta">Blog • Deadline: July 25, 2026</div>
-                        </div>
-                    </div>
-                    <div class="task-card">
-                        <div class="task-icon">💻</div>
-                        <div class="task-info">
-                            <div class="task-title">Implement Authentication</div>
-                            <div class="task-meta">PDP Project • Priority: High</div>
-                        </div>
-                    </div>
-                    <div class="task-card">
-                        <div class="task-icon">📊</div>
-                        <div class="task-info">
-                            <div class="task-title">Prepare Monthly Report</div>
-                            <div class="task-meta">Statistics • Due by August 1st</div>
-                        </div>
-                    </div>
-                </div>
+                ... // Mocks
             </div>
 
             <div id="tab-planned" class="tab-content">
-                <div class="tab-actions">
-                    <button
-                            class="create-task-btn"
-                            onclick="htmx.process(this); this.click();"
-                            hx-get="/task/create?tab=planned"
-                            hx-target="#app"
-                            hx-swap="outerHTML"
-                    >
-                        + Create task
-                    </button>
-                </div>
-                <div class="tasks-grid">
-                    <div class="task-card">
-                        <div class="task-icon">📖</div>
-                        <div class="task-info">
-                            <div class="task-title">Learn Scala 3</div>
-                            <div class="task-meta">Plan • Start in August</div>
-                        </div>
-                    </div>
-                    <div class="task-card">
-                        <div class="task-icon">🎯</div>
-                        <div class="task-info">
-                            <div class="task-title">Launch MVP project</div>
-                            <div class="task-meta">Plan • Goal: Q4 2026</div>
-                        </div>
-                    </div>
-                    <div class="task-card">
-                        <div class="task-icon">📈</div>
-                        <div class="task-info">
-                            <div class="task-title">Course Typelevel Stack</div>
-                            <div class="task-meta">Training • Planned for September</div>
-                        </div>
-                    </div>
-                </div>
+                ... // Mocks
             </div>
 
             <div id="tab-knowledge" class="tab-content">
-                <div class="tab-actions">
-                    <button
-                            class="create-task-btn"
-                            onclick="htmx.process(this); this.click();"
-                            hx-get="/task/create?tab=knowledge"
-                            hx-target="#app"
-                            hx-swap="outerHTML"
-                    >
-                        + Create task
-                    </button>
-                </div>
-                <div class="tasks-grid">
-                    <div class="task-card">
-                        <div class="task-icon">📄</div>
-                        <div class="task-info">
-                            <div class="task-title">Krop Documentation</div>
-                            <div class="task-meta">Knowledge Base • Read and Take Notes</div>
-                        </div>
-                    </div>
-                    <div class="task-card">
-                        <div class="task-icon">🎓</div>
-                        <div class="task-info">
-                            <div class="task-title">FP Lectures</div>
-                            <div class="task-meta">Knowledge Base • View and Write Questions</div>
-                        </div>
-                    </div>
-                </div>
+                ... // Mocks
             </div>
         </div>
 
@@ -346,7 +304,15 @@ end Routes
 </div>
 ```
 
-## Create assets
+### Assets
+
+The JavaScript file manages client-side interactions:
+
+- **Cookie management** – Functions to set, get, and delete cookies for storing the authentication token
+- **Authentication handlers** – `loginUser()` and `registerUser()` functions that send credentials to the server
+- **Response processing** – `handleAuthResponse()` parses the server response, extracts the token, and updates the UI
+- **Tab switching** – `switchTab()` manages the task tabs on the dashboard
+- **HTMX integration** – Automatically attaches the authentication token to all HTMX requests via the `htmx:beforeRequest` event listener
 
 ```javascript
 document.addEventListener('htmx:beforeRequest', function(event) {
@@ -450,19 +416,78 @@ function switchTab(tabId) {
 }
 ```
 
+### Server
 
-## Create simple auth server only for demonstration
+The `SimpleAuthService` trait defines the authentication contract with three operations:
 
-```scala 3
+- `findUser(token)` – Retrieves user information from a stored token
+- `login(username, password)` – Validates credentials and returns user info
+- `newUser(username, password)` – Creates a new user account
 
+The in-memory implementation demonstrates how to store and query user data, using a `Ref[IO, Vector[UserInfo]]` 
+for thread-safe state management. 
+This is a simplified demonstration; in production, you would replace this with a proper database.
+
+```scala
+package krop.examples.htmx.server
+
+import cats.effect.IO
+import cats.effect.Ref
+import krop.examples.htmx.server.SimpleAuthService.UserInfo
+
+import java.util.UUID
+
+/** !!!Just for the demonstration!!! */
+trait SimpleAuthService[F[_]]:
+  def findUser(token: String): F[Option[UserInfo]]
+
+  def login(username: String, password: String): F[Option[UserInfo]]
+
+  def newUser(username: String, password: String): F[Either[String, UserInfo]]
+
+object SimpleAuthService:
+  final case class UserInfo(username: String, password: String, token: String)
+
+  def make(db: Ref[IO, Vector[UserInfo]]): SimpleAuthService[IO] =
+    new SimpleAuthService:
+      def findUser(token: String): IO[Option[UserInfo]] =
+        db.get.map(_.find(_.token == token))
+
+      def login(username: String, password: String): IO[Option[UserInfo]] =
+        db.get.map(
+          _.find(user => user.username == username && user.password == password)
+        )
+
+      def newUser(
+          username: String,
+          password: String
+      ): IO[Either[String, UserInfo]] = {
+        val newUser = UserInfo(username, password, UUID.randomUUID().toString)
+
+        db.get.flatMap:
+          case users if users.exists(_.username == username) =>
+            IO.pure(Left("A user with such username already exists."))
+          case users =>
+            db.update(users => newUser +: users).as(Right(newUser))
+      }
 ```
 
+### Handlers
 
-## Create Handlers
+Each route has a corresponding handler that processes requests and generates responses:
 
-### Create Parser 
+- **`InitialHandler`** – Handles the root path (`/`), checking for existing sessions and either showing the login page or redirecting to the dashboard
+- **`HomeHandler`** – Serves the home endpoint, similarly checking for valid sessions
+- **`RegisterHandler`** – Serves the registration form
+- **`LoginHandler`** – Processes login credentials, returning either the welcome page or an error message
+- **`LogoutHandler`** – Validates the token and logs out the user
+- **`NewUserHandler`** – Processes registration requests, handling both success and conflict cases
 
-```scala 3
+All handlers use Krop's `handleIO` method for effectful computations, with proper error handling and logging.
+
+#### Create Parser
+
+```scala
 package krop.examples.htmx.handlers
 
 import org.http4s.headers.Cookie
@@ -474,23 +499,23 @@ object Parser:
         case rq if rq.name == "token" => rq.content
 ```
 
-### InitialHandler
+#### InitialHandler
 
-```scala 3
+```scala
 package krop.examples.htmx.handlers
 
 import cats.effect.IO
 import cats.syntax.all.*
 import krop.all.*
+import krop.examples.htmx.handlers.Parser.*
 import krop.examples.htmx.routes.Routes
-import krop.examples.htmx.server.SimpleAuthServer
+import krop.examples.htmx.server.SimpleAuthService
+import krop.examples.htmx.views.html
 import org.http4s.headers.Cookie
 import org.typelevel.log4cats.Logger
-import krop.examples.htmx.handlers.Parser.*
-import krop.examples.htmx.views.html
 
 final case class InitialHandler(
-    authServer: SimpleAuthServer[IO]
+    service: SimpleAuthService[IO]
 )(using Logger[IO]):
   private val name = "Personal Development Plan"
 
@@ -501,7 +526,7 @@ final case class InitialHandler(
     Routes.index.handleIO: (cookie: Cookie) =>
       cookie.getToken match
         case Some(token) =>
-          authServer
+          service
             .findUser(token)
             .map:
               case Some(user) =>
@@ -520,23 +545,23 @@ final case class InitialHandler(
 end InitialHandler
 ```
 
-### HomeHandler
+#### HomeHandler
 
-```scala 3
+```scala
 package krop.examples.htmx.handlers
 
 import cats.effect.IO
 import cats.syntax.all.*
 import krop.all.*
+import krop.examples.htmx.handlers.Parser.*
 import krop.examples.htmx.routes.Routes
-import krop.examples.htmx.server.SimpleAuthServer
+import krop.examples.htmx.server.SimpleAuthService
+import krop.examples.htmx.views.html
 import org.http4s.headers.Cookie
 import org.typelevel.log4cats.Logger
-import krop.examples.htmx.handlers.Parser.*
-import krop.examples.htmx.views.html
 
 final case class HomeHandler(
-    authServer: SimpleAuthServer[IO]
+    service: SimpleAuthService[IO]
 )(using Logger[IO]):
   private val defaultPage = html.login(None).toString
 
@@ -544,7 +569,7 @@ final case class HomeHandler(
     Routes.home.handleIO: (cookie: Cookie) =>
       cookie.getToken match
         case Some(token) =>
-          authServer
+          service
             .findUser(token)
             .map:
               case Some(user) =>
@@ -554,16 +579,16 @@ final case class HomeHandler(
             .recoverWith:
               case ex =>
                 Logger[IO]
-                  .error(ex)(s"Ошибка: ${ex.getMessage}")
+                  .error(ex)(s"Server error: ${ex.getMessage}")
                   .as(defaultPage)
         case None =>
           defaultPage.pure[IO]
 end HomeHandler
 ```
 
-### RegisterHandler
+#### RegisterHandler
 
-```scala 3
+```scala
 package krop.examples.htmx.handlers
 
 import krop.all.*
@@ -577,32 +602,188 @@ object RegisterHandler:
     }
 ```
 
-### LoginHandler
+#### LoginHandler
 
-```scala 3
+```scala
+package krop.examples.htmx.handlers
 
+import cats.effect.IO
+import cats.syntax.all.*
+import krop.all.*
+import krop.examples.htmx.models.LoginRequest
+import krop.examples.htmx.routes.Routes
+import krop.examples.htmx.server.SimpleAuthService
+import krop.examples.htmx.views.html
+import org.typelevel.log4cats.Logger
+
+final case class LoginHandler(
+    service: SimpleAuthService[IO]
+)(using Logger[IO]):
+  val handler: Handler =
+    Routes.login.handleIO { (request: LoginRequest) =>
+      service
+        .login(request.username, request.password)
+        .map:
+          case Some(user) =>
+            html.welcome(user.username, user.token).toString.asRight.some
+          case None =>
+            html.login("User not found".some).toString.asLeft.some
+        .recoverWith:
+          case ex =>
+            Logger[IO].error(ex)(s"Server error: ${ex.getMessage}").as(none)
+    }
+end LoginHandler
 ```
 
-### LogoutHandler
+#### LogoutHandler
 
-```scala 3
+```scala
+package krop.examples.htmx.handlers
 
+import cats.effect.IO
+import cats.syntax.all.*
+import krop.all.*
+import krop.examples.htmx.routes.Routes
+import krop.examples.htmx.server.SimpleAuthService
+import krop.examples.htmx.views.html
+import org.http4s.AuthScheme
+import org.http4s.Credentials.Token
+import org.http4s.headers.Authorization
+import org.typelevel.log4cats.Logger
+
+final case class LogoutHandler(
+    service: SimpleAuthService[IO]
+)(using Logger[IO]):
+  val handler: Handler =
+    Routes.logout.handleIO: (authorization: Authorization) =>
+      authorization match
+        case Authorization(Token(AuthScheme.Bearer, token)) =>
+          service
+            .findUser(token)
+            .map:
+              case Some(_) =>
+                html.login(none).toString.asRight.some
+              case None =>
+                html.login("User not found".some).toString.asLeft.some
+        case _ =>
+          html
+            .login("An authorization error occurred".some)
+            .toString
+            .asLeft
+            .some
+            .pure[IO]
+end LogoutHandler
 ```
 
-### NewUserHandler
+#### NewUserHandler
 
-```scala 3
+```scala
+package krop.examples.htmx.handlers
 
+import cats.effect.IO
+import cats.syntax.all.*
+import krop.all.*
+import krop.examples.htmx.models.LoginRequest
+import krop.examples.htmx.routes.Routes
+import krop.examples.htmx.server.SimpleAuthService
+import krop.examples.htmx.views.html
+import org.typelevel.log4cats.Logger
+
+final case class NewUserHandler(
+    service: SimpleAuthService[IO]
+)(using Logger[IO]):
+  val handler: Handler =
+    Routes.newUser.handleIO { (request: LoginRequest) =>
+      service
+        .newUser(request.username, request.password)
+        .map:
+          case Right(user) =>
+            html.welcome(user.username, user.token).toString.asRight.some
+          case Left(error) =>
+            html.register(error.some).toString.asLeft.some
+        .recoverWith:
+          case ex =>
+            Logger[IO].error(ex)(s"Server error: ${ex.getMessage}").as(none)
+    }
+end NewUserHandler
 ```
 
+### Main
 
+The `Main` object is the application entry point. It:
 
-## Create Main
+1. Creates a logger instance
+2. Initializes the in-memory user database
+3. Composes all routes together using `orElse`
+4. Builds and runs the server on the default port
 
-```scala 3
+```scala
+package krop.examples.htmx
 
+import cats.effect.*
+import krop.all.*
+import krop.examples.htmx.handlers.*
+import krop.examples.htmx.server.SimpleAuthService
+import krop.examples.htmx.server.SimpleAuthService.UserInfo
+import org.typelevel.log4cats.Logger
+import org.typelevel.log4cats.slf4j.Slf4jLogger
+
+val name = "Personal Development Plan"
+
+object Main extends IOApp:
+  given Logger[IO] = Slf4jLogger.getLogger[IO]
+
+  def application(db: Ref[IO, Vector[UserInfo]]): Application =
+    val service: SimpleAuthService[IO] =
+      SimpleAuthService.make(db)
+
+    val initialHandler = InitialHandler(service)
+    val homeHandler = HomeHandler(service)
+    val loginHandler = LoginHandler(service)
+    val logoutHandler = LogoutHandler(service)
+    val newUserHandler = NewUserHandler(service)
+    val assetRoute =
+      Route(
+        Request.get(Path.root / "asset" / Params.separatedString("/")),
+        Response.staticResource("/asset/")
+      )
+
+    initialHandler.handler
+      .orElse(homeHandler.handler)
+      .orElse(RegisterHandler.handler)
+      .orElse(loginHandler.handler)
+      .orElse(logoutHandler.handler)
+      .orElse(newUserHandler.handler)
+      .orElse(assetRoute.passthrough)
+      .orElse(Application.notFound)
+
+  override def run(args: List[String]): IO[ExitCode] =
+    Ref[IO]
+      .of(Vector.empty[UserInfo])
+      .flatMap: db =>
+        ServerBuilder.default
+          .withApplication(application(db))
+          .build
+          .toIO
+          .as(ExitCode.Success)
 ```
 
+## Using the Application
+
+1. Start the application by running the `Main` class
+2. Open your browser and navigate to `http://localhost:8080/`
+3. You'll see the login page. Use the "Register" link to create a new account
+4. After registration or login, you'll be redirected to your personalized dashboard
+5. Explore the task tabs, use the logout button, or switch between accounts
+
+## Conclusion
+
+This example demonstrates how Krop's design enables you to build complete, type-safe web applications 
+with modern frontend interactions using [HTMX][htmx]. 
+By combining Krop's routing, request handling, and response composition with HTMX's dynamic capabilities, 
+you can create rich user experiences while maintaining clean separation of concerns and functional programming principles.
+
+The full source code is available in the Krop [examples directory][source].
 
 [htmx]: https://htmx.org/
 [source]: https://github.com/creativescala/krop/tree/main/examples/src/main
