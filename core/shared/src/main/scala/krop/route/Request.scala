@@ -464,7 +464,7 @@ object Request {
       headers.pathAndQueryTo(pathParams, queryParams)
 
     def describe: String =
-      "${headers.describe} ${entity.encoder.contentType.map(_.mediaType).getOrElse(\"\")}"
+      s"${headers.describe} ${entity.encoder.contentType.map(_.mediaType).getOrElse("")}"
 
     def parse[F[_, _]: Raise.Handler](
         req: Http4sRequest[IO]
