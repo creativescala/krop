@@ -197,6 +197,9 @@ lazy val unidocs = project
 // To avoid including this in the core build
 lazy val examples = project
   .in(file("examples"))
+  .enablePlugins(
+    KropTwirlLayout
+  )
   .settings(
     commonSettings,
     moduleName := "krop-examples",
