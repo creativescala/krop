@@ -228,7 +228,7 @@ object NotFound {
         .foldLeft(
           Resource.eval(IO.pure(builder))
         ) { (accum, handler) =>
-          accum.flatMap(chain =>
+          accum.flatMap(_ =>
             handler.build(runtime).map(routeHandler => builder += routeHandler)
           )
         }
