@@ -46,7 +46,7 @@ object Routes:
       .withEntity(Entity.formOf[LoginRequest]),
     Response
       .ok(Entity.html)
-      .orElse(Response.status(HttpStatus.Forbidden, Entity.html))
+      .orElse(Response.status(HttpStatus.Ok, Entity.html))
       .orNotFound
   )
 
@@ -56,7 +56,7 @@ object Routes:
       .withEntity(Entity.formOf[LoginRequest]),
     Response
       .status(HttpStatus.Created, Entity.html)
-      .orElse(Response.status(HttpStatus.Conflict, Entity.html))
+      .orElse(Response.status(HttpStatus.Ok, Entity.html))
       .orNotFound
   )
 
@@ -66,7 +66,7 @@ object Routes:
       .extractHeader[Authorization],
     Response
       .ok(Entity.html)
-      .orElse(Response.status(HttpStatus.Forbidden, Entity.html))
+      .orElse(Response.status(HttpStatus.Ok, Entity.html))
       .orNotFound
   )
 

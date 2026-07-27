@@ -32,12 +32,14 @@ This model is shared across the registration and login flows.
 package krop.examples.htmx.models
 
 import io.circe.*
+import krop.route.FormCodec
 
 final case class LoginRequest(
     username: String,
     password: String
 ) derives Decoder,
-      Encoder
+      Encoder,
+      FormCodec
 ```
 
 ### Routes
@@ -86,20 +88,20 @@ object Routes:
   val login = Route(
     Request
       .post(Path.root / "auth" / "login")
-      .withEntity(Entity.jsonOf[LoginRequest]),
+      .withEntity(Entity.formOf[LoginRequest]),
     Response
       .ok(Entity.html)
-      .orElse(Response.status(HttpStatus.Forbidden, Entity.html))
+      .orElse(Response.status(HttpStatus.Ok, Entity.html))
       .orNotFound
   )
 
   val newUser = Route(
     Request
       .post(Path.root / "new_user")
-      .withEntity(Entity.jsonOf[LoginRequest]),
+      .withEntity(Entity.formOf[LoginRequest]),
     Response
       .status(HttpStatus.Created, Entity.html)
-      .orElse(Response.status(HttpStatus.Conflict, Entity.html))
+      .orElse(Response.status(HttpStatus.Ok, Entity.html))
       .orNotFound
   )
 
@@ -109,7 +111,7 @@ object Routes:
       .extractHeader[Authorization],
     Response
       .ok(Entity.html)
-      .orElse(Response.status(HttpStatus.Forbidden, Entity.html))
+      .orElse(Response.status(HttpStatus.Ok, Entity.html))
       .orNotFound
   )
 
@@ -165,40 +167,46 @@ It uses `hx-get` and `hx-target` attributes to enable HTMX's dynamic page update
 #### login.scala.html
 
 **`login.scala.html`** – The login form with username and password fields. 
-Error messages are displayed conditionally, and the form uses a JavaScript `onclick` handler to submit via fetch.
+Error messages are displayed conditionally, and the form uses `hx-post` handler to submit via fetch.
 
 ```html
 @(errorMessage: Option[String])
 <div id="app" class="app-container-narrow">
-    <h2>Login</h2>
+  <h2>Login</h2>
 
-    <form id="loginForm">
-        <div class="form-group">
-            <label for="loginUsername">Username:</label>
-            <input id="loginUsername" name="username" type="text" required />
-        </div>
-        <div class="form-group">
-            <label for="loginPassword">Password:</label>
-            <input id="loginPassword" name="password" type="password" required />
-        </div>
-        <button type="button" onclick="loginUser()">Login</button>
-    </form>
-
-    <div id="messageBlock">
-        @errorMessage.map { msg =>
-        <div class="error">@msg</div>
-        }
+  <form id="loginForm">
+    <div class="form-group">
+      <label for="loginUsername">Username:</label>
+      <input id="loginUsername" name="username" type="text" required/>
     </div>
+    <div class="form-group">
+      <label for="loginPassword">Password:</label>
+      <input id="loginPassword" name="password" type="password" required/>
+    </div>
+    <button
+            type="button"
+            hx-post="/auth/login"
+            hx-target="#app"
+            hx-swap="outerHTML"
+    >Login
+    </button>
+  </form>
 
-    <p>
-        Don't have an account?
-        <a
-                onclick="htmx.process(this); this.click();"
-                hx-get="/register"
-                hx-target="#app"
-                hx-swap="outerHTML"
-        >Register</a>
-    </p>
+  <div id="messageBlock">
+    @errorMessage.map { msg =>
+    <div class="error">@msg</div>
+    }
+  </div>
+
+  <p>
+    Don't have an account?
+    <a
+            onclick="htmx.process(this); this.click();"
+            hx-get="/register"
+            hx-target="#app"
+            hx-swap="outerHTML"
+    >Register</a>
+  </p>
 </div>
 ```
 
@@ -209,35 +217,41 @@ Error messages are displayed conditionally, and the form uses a JavaScript `oncl
 ```html
 @(errorMessage: Option[String])
 <div id="app" class="app-container-narrow">
-    <h2>Registration</h2>
+  <h2>Registration</h2>
 
-    <form id="registerForm">
-        <div class="form-group">
-            <label for="username">Username:</label>
-            <input id="username" name="username" type="text" required />
-        </div>
-        <div class="form-group">
-            <label for="password">Password:</label>
-            <input id="password" name="password" type="password" required />
-        </div>
-        <button type="button" onclick="registerUser()">Register</button>
-    </form>
-
-    <div id="messageBlock">
-        @errorMessage.map { msg =>
-        <div class="error">@msg</div>
-        }
+  <form id="registerForm">
+    <div class="form-group">
+      <label for="username">Username:</label>
+      <input id="username" name="username" type="text" required/>
     </div>
+    <div class="form-group">
+      <label for="password">Password:</label>
+      <input id="password" name="password" type="password" required/>
+    </div>
+    <button
+            type="button"
+            hx-post="/new_user"
+            hx-target="#app"
+            hx-swap="outerHTML"
+    >Register
+    </button>
+  </form>
 
-    <p>
-        Have an account?
-        <a
-                onclick="htmx.process(this); this.click();"
-                hx-get="/home"
-                hx-target="#app"
-                hx-swap="outerHTML"
-        >Login</a>
-    </p>
+  <div id="messageBlock">
+    @errorMessage.map { msg =>
+    <div class="error">@msg</div>
+    }
+  </div>
+
+  <p>
+    Have an account?
+    <a
+            onclick="htmx.process(this); this.click();"
+            hx-get="/home"
+            hx-target="#app"
+            hx-swap="outerHTML"
+    >Login</a>
+  </p>
 </div>
 ```
 
@@ -248,11 +262,12 @@ Error messages are displayed conditionally, and the form uses a JavaScript `oncl
 - Displays the user's name and logout button
 - Implements three tabbed sections: "In progress", "Planned", and "Knowledge base"
 - Shows example tasks in each tab
-- Includes `data-token` attribute for JavaScript to extract and store the session token
+- Includes `saveUserCookies` script to extract and store the session token
 
 ```html
 @(username: String, token: String)
 <div id="app" class="app-container">
+    <iframe onload="saveUserCookies('@token')" style="display:none;"></iframe>
     <div id="welcomeBlock" class="welcome-container"
          data-token="@token">
         <div class="welcome-header">
@@ -309,110 +324,57 @@ Error messages are displayed conditionally, and the form uses a JavaScript `oncl
 The JavaScript file manages client-side interactions:
 
 - **Cookie management** – Functions to set, get, and delete cookies for storing the authentication token
-- **Authentication handlers** – `loginUser()` and `registerUser()` functions that send credentials to the server
-- **Response processing** – `handleAuthResponse()` parses the server response, extracts the token, and updates the UI
 - **Tab switching** – `switchTab()` manages the task tabs on the dashboard
 - **HTMX integration** – Automatically attaches the authentication token to all HTMX requests via the `htmx:beforeRequest` event listener
 
 ```javascript
 document.addEventListener('htmx:beforeRequest', function(event) {
-    var token = getCookie('token');
-    if (token) {
-        event.detail.xhr.setRequestHeader('Authorization', 'Bearer ' + token);
-    }
+  var token = getCookie('token');
+  if (token) {
+    event.detail.xhr.setRequestHeader('Authorization', 'Bearer ' + token);
+  }
 });
 
 function setCookie(name, value, days) {
-    days = days || 7;
-    var expires = new Date();
-    expires.setTime(expires.getTime() + days * 24 * 60 * 60 * 1000);
-    document.cookie = name + "=" + encodeURIComponent(value) +
-        "; expires=" + expires.toUTCString() +
-        "; path=/";
+  days = days || 7;
+  var expires = new Date();
+  expires.setTime(expires.getTime() + days * 24 * 60 * 60 * 1000);
+  document.cookie = name + "=" + encodeURIComponent(value) +
+          "; expires=" + expires.toUTCString() +
+          "; path=/";
 }
 
 function getCookie(name) {
-    var nameEQ = name + "=";
-    var ca = document.cookie.split(';');
-    for(var i = 0; i < ca.length; i++) {
-        var c = ca[i];
-        while (c.charAt(0) === ' ') c = c.substring(1, c.length);
-        if (c.indexOf(nameEQ) === 0) return decodeURIComponent(c.substring(nameEQ.length, c.length));
-    }
-    return null;
+  var nameEQ = name + "=";
+  var ca = document.cookie.split(';');
+  for(var i = 0; i < ca.length; i++) {
+    var c = ca[i];
+    while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+    if (c.indexOf(nameEQ) === 0) return decodeURIComponent(c.substring(nameEQ.length, c.length));
+  }
+  return null;
 }
 
 function deleteCookie(name) {
-    document.cookie = name + '=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+  document.cookie = name + '=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
 }
 
 function saveUserCookies(token) {
-    if (token) {
-        setCookie('token', token);
-    }
+  if (token) {
+    setCookie('token', token);
+  }
 }
 
 function clearUserCookies() {
-    deleteCookie('token');
-}
-
-function handleAuthResponse(response) {
-    if (response.ok) {
-        return response.text().then(html => {
-            var parser = new DOMParser();
-            var doc = parser.parseFromString(html, 'text/html');
-            var welcomeBlock = doc.querySelector('#welcomeBlock');
-
-            if (welcomeBlock) {
-                var token = welcomeBlock.getAttribute('data-token');
-                if (token) {
-                    saveUserCookies(token);
-                }
-            }
-
-            document.getElementById('app').outerHTML = html;
-        });
-    } else {
-        return response.text().then(html => {
-            document.getElementById('app').outerHTML = html;
-        });
-    }
-}
-
-function registerUser() {
-    const username = document.getElementById('username').value;
-    const password = document.getElementById('password').value;
-
-    fetch('/new_user', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({username, password})
-    })
-        .then(response => handleAuthResponse(response));
-}
-
-function loginUser() {
-    const username = document.getElementById('loginUsername').value;
-    const password = document.getElementById('loginPassword').value;
-
-    fetch('/auth/login', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({username, password})
-    })
-        .then(response => handleAuthResponse(response));
+  deleteCookie('token');
 }
 
 function switchTab(tabId) {
-    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-    document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
 
-    document.querySelector(`.tab-btn[data-tab="${tabId}"]`).classList.add('active');
-    document.getElementById(`tab-${tabId}`).classList.add('active');
+  document.querySelector(`.tab-btn[data-tab="${tabId}"]`).classList.add('active');
+  document.getElementById(`tab-${tabId}`).classList.add('active');
 }
 ```
 
