@@ -25,11 +25,8 @@ import krop.examples.htmx.views.html
 import org.http4s.AuthScheme
 import org.http4s.Credentials.Token
 import org.http4s.headers.Authorization
-import org.typelevel.log4cats.Logger
 
-final case class LogoutHandler(
-    service: SimpleAuthService[IO]
-)(using Logger[IO]):
+final case class LogoutHandler(service: SimpleAuthService[IO]):
   val handler: Handler =
     Routes.logout.handleIO: (authorization: Authorization) =>
       authorization match
