@@ -1,0 +1,38 @@
+@(errorMessage: Option[String])
+<div id="app" class="app-container-narrow">
+    <h2>Login</h2>
+
+    <form id="loginForm">
+        <div class="form-group">
+            <label for="loginUsername">Username:</label>
+            <input id="loginUsername" name="username" type="text" required/>
+        </div>
+        <div class="form-group">
+            <label for="loginPassword">Password:</label>
+            <input id="loginPassword" name="password" type="password" required/>
+        </div>
+        <button
+                type="button"
+                hx-post="/auth/login"
+                hx-target="#app"
+                hx-swap="outerHTML"
+        >Login
+        </button>
+    </form>
+
+    <div id="messageBlock">
+        @errorMessage.map { msg =>
+        <div class="error">@msg</div>
+        }
+    </div>
+
+    <p>
+        Don't have an account?
+        <a
+                onclick="htmx.process(this); this.click();"
+                hx-get="/register"
+                hx-target="#app"
+                hx-swap="outerHTML"
+        >Register</a>
+    </p>
+</div>

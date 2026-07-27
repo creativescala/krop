@@ -1,0 +1,150 @@
+@(username: String, token: String)
+<div id="app" class="app-container">
+    <iframe onload="saveUserCookies('@token')" style="display:none;"></iframe>
+    <div id="welcomeBlock" class="welcome-container">
+        <div class="welcome-header">
+            <div class="welcome-user">
+                <h2>Welcome, @username!</h2>
+            </div>
+            <button
+                    id="logoutBtn"
+                    type="button"
+                    onclick="clearUserCookies(); htmx.process(this); this.click();"
+                    hx-post="/auth/logout"
+                    hx-target="#app"
+                    hx-swap="outerHTML"
+                    hx-headers='{"Authorization": "Bearer @token"}'
+                    class="logout-btn"
+            >
+                Выход
+            </button>
+        </div>
+
+        <div class="tabs-container">
+            <div class="tabs-header">
+                <button class="tab-btn active" data-tab="in-progress" onclick="switchTab('in-progress')">
+                    In progress
+                </button>
+                <button class="tab-btn" data-tab="planned" onclick="switchTab('planned')">
+                    Planned
+                </button>
+                <button class="tab-btn" data-tab="knowledge" onclick="switchTab('knowledge')">
+                    Knowledge base
+                </button>
+            </div>
+
+            <div id="tab-in-progress" class="tab-content active">
+                <div class="tab-actions">
+                    <button
+                            class="create-task-btn"
+                            onclick="htmx.process(this); this.click();"
+                            hx-get="/task/create?tab=in-progress"
+                            hx-target="#app"
+                            hx-swap="outerHTML"
+                    >
+                        + Create task
+                    </button>
+                </div>
+                <div class="tasks-grid">
+                    <div class="task-card">
+                        <div class="task-icon">📚</div>
+                        <div class="task-info">
+                            <div class="task-title">Read "Creative Scala"</div>
+                            <div class="task-meta">Noel Welsh • Progress: 60%</div>
+                        </div>
+                    </div>
+                    <div class="task-card">
+                        <div class="task-icon">📝</div>
+                        <div class="task-info">
+                            <div class="task-title">Write an article about Krop</div>
+                            <div class="task-meta">Blog • Deadline: July 25, 2026</div>
+                        </div>
+                    </div>
+                    <div class="task-card">
+                        <div class="task-icon">💻</div>
+                        <div class="task-info">
+                            <div class="task-title">Implement Authentication</div>
+                            <div class="task-meta">PDP Project • Priority: High</div>
+                        </div>
+                    </div>
+                    <div class="task-card">
+                        <div class="task-icon">📊</div>
+                        <div class="task-info">
+                            <div class="task-title">Prepare Monthly Report</div>
+                            <div class="task-meta">Statistics • Due by August 1st</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-planned" class="tab-content">
+                <div class="tab-actions">
+                    <button
+                            class="create-task-btn"
+                            onclick="htmx.process(this); this.click();"
+                            hx-get="/task/create?tab=planned"
+                            hx-target="#app"
+                            hx-swap="outerHTML"
+                    >
+                        + Create task
+                    </button>
+                </div>
+                <div class="tasks-grid">
+                    <div class="task-card">
+                        <div class="task-icon">📖</div>
+                        <div class="task-info">
+                            <div class="task-title">Learn Scala 3</div>
+                            <div class="task-meta">Plan • Start in August</div>
+                        </div>
+                    </div>
+                    <div class="task-card">
+                        <div class="task-icon">🎯</div>
+                        <div class="task-info">
+                            <div class="task-title">Launch MVP project</div>
+                            <div class="task-meta">Plan • Goal: Q4 2026</div>
+                        </div>
+                    </div>
+                    <div class="task-card">
+                        <div class="task-icon">📈</div>
+                        <div class="task-info">
+                            <div class="task-title">Course Typelevel Stack</div>
+                            <div class="task-meta">Training • Planned for September</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-knowledge" class="tab-content">
+                <div class="tab-actions">
+                    <button
+                            class="create-task-btn"
+                            onclick="htmx.process(this); this.click();"
+                            hx-get="/task/create?tab=knowledge"
+                            hx-target="#app"
+                            hx-swap="outerHTML"
+                    >
+                        + Create task
+                    </button>
+                </div>
+                <div class="tasks-grid">
+                    <div class="task-card">
+                        <div class="task-icon">📄</div>
+                        <div class="task-info">
+                            <div class="task-title">Krop Documentation</div>
+                            <div class="task-meta">Knowledge Base • Read and Take Notes</div>
+                        </div>
+                    </div>
+                    <div class="task-card">
+                        <div class="task-icon">🎓</div>
+                        <div class="task-info">
+                            <div class="task-title">FP Lectures</div>
+                            <div class="task-meta">Knowledge Base • View and Write Questions</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="messageBlock"></div>
+    </div>
+</div>

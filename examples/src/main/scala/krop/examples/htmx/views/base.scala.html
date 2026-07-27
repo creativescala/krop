@@ -1,0 +1,29 @@
+@(title: String, content: Html)
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>@title</title>
+
+    <link rel="stylesheet" href="/asset/htmx-example.css" />
+    <script src="/asset/htmx-example.js"></script>
+    <script src="@{"https://cdn.jsdelivr.net/npm/htmx.org@2.0.10/dist/htmx.js"}" integrity="sha384-Q+Dky3iHVJOr6wUjQ4ulh6uQ76an/t+ak1+PjMVaxRjbZamFLAG+u9InkfjbsEQf" crossorigin="anonymous"></script>
+</head>
+<body>
+<header class="app-header">
+    <div class="header-container">
+        <a
+                hx-get="/home"
+                hx-target="#app"
+                hx-swap="outerHTML"
+        >@title</a>
+    </div>
+    <div class="header-divider"></div>
+</header>
+
+<main class="main-content">
+    @content
+</main>
+</body>
+</html>

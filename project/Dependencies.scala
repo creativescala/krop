@@ -8,7 +8,7 @@ object Dependencies {
   val catsVersion = "2.10.0"
   val catsEffectVersion = "3.5.1"
   val circeVersion = "0.14.13"
-  val circeGenericVersion = "0.14.15"
+  val circeGenericVersion = "0.14.16"
   val declineVersion = "2.6.2"
   val fs2Version = "3.6.1"
   val http4sVersion = "1.0.0-M47"
