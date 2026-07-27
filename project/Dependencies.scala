@@ -16,9 +16,9 @@ object Dependencies {
   val scalaTagsVersion = "0.13.1"
   val twirlVersion = "2.0.9"
   val log4catsVersion = "2.8.0"
-  val logbackVersion = "1.5.32"
+  val logbackVersion = "1.6.0"
 
-  val sqliteVersion = "3.51.2.0"
+  val sqliteVersion = "3.53.2.1"
   val magnumVersion = "1.3.1"
 
   val directoryWatcherVersion = "0.19.1"
