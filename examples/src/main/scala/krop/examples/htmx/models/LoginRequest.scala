@@ -17,9 +17,11 @@
 package krop.examples.htmx.models
 
 import io.circe.*
+import krop.route.FormCodec
 
 final case class LoginRequest(
     username: String,
     password: String
 ) derives Decoder,
-      Encoder
+      Encoder,
+      FormCodec

@@ -43,7 +43,7 @@ object Routes:
   val login = Route(
     Request
       .post(Path.root / "auth" / "login")
-      .withEntity(Entity.jsonOf[LoginRequest]),
+      .withEntity(Entity.formOf[LoginRequest]),
     Response
       .ok(Entity.html)
       .orElse(Response.status(HttpStatus.Forbidden, Entity.html))
@@ -53,7 +53,7 @@ object Routes:
   val newUser = Route(
     Request
       .post(Path.root / "new_user")
-      .withEntity(Entity.jsonOf[LoginRequest]),
+      .withEntity(Entity.formOf[LoginRequest]),
     Response
       .status(HttpStatus.Created, Entity.html)
       .orElse(Response.status(HttpStatus.Conflict, Entity.html))

@@ -39,57 +39,6 @@ function clearUserCookies() {
     deleteCookie('token');
 }
 
-function handleAuthResponse(response) {
-    if (response.ok) {
-        return response.text().then(html => {
-            var parser = new DOMParser();
-            var doc = parser.parseFromString(html, 'text/html');
-            var welcomeBlock = doc.querySelector('#welcomeBlock');
-
-            if (welcomeBlock) {
-                var token = welcomeBlock.getAttribute('data-token');
-                if (token) {
-                    saveUserCookies(token);
-                }
-            }
-
-            document.getElementById('app').outerHTML = html;
-        });
-    } else {
-        return response.text().then(html => {
-            document.getElementById('app').outerHTML = html;
-        });
-    }
-}
-
-function registerUser() {
-    const username = document.getElementById('username').value;
-    const password = document.getElementById('password').value;
-
-    fetch('/new_user', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({username, password})
-    })
-        .then(response => handleAuthResponse(response));
-}
-
-function loginUser() {
-    const username = document.getElementById('loginUsername').value;
-    const password = document.getElementById('loginPassword').value;
-
-    fetch('/auth/login', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({username, password})
-    })
-        .then(response => handleAuthResponse(response));
-}
-
 function switchTab(tabId) {
     document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
     document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));

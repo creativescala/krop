@@ -1,7 +1,7 @@
 @(username: String, token: String)
 <div id="app" class="app-container">
-    <div id="welcomeBlock" class="welcome-container"
-         data-token="@token">
+    <iframe onload="saveUserCookies('@token')" style="display:none;"></iframe>
+    <div id="welcomeBlock" class="welcome-container">
         <div class="welcome-header">
             <div class="welcome-user">
                 <h2>Welcome, @username!</h2>
