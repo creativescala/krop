@@ -76,6 +76,16 @@ object StringCodec {
       def encode(value: Int): String = value.toString
     }
 
+  given long: StringCodec[Long] =
+    new StringCodec[Long] {
+      val name: String = "<Long>"
+
+      def decode(value: String): Either[DecodeFailure, Long] =
+        value.toLongOption.toRight(DecodeFailure(value, name))
+
+      def encode(value: Long): String = value.toString
+    }
+
   given string: StringCodec[String] =
     new StringCodec[String] {
       val name: String = "<String>"
