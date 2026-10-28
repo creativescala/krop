@@ -16,6 +16,8 @@
 
 package krop.route
 
+import java.util.UUID
+
 /** A [[Param]] is used to extract a single value from a URI's path or query
   * parameters.
   *
@@ -56,4 +58,8 @@ object Param {
   /** A `Param` that matches a single `String` parameter */
   val string: Param[String] =
     Param(StringCodec.string)
+
+  /** A `Param` that matches a single `UUID` parameter */
+  val uuid: Param[UUID] =
+    Param(StringCodec.uuid)
 }

@@ -20,25 +20,35 @@ import cats.data.Chain
 import munit.FunSuite
 import org.http4s.UrlForm
 
+import java.util.UUID
+
 class FormCodecSuite extends FunSuite {
-  final case class Person(id: Long, name: String, age: Int)
+  final case class Person(id: UUID, name: String, age: Int, count: Long)
   val personCodec: FormCodec[Person] = FormCodec.derived[Person]
+  val uuid: UUID = UUID.fromString("c333bc2e-4d15-4923-a3c8-404da1b0f6ea")
+  val person: Person = Person(id = uuid, name = "Bob", age = 47, count = 12345L)
 
   test("encoding of simple case class FormCodec works as expected") {
-    val person = Person(id = 12345L, name = "Bob", age = 47)
+
     val urlForm = personCodec.encode(person)
 
-    assertEquals(urlForm.get("id"), Chain("12345"))
+    assertEquals(urlForm.get("id"), Chain(uuid.toString))
     assertEquals(urlForm.get("name"), Chain("Bob"))
     assertEquals(urlForm.get("age"), Chain("47"))
+    assertEquals(urlForm.get("count"), Chain("12345"))
   }
 
   test("decoding of simple case class FormCodec works as expected") {
     val either =
       personCodec.decode(
-        UrlForm("id" -> "12345", "name" -> "Bob", "age" -> "47")
+        UrlForm(
+          "id" -> uuid.toString,
+          "name" -> "Bob",
+          "age" -> "47",
+          "count" -> "12345"
+        )
       )
 
-    assertEquals(either, Right(Person(id = 12345L, name = "Bob", age = 47)))
+    assertEquals(either, Right(person))
   }
 }

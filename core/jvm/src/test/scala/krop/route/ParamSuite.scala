@@ -19,6 +19,8 @@ package krop.route
 import fs2.io.file.Path as Fs2Path
 import munit.FunSuite
 
+import java.util.UUID
+
 class ParamSuite extends FunSuite {
   def paramDecodesValid[A](param: Param[A], values: Seq[(String, A)])(using
       munit.Location
@@ -53,6 +55,13 @@ class ParamSuite extends FunSuite {
         ("a" -> "a"),
         ("42" -> "42"),
         ("baby you and me" -> "baby you and me")
+      )
+    )
+    val uuid = UUID.fromString("c333bc2e-4d15-4923-a3c8-404da1b0f6ea")
+    paramDecodesValid[UUID](
+      Param.uuid,
+      Seq(
+        uuid.toString -> uuid
       )
     )
   }

@@ -16,6 +16,9 @@
 
 package krop.route
 
+import java.util.UUID
+import scala.util.Try
+
 /** A StringCodec encodes a value as a String, and decodes a value from a
   * String. StringCodecs are used for handling:
   *
@@ -94,5 +97,15 @@ object StringCodec {
         Right(value)
 
       def encode(value: String): String = value
+    }
+
+  given uuid: StringCodec[UUID] =
+    new StringCodec[UUID] {
+      val name: String = "<UUID>"
+
+      def decode(value: String): Either[DecodeFailure, UUID] =
+        Try(UUID.fromString(value)).toOption.toRight(DecodeFailure(value, name))
+
+      def encode(value: UUID): String = value.toString
     }
 }
