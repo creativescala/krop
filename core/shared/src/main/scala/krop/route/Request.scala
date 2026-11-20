@@ -243,8 +243,18 @@ object Request {
 
     def withEntity[E, D](
         entity: Entity[E, D]
-    ): RequestEntity[P, Q, P, Q, E, D] = {
+    ): RequestEntity[P, Q, EmptyTuple, EmptyTuple, E, D] = {
       val headers = RequestHeaders.empty(this)
+      RequestEntity(headers, entity)
+    }
+
+    def withEntityAndExtractHeader[A](using
+        h: Header[A, ?],
+        s: Header.Select[A]
+    )[E, D](
+        entity: Entity[E, D]
+    ): RequestEntity[P, Q, Tuple1[s.F[A]], Tuple1[s.F[A]], E, D] = {
+      val headers = extractHeader[A]
       RequestEntity(headers, entity)
     }
   }
@@ -455,7 +465,12 @@ object Request {
   ](
       headers: RequestHeaders[P, Q, ?, ?],
       entity: Entity[E, D]
-  ) extends Request[Tuple.Append[O, E], P, Q, Tuple.Append[I, D]] {
+  ) extends Request[
+        TupleConcat[TupleConcat[P, Q], Tuple.Append[O, E]],
+        P,
+        Q,
+        TupleConcat[TupleConcat[P, Q], Tuple.Append[I, D]]
+      ] {
 
     def pathTo(params: P): String =
       headers.pathTo(params)
@@ -495,9 +510,12 @@ object Request {
     }
 
     def unparse(params: Unparsed): Http4sRequest[IO] = {
-      val (o, e) = params.splitAt(headers.outputCount)
-      val request = headers.unparse(o.asInstanceOf[headers.Unparsed])
-      val encoded = entity.encoder.toEntity(e.asInstanceOf[Tuple1[E]](0))
+      val ps = params.toIArray
+      val (pqAndO, eArr) = ps.splitAt(ps.length - 1)
+      val request = headers.unparse(
+        Tuple.fromIArray(pqAndO).asInstanceOf[headers.Unparsed]
+      )
+      val encoded = entity.encoder.toEntity(eArr(0).asInstanceOf[E])
       request.withEntity(encoded)
     }
 

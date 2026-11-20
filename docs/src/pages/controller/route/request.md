@@ -98,3 +98,19 @@ Request.get(Path.root).withEntity(Entity.html)
 ```
 
 There are several predefined `Entity` values on the companion object, but you can easily create your own if needed. The [documentation for entities](entities.md) has more details.
+
+### Extracting a Header Together with an Entity
+
+If you want to both extract a header and attach an @:api(krop.route.Entity) to the same `Request`, you can combine the two operations in a single call using `withEntityAndExtractHeader`. 
+This is a convenience method: it is equivalent to calling `extractHeader[Header]` and then `withEntity(entity)`, but it keeps the resulting @:api(krop.route.RequestEntity) type faithful to both the extracted header and the entity.
+
+Here is an example that extracts the `Content-Type` header and attaches a text entity.
+
+```scala mdoc:silent
+Request
+  .get(Path.root / Param.int)
+  .withEntityAndExtractHeader[`Content-Type`](Entity.text)
+```
+
+The header type is given as a type argument (just like the first variant of `extractHeader`), while the entity is passed as a regular argument. 
+The resulting `Request` extracts both the header value and the decoded entity, so the handler receives them as a pair.

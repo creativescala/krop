@@ -18,12 +18,27 @@ package krop.route
 
 import cats.effect.IO
 import munit.FunSuite
+import org.http4s.MediaType
+import org.http4s.headers.`Content-Type`
 
 class TupleApplySuite extends FunSuite {
 
   val emptyRequest = Request.get(Path.root)
   val intRequest = Request.get(Path / Param.int)
   val intStringRequest = Request.get(Path / Param.int / Param.string)
+  val jsonContentType = `Content-Type`(MediaType.application.json)
+  val headerEntityRequest =
+    Request
+      .get(Path.root)
+      .withEntityAndExtractHeader[`Content-Type`](Entity.text)
+  val entityPathRequest =
+    Request
+      .get(Path.root / Param.int)
+      .withEntity(Entity.text)
+  val headerEntityPathRequest =
+    Request
+      .get(Path.root / Param.int)
+      .withEntityAndExtractHeader[`Content-Type`](Entity.text)
 
   test("Type inference works for EmptyTuple") {
     val route = Route(emptyRequest, Response.ok(Entity.text))
@@ -56,5 +71,26 @@ class TupleApplySuite extends FunSuite {
     val f = TupleApply.tuple1Apply[Int, String].tuple(int => int.toString)
 
     assertEquals(f.apply(Tuple1(42)), "42")
+  }
+
+  test("Type inference works for extracted header and entity") {
+    val route = Route(headerEntityRequest, Response.ok(Entity.text))
+
+    route.handle((header, body) => s"$header: $body")
+    route.handleIO((header, body) => IO.pure(s"$header: $body"))
+  }
+
+  test("Type inference works for extracted path and entity") {
+    val route = Route(entityPathRequest, Response.ok(Entity.text))
+
+    route.handle((int, body) => s"$int: $body")
+    route.handleIO((int, body) => IO.pure(s"$int: $body"))
+  }
+
+  test("Type inference works for extracted path, header and entity") {
+    val route = Route(headerEntityPathRequest, Response.ok(Entity.text))
+
+    route.handle((int, header, body) => s"$int: $header: $body")
+    route.handleIO((int, header, body) => IO.pure(s"$int: $header: $body"))
   }
 }
